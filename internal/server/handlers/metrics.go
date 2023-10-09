@@ -20,6 +20,8 @@ type MetricsHandlers interface {
 	UpdateGauge(c *gin.Context)
 	UpdateCounter(c *gin.Context)
 	GetAllMetricsHTML(c *gin.Context)
+	Update(c *gin.Context)
+	Value(c *gin.Context)
 }
 
 // Структура реализующая интерфейс
@@ -86,6 +88,34 @@ func (h *metricsHandlers) UpdateCounter(c *gin.Context) {
 	h.metricsRepository.UpdateMetricCounter(metric, metricValue)
 
 	c.Status(http.StatusOK)
+}
+
+func (h *metricsHandlers) Update(c *gin.Context) {
+
+	typeMetric := c.Param("type")
+
+	switch val := typeMetric; val {
+	case "gauge":
+		h.UpdateGauge(c)
+	case "counter":
+		h.UpdateCounter(c)
+	default:
+		c.Status(http.StatusBadRequest)
+	}
+}
+
+func (h *metricsHandlers) Value(c *gin.Context) {
+
+	typeMetric := c.Param("type")
+
+	switch val := typeMetric; val {
+	case "gauge":
+		h.GetMetricsGauge(c)
+	case "counter":
+		h.GetMetricsCounter(c)
+	default:
+		c.Status(http.StatusBadRequest)
+	}
 }
 
 // End Points MetricsHandlers GetAllMetricsHtml

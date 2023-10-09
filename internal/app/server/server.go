@@ -28,7 +28,7 @@ func Run() {
 	metricsHandlers := handlers.NewMetricsHandlers(metricsRepository)
 
 	//Роутинг
-	metricsRotes := routes.NewGinMetricsRoutes(metricsHandlers)
+	metricsRotes := routes.NewGinMetricsRoutesChange(metricsHandlers)
 
 	router := gin.Default()
 
