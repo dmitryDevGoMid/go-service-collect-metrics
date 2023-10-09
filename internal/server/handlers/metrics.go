@@ -1,0 +1,102 @@
+package handlers
+
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository"
+	//"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/service"
+	"net/http"
+
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/restutils"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Интерфейс для обработчиков запросов
+type MetricsHandlers interface {
+	GetMetricsGauge(c *gin.Context)
+	GetMetricsCounter(c *gin.Context)
+	UpdateGauge(c *gin.Context)
+	UpdateCounter(c *gin.Context)
+	GetAllMetricsHtml(c *gin.Context)
+}
+
+// Структура реализующая интерфейс
+type metricsHandlers struct {
+	metricsRepository repository.MetricsRepository
+	//metricsService service.MetricsService
+}
+
+// Конструктор
+func NewMetricsHandlers(metricsRepository repository.MetricsRepository) MetricsHandlers {
+	return &metricsHandlers{metricsRepository: metricsRepository}
+}
+
+// endPointsMetricsHandlers GetMetricsGauge
+func (h *metricsHandlers) GetMetricsGauge(c *gin.Context) {
+	metricName := c.Param("metric")
+
+	resp, err := h.metricsRepository.GetMetricGauge(metricName)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, err.Error())
+	} else {
+		c.JSON(http.StatusOK, resp)
+	}
+}
+
+// endPointsMetricsHandlers GetMetricsCounter
+func (h *metricsHandlers) GetMetricsCounter(c *gin.Context) {
+	metricName := c.Param("metric")
+
+	resp, err := h.metricsRepository.GetMetricGauge(metricName)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, err.Error())
+	} else {
+		c.JSON(http.StatusOK, resp)
+	}
+}
+
+// End Points MetricsHandlers UpdateGauge
+func (h *metricsHandlers) UpdateGauge(c *gin.Context) {
+	metricName := c.Param("metric")
+
+	metricValue, err := strconv.ParseFloat(c.Param("value"), 64)
+	if err != nil {
+		restutils.GinWriteError(c, http.StatusBadRequest, `Неверный параметр метрики!`)
+	}
+
+	h.metricsRepository.UpdateMetricGauge(metricName, metricValue)
+
+	c.Status(http.StatusOK)
+}
+
+// End Points MetricsHandlers UpdateCounter
+func (h *metricsHandlers) UpdateCounter(c *gin.Context) {
+
+	metric := c.Param("metric")
+
+	metricValue, err := strconv.ParseInt(c.Param("value"), 10, 64)
+	if err != nil {
+		restutils.GinWriteError(c, http.StatusBadRequest, `Неверный параметр метрики!`)
+	}
+
+	h.metricsRepository.UpdateMetricCounter(metric, metricValue)
+
+	c.Status(http.StatusOK)
+}
+
+// End Points MetricsHandlers GetAllMetricsHtml
+func (h *metricsHandlers) GetAllMetricsHtml(c *gin.Context) {
+	html := ""
+	metrics := h.metricsRepository.GetAllMetrics()
+	for key, val := range metrics.Counter {
+		html += fmt.Sprintf("<div>%s => %d </div>", key, val)
+	}
+	for key, val := range metrics.Gauge {
+		html += fmt.Sprintf("<div>%s => %v </div>", key, val)
+	}
+	c.Data(http.StatusOK, "", []byte(html))
+}
