@@ -35,5 +35,7 @@ func MonitorMetrics() {
 }
 
 func Run() {
+
 	MonitorMetrics()
+
 }
