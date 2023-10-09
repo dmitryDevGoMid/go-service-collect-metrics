@@ -1,4 +1,4 @@
-module metrics
+module github.com/dmitryDevGoMid/go-service-collect-metrics
 
 go 1.19
 
