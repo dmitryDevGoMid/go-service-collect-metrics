@@ -19,7 +19,7 @@ type MetricsHandlers interface {
 	GetMetricsCounter(c *gin.Context)
 	UpdateGauge(c *gin.Context)
 	UpdateCounter(c *gin.Context)
-	GetAllMetricsHtml(c *gin.Context)
+	GetAllMetricsHTML(c *gin.Context)
 }
 
 // Структура реализующая интерфейс
@@ -89,7 +89,7 @@ func (h *metricsHandlers) UpdateCounter(c *gin.Context) {
 }
 
 // End Points MetricsHandlers GetAllMetricsHtml
-func (h *metricsHandlers) GetAllMetricsHtml(c *gin.Context) {
+func (h *metricsHandlers) GetAllMetricsHTML(c *gin.Context) {
 	html := ""
 	metrics := h.metricsRepository.GetAllMetrics()
 	for key, val := range metrics.Counter {

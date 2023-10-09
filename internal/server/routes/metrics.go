@@ -11,7 +11,7 @@ func NewGinMetricsRoutes(metricsHandlers handlers.MetricsHandlers) []*GinRoute {
 			// Update url counter metrics
 			Path:    "/",
 			Method:  "get",
-			Handler: metricsHandlers.GetAllMetricsHtml,
+			Handler: metricsHandlers.GetAllMetricsHTML,
 		},
 		{
 			// Update url counter metrics
