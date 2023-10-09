@@ -39,6 +39,6 @@ func Run() {
 	routes.InstallRouteGin(router, metricsRotes)
 
 	// Сервер
-	router.Run(fmt.Sprintf("%s", cfg.Server.Address))
+	router.Run(cfg.Server.Address)
 
 }
