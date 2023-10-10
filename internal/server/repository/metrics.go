@@ -47,7 +47,13 @@ func (mr *metricsRepository) GetMetricCounter(nameMetric string) (int64, error) 
 		return 0, validator.ErrEmptyNameMetrics
 	}
 
-	return mr.metrics.Counter[nameMetric], nil
+	val, ok := mr.metrics.Counter[nameMetric]
+	if ok {
+		return val, nil
+	}
+
+	return 0, validator.ErrMetricsKeyNotFound
+
 }
 
 // Upodate metrics Gauge
