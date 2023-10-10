@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"fmt"
-
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/models"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/validator"
 )
@@ -72,8 +70,13 @@ func (mr *metricsRepository) UpdateMetricCounter(nameMetric string, value int64)
 		return validator.ErrEmptyNameMetrics
 	}
 
-	fmt.Println("Сохраняем:", nameMetric, ":", value)
-	mr.metrics.Counter[nameMetric] = value
+	//Sum metrics Counter
+	val, ok := mr.metrics.Counter[nameMetric]
+	if ok {
+		mr.metrics.Counter[nameMetric] = value + val
+	} else {
+		mr.metrics.Counter[nameMetric] = value
+	}
 
 	return nil
 }
