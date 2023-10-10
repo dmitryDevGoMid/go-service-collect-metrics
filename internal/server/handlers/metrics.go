@@ -52,7 +52,7 @@ func (h *metricsHandlers) GetMetricsGauge(c *gin.Context) {
 func (h *metricsHandlers) GetMetricsCounter(c *gin.Context) {
 	metricName := c.Param("metric")
 
-	resp, err := h.metricsRepository.GetMetricGauge(metricName)
+	resp, err := h.metricsRepository.GetMetricCounter(metricName)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, err.Error())
