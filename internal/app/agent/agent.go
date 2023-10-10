@@ -10,7 +10,7 @@ import (
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/config"
 )
 
-func MonitorMetricsRun() {
+func MonitorMetrics() {
 
 	cfg, err := config.ParseConfig()
 
@@ -35,5 +35,5 @@ func MonitorMetricsRun() {
 }
 
 func Run() {
-	MonitorMetricsRun()
+	MonitorMetrics()
 }
