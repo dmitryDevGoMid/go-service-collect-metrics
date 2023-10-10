@@ -79,11 +79,16 @@ func (h *metricsHandlers) UpdateGauge(c *gin.Context) {
 func (h *metricsHandlers) UpdateCounter(c *gin.Context) {
 
 	metric := c.Param("metric")
+	value := c.Param("value")
 
-	metricValue, err := strconv.ParseInt(c.Param("value"), 10, 64)
+	fmt.Println("Получили:", value)
+
+	metricValue, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
 		restutils.GinWriteError(c, http.StatusBadRequest, `Неверный параметр метрики!`)
 	}
+
+	fmt.Println("Типизация:", metricValue)
 
 	h.metricsRepository.UpdateMetricCounter(metric, metricValue)
 
