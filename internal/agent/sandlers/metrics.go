@@ -61,7 +61,7 @@ func (rm *sandlerMetrics) SendMetrics(cfg *config.Config) {
 		url := fmt.Sprintf("http://%s/update/gauge/%s/%v", cfg.Server.Address, key, val)
 		_, err := client.R().Post(url)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		//fmt.Println(response)
 	}

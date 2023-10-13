@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/models"
@@ -8,6 +9,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
+
+var mutex sync.Mutex
 
 func getStorages() (*models.AllMetrics, *models.MemStorage) {
 	TestStorageMetrics := storage.NewMemStorage()
@@ -22,7 +25,7 @@ func TestRepositoryMetrics(t *testing.T) {
 	assert.NotNil(t, TestStorageMetrics)
 	assert.NotNil(t, TestStorageAllMetrics)
 
-	TestRepositoryMetrics := NewRepositoryMetrics(TestStorageMetrics, TestStorageAllMetrics)
+	TestRepositoryMetrics := NewRepositoryMetrics(TestStorageMetrics, TestStorageAllMetrics, &mutex)
 	assert.NotNil(t, TestRepositoryMetrics)
 
 	TestRepositoryMetrics.ChangeMetrics()

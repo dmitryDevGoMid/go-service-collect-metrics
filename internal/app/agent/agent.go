@@ -2,13 +2,19 @@ package agent
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/repository"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/sandlers"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/storage"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/config"
 )
+
+var mutex sync.Mutex
 
 func MonitorMetricsRun() {
 
@@ -22,7 +28,7 @@ func MonitorMetricsRun() {
 
 	storageAllMetrics := storage.NewAllMetricsStorage()
 
-	repositoryMetrics := repository.NewRepositoryMetrics(storageMetrics, storageAllMetrics)
+	repositoryMetrics := repository.NewRepositoryMetrics(storageMetrics, storageAllMetrics, &mutex)
 
 	sandlerMetrics := sandlers.NewMetricsSendler(repositoryMetrics)
 
@@ -31,7 +37,10 @@ func MonitorMetricsRun() {
 
 	signalChannel := make(chan os.Signal, 1)
 
+	signal.Notify(signalChannel, syscall.SIGINT, syscall.SIGTERM)
+
 	<-signalChannel
+	log.Println("Shutdown Agent ...")
 }
 
 func Run() {

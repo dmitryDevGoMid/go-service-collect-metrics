@@ -68,6 +68,7 @@ func (h *metricsHandlers) UpdateGauge(c *gin.Context) {
 	metricValue, err := strconv.ParseFloat(c.Param("value"), 64)
 	if err != nil {
 		restutils.GinWriteError(c, http.StatusBadRequest, `Неверный параметр метрики!`)
+		return
 	}
 
 	h.metricsRepository.UpdateMetricGauge(metricName, metricValue)
@@ -86,6 +87,7 @@ func (h *metricsHandlers) UpdateCounter(c *gin.Context) {
 	metricValue, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
 		restutils.GinWriteError(c, http.StatusBadRequest, `Неверный параметр метрики!`)
+		return
 	}
 
 	fmt.Println("Типизация:", metricValue)

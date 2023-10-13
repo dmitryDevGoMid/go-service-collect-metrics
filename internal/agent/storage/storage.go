@@ -6,8 +6,6 @@ func NewMemStorage() *models.MemStorage {
 
 	var metrics models.MemStorage
 
-	initMetrics(&metrics)
-
 	return &metrics
 }
 
@@ -19,9 +17,4 @@ func NewAllMetricsStorage() *models.AllMetrics {
 	metrics := models.AllMetrics{Gauge: mapGauge, Counter: mapCounter}
 
 	return &metrics
-}
-
-// Init metrics value
-func initMetrics(metrics *models.MemStorage) {
-	metrics.Counter.PollCount = 0
 }

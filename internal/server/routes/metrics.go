@@ -26,42 +26,6 @@ func NewGinMetricsRoutesChange(metricsHandlers handlers.MetricsHandlers) []*GinR
 	}
 }
 
-// Create route by Slice
-func NewGinMetricsRoutes(metricsHandlers handlers.MetricsHandlers) []*GinRoute {
-	return []*GinRoute{
-		{
-			// Update url counter metrics
-			Path:    "/",
-			Method:  "get",
-			Handler: metricsHandlers.GetAllMetricsHTML,
-		},
-		{
-			// Update url counter metrics
-			Path:    "/update/counter/:metric/:value",
-			Method:  "post",
-			Handler: metricsHandlers.UpdateCounter,
-		},
-		{
-			// Get url counter metrics
-			Path:    "/value/counter/:metric", // Логин
-			Method:  "get",
-			Handler: metricsHandlers.GetMetricsCounter,
-		},
-		{
-			// Update url gauge metrics
-			Path:    "/update/gauge/:metric/:value", // Регистр нового
-			Method:  "post",
-			Handler: metricsHandlers.UpdateGauge,
-		},
-		{
-			// Get url gauge metrics
-			Path:    "/value/gauge/:metric", // Логин
-			Method:  "get",
-			Handler: metricsHandlers.GetMetricsGauge,
-		},
-	}
-}
-
 /*
 Пример запроса к серверу:
 

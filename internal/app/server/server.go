@@ -1,7 +1,14 @@
 package server
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/config"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/handlers"
@@ -31,14 +38,47 @@ func Run() {
 	metricsRotes := routes.NewGinMetricsRoutesChange(metricsHandlers)
 
 	router := gin.Default()
+	//router := gin.New()
 
 	//Middleware Set Content TYPE
 	router.Use(routes.WriteContentType())
+
+	//Middleware CORS
+	router.Use(routes.CORSMiddleware())
 
 	//Инициализируем роуты
 	routes.InstallRouteGin(router, metricsRotes)
 
 	// Сервер
-	router.Run(cfg.Server.Address)
+	//router.Run(cfg.Server.Address)
+
+	// Line 27
+	srv := &http.Server{
+		Addr:    cfg.Server.Address,
+		Handler: router,
+	}
+
+	go func() {
+		// service connections
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
+		}
+	}()
+
+	signalChannel := make(chan os.Signal, 1)
+
+	signal.Notify(signalChannel, syscall.SIGINT, syscall.SIGTERM)
+
+	<-signalChannel
+	log.Println("Shutdown Server ...")
+
+	// Line 49
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Line 51
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal("Server forced to shutdown: ", err)
+	}
 
 }

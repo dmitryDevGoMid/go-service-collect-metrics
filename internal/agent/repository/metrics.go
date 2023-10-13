@@ -3,8 +3,8 @@ package repository
 import (
 	"fmt"
 	"math/rand"
-	"reflect"
 	"runtime"
+	"sync"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/models"
 )
@@ -13,17 +13,19 @@ type RepositoryMetrics interface {
 	ChangeMetrics() error
 	GetGaugeMetricsAll() (*models.AllMetrics, error)
 	GetCounterMetricsAll() (*models.AllMetrics, error)
-	changePollCount() int64
+	calcPollCount() int64
 }
 
 type repositoryMetrics struct {
 	metrics    *models.MemStorage
 	metricsAll *models.AllMetrics
+	//Set mutex for gorutine metrics
+	mutex *sync.Mutex
 }
 
-// Сonstructor
-func NewRepositoryMetrics(metrics *models.MemStorage, metricsAll *models.AllMetrics) RepositoryMetrics {
-	return &repositoryMetrics{metrics: metrics, metricsAll: metricsAll}
+// Сonstructor пробрасываем две модели
+func NewRepositoryMetrics(metrics *models.MemStorage, metricsAll *models.AllMetrics, mutex *sync.Mutex) RepositoryMetrics {
+	return &repositoryMetrics{metrics: metrics, metricsAll: metricsAll, mutex: mutex}
 }
 
 // Change all metrics
@@ -31,7 +33,12 @@ func (rp *repositoryMetrics) ChangeMetrics() error {
 
 	fmt.Println("Запустили обновление метрик!")
 
-	defer fmt.Println("Завершили обновление метрик!")
+	defer func() {
+		rp.mutex.Unlock()
+		fmt.Println("Завершили обновление метрик!")
+	}()
+
+	rp.mutex.Lock()
 
 	var rtm runtime.MemStats
 	runtime.ReadMemStats(&rtm)
@@ -66,7 +73,7 @@ func (rp *repositoryMetrics) ChangeMetrics() error {
 	rp.metrics.Gauge.TotalAlloc = float64(rtm.TotalAlloc)
 
 	// Custom metrics
-	rp.metrics.Counter.PollCount = rp.changePollCount()
+	rp.metrics.Counter.PollCount = rp.calcPollCount()
 	rp.metrics.Gauge.RandomValue = randomValue()
 
 	return nil
@@ -78,20 +85,47 @@ func randomValue() float64 {
 }
 
 // Count metrics PollCount
-func (rp *repositoryMetrics) changePollCount() int64 {
+func (rp *repositoryMetrics) calcPollCount() int64 {
 	return rp.metrics.Counter.PollCount + 1
 }
 
 // Get all GAUGE metrics, use reflection for get Name and Value by Map
 func (rp repositoryMetrics) GetGaugeMetricsAll() (*models.AllMetrics, error) {
 
-	structMetricsReflection := reflect.ValueOf(&rp.metrics.Gauge).Elem()
+	defer func() {
+		rp.mutex.Unlock()
+	}()
 
-	for i := 0; i < structMetricsReflection.NumField(); i++ {
-		name := structMetricsReflection.Type().Field(i).Name
-		value := structMetricsReflection.Field(i).Interface()
-		rp.metricsAll.Gauge[name] = float64(value.(float64))
-	}
+	rp.mutex.Lock()
+
+	rp.metricsAll.Gauge["Alloc"] = rp.metrics.Gauge.Alloc
+	rp.metricsAll.Gauge["BuckHashSys"] = rp.metrics.Gauge.BuckHashSys
+	rp.metricsAll.Gauge["Frees"] = rp.metrics.Gauge.Frees
+	rp.metricsAll.Gauge["GCCPUFraction"] = rp.metrics.Gauge.GCCPUFraction
+	rp.metricsAll.Gauge["GCSys"] = rp.metrics.Gauge.GCSys
+	rp.metricsAll.Gauge["HeapAlloc"] = rp.metrics.Gauge.HeapAlloc
+	rp.metricsAll.Gauge["HeapIdle"] = rp.metrics.Gauge.HeapIdle
+	rp.metricsAll.Gauge["HeapInuse"] = rp.metrics.Gauge.HeapInuse
+	rp.metricsAll.Gauge["HeapObjects"] = rp.metrics.Gauge.HeapObjects
+	rp.metricsAll.Gauge["HeapReleased"] = rp.metrics.Gauge.HeapReleased
+	rp.metricsAll.Gauge["HeapSys"] = rp.metrics.Gauge.HeapSys
+	rp.metricsAll.Gauge["LastGC"] = rp.metrics.Gauge.LastGC
+	rp.metricsAll.Gauge["Lookups"] = rp.metrics.Gauge.Lookups
+	rp.metricsAll.Gauge["MCacheInuse"] = rp.metrics.Gauge.MCacheInuse
+	rp.metricsAll.Gauge["MCacheSys"] = rp.metrics.Gauge.MCacheSys
+	rp.metricsAll.Gauge["MSpanInuse"] = rp.metrics.Gauge.MSpanInuse
+	rp.metricsAll.Gauge["MSpanSys"] = rp.metrics.Gauge.MSpanSys
+	rp.metricsAll.Gauge["Mallocs"] = rp.metrics.Gauge.Mallocs
+	rp.metricsAll.Gauge["NextGC"] = rp.metrics.Gauge.NextGC
+	rp.metricsAll.Gauge["NumForcedGC"] = rp.metrics.Gauge.NumForcedGC
+	rp.metricsAll.Gauge["NumGC"] = rp.metrics.Gauge.NumGC
+	rp.metricsAll.Gauge["OtherSys"] = rp.metrics.Gauge.OtherSys
+	rp.metricsAll.Gauge["PauseTotalNs"] = rp.metrics.Gauge.PauseTotalNs
+	rp.metricsAll.Gauge["StackInuse"] = rp.metrics.Gauge.StackInuse
+	rp.metricsAll.Gauge["StackSys"] = rp.metrics.Gauge.StackSys
+	rp.metricsAll.Gauge["Sys"] = rp.metrics.Gauge.Sys
+	rp.metricsAll.Gauge["TotalAlloc"] = rp.metrics.Gauge.TotalAlloc
+	rp.metricsAll.Gauge["RandomValue"] = rp.metrics.Gauge.RandomValue
 
 	return rp.metricsAll, nil
 }
@@ -99,13 +133,13 @@ func (rp repositoryMetrics) GetGaugeMetricsAll() (*models.AllMetrics, error) {
 // Get all COUNTER metrics, use reflection for get Name and Value by Map
 func (rp repositoryMetrics) GetCounterMetricsAll() (*models.AllMetrics, error) {
 
-	structMetricsReflection := reflect.ValueOf(&rp.metrics.Counter).Elem()
+	defer func() {
+		rp.mutex.Unlock()
+	}()
 
-	for i := 0; i < structMetricsReflection.NumField(); i++ {
-		name := structMetricsReflection.Type().Field(i).Name
-		value := structMetricsReflection.Field(i).Interface()
-		rp.metricsAll.Counter[name] = int64(value.(int64))
-	}
+	rp.mutex.Lock()
+
+	rp.metricsAll.Counter["PollCount"] = rp.metrics.Counter.PollCount
 
 	return rp.metricsAll, nil
 }
