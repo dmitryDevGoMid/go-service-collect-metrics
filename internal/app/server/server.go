@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/config"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/pkg/logger"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/handlers"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/routes"
@@ -26,19 +27,33 @@ func Run() {
 		fmt.Println("Config", err)
 	}
 
+	//Инициализируем логгер
+	appLogger := logger.NewApiLogger(cfg)
+
+	appLogger.InitLogger()
+	appLogger.Info("Start Service API Metrics")
+
+	appLogger.Infof(
+		"AppVersion: %s",
+		cfg.Logger.Level,
+	)
+
 	metricsModel := storage.NewMemStorage()
 
 	//Репозетарий
 	metricsRepository := repository.NewMetricsRepository(metricsModel)
 
 	//Обработчики
-	metricsHandlers := handlers.NewMetricsHandlers(metricsRepository)
+	metricsHandlers := handlers.NewMetricsHandlers(metricsRepository, cfg)
 
 	//Роутинг
 	metricsRotes := routes.NewGinMetricsRoutesChange(metricsHandlers)
 
 	router := gin.Default()
 	//router := gin.New()
+
+	//Middleware Logger
+	router.Use(routes.LoggerMiddleware(appLogger))
 
 	//Middleware Set Content TYPE
 	router.Use(routes.WriteContentType())
