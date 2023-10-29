@@ -5,7 +5,7 @@ import (
 	"compress/flate"
 	"compress/gzip"
 	"fmt"
-	"io/ioutil"
+	"io"
 )
 
 // Decompress распаковывает слайс байт.
@@ -31,7 +31,7 @@ func DecompressGzip(obj []byte) ([]byte, error) {
 		return nil, err
 	}
 	defer r.Close()
-	res, err := ioutil.ReadAll(r)
+	res, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}

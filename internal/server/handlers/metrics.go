@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/config"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/pkg/compress"
@@ -52,7 +52,7 @@ func checkGzip(c *gin.Context) ([]byte, error) {
 		}
 	}
 
-	body, _ := ioutil.ReadAll(c.Request.Body)
+	body, _ := io.ReadAll(c.Request.Body)
 
 	if compress_ {
 
