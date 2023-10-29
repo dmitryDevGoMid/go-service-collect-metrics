@@ -59,7 +59,7 @@ func init() {
 	flag.StringVar(&serializeType, "sertype", "json", "set logger config encoding")
 
 	//Serialize Type
-	flag.BoolVar(&enableGzip, "gzip", true, "set gzip for agent and server")
+	flag.BoolVar(&enableGzip, "gzip", false, "set gzip for agent and server")
 }
 
 // Разбираем конфигурацию по структурам
