@@ -90,10 +90,10 @@ func (rm *sandlerMetrics) SendMetrics() {
 	for key, val := range metrics.Gauge {
 
 		metricsSData := serialize.Metrics{ID: key, MType: "gauge", Delta: nil, Value: &val}
-		serialize_err := serializer.SetData(&metricsSData).GetData(&sendStringMetrics)
+		serializeErr := serializer.SetData(&metricsSData).GetData(&sendStringMetrics)
 
-		if serialize_err.Errors() != nil {
-			panic(serialize_err.Errors().Error())
+		if serializeErr.Errors() != nil {
+			panic(serializeErr.Errors().Error())
 		}
 
 		url := fmt.Sprintf("http://%s/update/gauge/%s/%v", cfg.Server.Address, key, val)
@@ -121,10 +121,10 @@ func (rm *sandlerMetrics) SendMetrics() {
 	//Send metrics COUNTER
 	for key, val := range metrics.Counter {
 		metricsSData := serialize.Metrics{ID: key, MType: "counter", Delta: &val, Value: nil}
-		serialize_err := serializer.SetData(&metricsSData).GetData(&sendStringMetrics)
+		serializeErr := serializer.SetData(&metricsSData).GetData(&sendStringMetrics)
 
-		if serialize_err.Errors() != nil {
-			panic(serialize_err.Errors().Error())
+		if serializeErr.Errors() != nil {
+			panic(serializeErr.Errors().Error())
 		}
 
 		url := fmt.Sprintf("http://%s/update/counter/%s/%v", cfg.Server.Address, key, val)

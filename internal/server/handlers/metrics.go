@@ -101,10 +101,10 @@ func (h *metricsHandlers) serializerResponse(metricsSData *serialize.Metrics) *s
 
 	var sendStringMetrics string
 
-	serialize_err := serializer.SetData(metricsSData).GetData(&sendStringMetrics)
+	serializeErr := serializer.SetData(metricsSData).GetData(&sendStringMetrics)
 
-	if serialize_err.Errors() != nil {
-		panic(serialize_err.Errors().Error())
+	if serializeErr.Errors() != nil {
+		panic(serializeErr.Errors().Error())
 	}
 
 	return metricsSData
