@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"io"
+	"strconv"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/config"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/pkg/compress"
@@ -21,6 +22,14 @@ import (
 
 // Интерфейс для обработчиков запросов
 type MetricsHandlers interface {
+
+	//######### NOT JSON ###########
+	GetMetricsGauge(c *gin.Context)
+	GetMetricsCounter(c *gin.Context)
+	UpdateGauge(c *gin.Context)
+	UpdateCounter(c *gin.Context)
+	//######### NOT JSON ###########
+
 	GetMetrics(c *gin.Context)
 	UpdateMetrics(c *gin.Context)
 
@@ -40,6 +49,73 @@ type metricsHandlers struct {
 func NewMetricsHandlers(metricsRepository repository.MetricsRepository, cfg *config.Config) MetricsHandlers {
 	return &metricsHandlers{metricsRepository: metricsRepository, cfg: cfg}
 }
+
+// ####################### POST NOT JSON ######################
+// endPointsMetricsHandlers GetMetricsGauge
+func (h *metricsHandlers) GetMetricsGauge(c *gin.Context) {
+	metricName := c.Param("metric")
+
+	resp, err := h.metricsRepository.GetMetricGauge(metricName)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, err.Error())
+	} else {
+		c.JSON(http.StatusOK, resp)
+	}
+}
+
+// endPointsMetricsHandlers GetMetricsCounter
+func (h *metricsHandlers) GetMetricsCounter(c *gin.Context) {
+	metricName := c.Param("metric")
+
+	resp, err := h.metricsRepository.GetMetricCounter(metricName)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, err.Error())
+	} else {
+		c.JSON(http.StatusOK, resp)
+	}
+}
+
+// End Points MetricsHandlers UpdateGauge
+func (h *metricsHandlers) UpdateGauge(c *gin.Context) {
+	metricName := c.Param("metric")
+
+	metricValue, err := strconv.ParseFloat(c.Param("value"), 64)
+	if err != nil {
+		restutils.GinWriteError(c, http.StatusBadRequest, `Неверный параметр метрики!`)
+		return
+	}
+
+	h.metricsRepository.UpdateMetricGauge(metricName, metricValue)
+
+	c.Status(http.StatusOK)
+}
+
+// End Points MetricsHandlers UpdateCounter
+func (h *metricsHandlers) UpdateCounter(c *gin.Context) {
+
+	metric := c.Param("metric")
+	value := c.Param("value")
+
+	fmt.Println("Получили:", value)
+
+	metricValue, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		restutils.GinWriteError(c, http.StatusBadRequest, `Неверный параметр метрики!`)
+		return
+	}
+
+	fmt.Println("Типизация:", metricValue)
+
+	h.metricsRepository.UpdateMetricCounter(metric, metricValue)
+
+	c.Status(http.StatusOK)
+}
+
+//####################### POST NOT JSON ######################
+
+//######################### POST JSON ######################
 
 func checkGzip(c *gin.Context) ([]byte, error) {
 	compress_ := false
@@ -203,12 +279,39 @@ func (h *metricsHandlers) UpdateMetrics(c *gin.Context) {
 
 // Point Update
 func (h *metricsHandlers) Update(c *gin.Context) {
-	h.UpdateMetrics(c)
+	if c.Request.Header.Get("Content-Type") == "application/json" {
+		h.UpdateMetrics(c)
+	} else {
+
+		typeMetric := c.Param("type")
+
+		switch val := typeMetric; val {
+		case "gauge":
+			h.UpdateGauge(c)
+		case "counter":
+			h.UpdateCounter(c)
+		default:
+			c.Status(http.StatusBadRequest)
+		}
+	}
 }
 
 // Point Value
 func (h *metricsHandlers) Value(c *gin.Context) {
-	h.GetMetrics(c)
+	if c.Request.Header.Get("Content-Type") == "application/json" {
+		h.GetMetrics(c)
+	} else {
+		typeMetric := c.Param("type")
+
+		switch val := typeMetric; val {
+		case "gauge":
+			h.GetMetricsGauge(c)
+		case "counter":
+			h.GetMetricsCounter(c)
+		default:
+			c.Status(http.StatusBadRequest)
+		}
+	}
 }
 
 // End Points MetricsHandlers GetAllMetricsHtml
