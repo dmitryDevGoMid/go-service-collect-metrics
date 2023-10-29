@@ -4055,3 +4055,107 @@
 {"LEVEL":"INFO","TIME":"2023-10-30T00:51:41.051+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/ method POST duration 55.911µs status 200 size 46 content application/json"}
 {"LEVEL":"INFO","TIME":"2023-10-30T00:51:41.778+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/ method POST duration 37.345µs status 200 size 46 content application/json"}
 {"LEVEL":"INFO","TIME":"2023-10-30T00:51:48.494+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/counter/testSetGet40123/843 method POST duration 22.488µs status 200 size -1 content "}
+{"LEVEL":"ERROR","TIME":"2023-10-30T00:59:51.550+0300","CALLER":"server/server.go:33","MESSAGE":"sync /dev/stdout: inappropriate ioctl for device"}
+{"LEVEL":"INFO","TIME":"2023-10-30T00:59:51.552+0300","CALLER":"server/server.go:34","MESSAGE":"Start Service API Metrics"}
+{"LEVEL":"INFO","TIME":"2023-10-30T00:59:51.552+0300","CALLER":"server/server.go:36","MESSAGE":"AppVersion: InfoLevel"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:00:06.284+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /http://localhost:8080/update/gauge/OtherSys/724522 method POST duration 2.944µs status 404 size -1 content "}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:00:45.974+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /http://localhost:8080/update/gauge/OtherSys/724522 method POST duration 2.564µs status 404 size -1 content "}
+{"LEVEL":"ERROR","TIME":"2023-10-30T01:01:51.798+0300","CALLER":"server/server.go:33","MESSAGE":"sync /dev/stdout: inappropriate ioctl for device"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:01:51.798+0300","CALLER":"server/server.go:34","MESSAGE":"Start Service API Metrics"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:01:51.798+0300","CALLER":"server/server.go:36","MESSAGE":"AppVersion: InfoLevel"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:01:56.640+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /http://localhost:8080/update/gauge/OtherSys/724522 method POST duration 2.713µs status 404 size -1 content "}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:01:57.881+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /http://localhost:8080/update/gauge/OtherSys/724522 method POST duration 3.128µs status 404 size -1 content "}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:01:58.859+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /http://localhost:8080/update/gauge/OtherSys/724522 method POST duration 3.67µs status 404 size -1 content "}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.258+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/HeapInuse/851968 method POST duration 381.585µs status 200 size 48 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.260+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/HeapObjects/957 method POST duration 133.967µs status 200 size 47 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.261+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/HeapReleased/2.883584e+06 method POST duration 129.327µs status 200 size 52 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.262+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/HeapSys/3.76832e+06 method POST duration 131.896µs status 200 size 47 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.263+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/MCacheInuse/4800 method POST duration 92.413µs status 200 size 48 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.263+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/Mallocs/971 method POST duration 71.824µs status 200 size 43 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.265+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/StackInuse/425984 method POST duration 105.146µs status 200 size 49 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.265+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/BuckHashSys/3965 method POST duration 117.204µs status 200 size 48 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.266+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/RandomValue/8.023301439898098 method POST duration 127.573µs status 200 size 61 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.267+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/MSpanSys/32544 method POST duration 123.388µs status 200 size 46 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.267+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/NumForcedGC/0 method POST duration 62.887µs status 200 size 45 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.268+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/PauseTotalNs/0 method POST duration 66.412µs status 200 size 46 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.269+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/GCSys/7.993912e+06 method POST duration 115.064µs status 200 size 45 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.269+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/HeapIdle/2.916352e+06 method POST duration 120.823µs status 200 size 48 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.270+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/LastGC/0 method POST duration 66.866µs status 200 size 40 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.270+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/Lookups/0 method POST duration 58.336µs status 200 size 41 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.271+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/OtherSys/718411 method POST duration 71.93µs status 200 size 47 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.271+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/TotalAlloc/213752 method POST duration 54.178µs status 200 size 49 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.272+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/Frees/14 method POST duration 52.921µs status 200 size 40 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.272+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/NumGC/0 method POST duration 72.783µs status 200 size 39 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.273+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/StackSys/425984 method POST duration 50.32µs status 200 size 47 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.274+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/Sys/1.2958736e+07 method POST duration 131.435µs status 200 size 44 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.274+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/Alloc/213752 method POST duration 70.596µs status 200 size 44 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.274+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/MCacheSys/15600 method POST duration 51.601µs status 200 size 47 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.275+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/HeapAlloc/213752 method POST duration 50.801µs status 200 size 48 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.276+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/MSpanInuse/30384 method POST duration 70.553µs status 200 size 48 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.276+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/NextGC/4.194304e+06 method POST duration 67.456µs status 200 size 46 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.277+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/GCCPUFraction/0 method POST duration 63.817µs status 200 size 47 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:41.277+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/counter/PollCount/2 method POST duration 61.696µs status 200 size 45 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.279+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/NextGC/4.194304e+06 method POST duration 115.345µs status 200 size 46 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.280+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/GCCPUFraction/0.0002934576905148423 method POST duration 111.183µs status 200 size 67 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.281+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/HeapAlloc/2.06372e+06 method POST duration 125.029µs status 200 size 49 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.282+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/MSpanInuse/48816 method POST duration 90.78µs status 200 size 48 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.283+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/HeapReleased/2.883584e+06 method POST duration 64.339µs status 200 size 52 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.283+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/HeapSys/7.897088e+06 method POST duration 89.629µs status 200 size 47 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.284+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/MCacheInuse/4800 method POST duration 74.214µs status 200 size 48 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.285+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/Mallocs/4893 method POST duration 106.943µs status 200 size 44 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.286+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/StackInuse/491520 method POST duration 61.703µs status 200 size 49 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.286+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/BuckHashSys/3965 method POST duration 190.082µs status 200 size 48 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.287+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/HeapInuse/2.924544e+06 method POST duration 81.083µs status 200 size 49 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.288+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/HeapObjects/1070 method POST duration 89.89µs status 200 size 48 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.290+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/MSpanSys/48816 method POST duration 823.749µs status 200 size 46 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.291+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/RandomValue/8.322800266092452 method POST duration 65.302µs status 200 size 61 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.292+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/GCSys/8.595776e+06 method POST duration 354.397µs status 200 size 45 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.294+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/NumForcedGC/0 method POST duration 56.217µs status 200 size 45 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.294+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/PauseTotalNs/484106 method POST duration 75.391µs status 200 size 51 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.295+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/HeapIdle/4.972544e+06 method POST duration 73.351µs status 200 size 48 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.295+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/OtherSys/1.017779e+06 method POST duration 42.633µs status 200 size 48 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.296+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/TotalAlloc/2.4763992e+07 method POST duration 153.227µs status 200 size 51 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.297+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/Frees/3823 method POST duration 65.867µs status 200 size 42 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.297+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/LastGC/1.69861702127719e+18 method POST duration 73.405µs status 200 size 58 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.298+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/Lookups/0 method POST duration 87.288µs status 200 size 41 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.299+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/Sys/1.8070544e+07 method POST duration 54.858µs status 200 size 44 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.299+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/Alloc/2.06372e+06 method POST duration 41.297µs status 200 size 45 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.299+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/NumGC/9 method POST duration 88.077µs status 200 size 39 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.300+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/StackSys/491520 method POST duration 65.199µs status 200 size 47 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.301+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/MCacheSys/15600 method POST duration 103.233µs status 200 size 47 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:03:45.301+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/counter/PollCount/3 method POST duration 119.896µs status 200 size 45 content application/json"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:04:03.695+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /http://localhost:8080/update/gauge/OtherSys/724522 method POST duration 17.137µs status 404 size -1 content "}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:04:20.603+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /http://localhost:8080/update/gauge/Frees/724522 method POST duration 3.211µs status 404 size -1 content "}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:04:22.135+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /http://localhost:8080/update/gauge/Frees/724522 method POST duration 3.093µs status 404 size -1 content "}
+{"LEVEL":"ERROR","TIME":"2023-10-30T01:04:56.122+0300","CALLER":"server/server.go:33","MESSAGE":"sync /dev/stdout: inappropriate ioctl for device"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:04:56.122+0300","CALLER":"server/server.go:34","MESSAGE":"Start Service API Metrics"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:04:56.122+0300","CALLER":"server/server.go:36","MESSAGE":"AppVersion: InfoLevel"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:04:59.947+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /http://localhost:8080/update/gauge/Frees/724522 method POST duration 8.612µs status 404 size -1 content "}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:05:00.952+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /http://localhost:8080/update/gauge/Frees/724522 method POST duration 3.698µs status 404 size -1 content "}
+{"LEVEL":"ERROR","TIME":"2023-10-30T01:06:10.088+0300","CALLER":"server/server.go:33","MESSAGE":"sync /dev/stdout: inappropriate ioctl for device"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:06:10.089+0300","CALLER":"server/server.go:34","MESSAGE":"Start Service API Metrics"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:06:10.089+0300","CALLER":"server/server.go:36","MESSAGE":"AppVersion: InfoLevel"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:06:12.226+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /http://localhost:8080/update/gauge/Frees/724522 method POST duration 3.081µs status 404 size -1 content "}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:06:22.656+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /http://localhost:8080/update/gauge/Frees/724522 method POST duration 3.554µs status 404 size -1 content "}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:06:23.573+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /http://localhost:8080/update/gauge/Frees/724522 method POST duration 3.332µs status 404 size -1 content "}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:06:23.580+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /http://localhost:8080/update/gauge/Frees/724522 method POST duration 2.908µs status 404 size -1 content "}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:06:23.590+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /http://localhost:8080/update/gauge/Frees/724522 method POST duration 38.81µs status 404 size -1 content "}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:06:23.595+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /http://localhost:8080/update/gauge/Frees/724522 method POST duration 15.865µs status 404 size -1 content "}
+{"LEVEL":"ERROR","TIME":"2023-10-30T01:07:09.200+0300","CALLER":"server/server.go:33","MESSAGE":"sync /dev/stdout: inappropriate ioctl for device"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:07:09.201+0300","CALLER":"server/server.go:34","MESSAGE":"Start Service API Metrics"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:07:09.201+0300","CALLER":"server/server.go:36","MESSAGE":"AppVersion: InfoLevel"}
+{"LEVEL":"ERROR","TIME":"2023-10-30T01:08:13.705+0300","CALLER":"server/server.go:33","MESSAGE":"sync /dev/stdout: inappropriate ioctl for device"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:08:13.706+0300","CALLER":"server/server.go:34","MESSAGE":"Start Service API Metrics"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:08:13.706+0300","CALLER":"server/server.go:36","MESSAGE":"AppVersion: InfoLevel"}
+{"LEVEL":"ERROR","TIME":"2023-10-30T01:08:30.420+0300","CALLER":"server/server.go:33","MESSAGE":"sync /dev/stdout: inappropriate ioctl for device"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:08:30.421+0300","CALLER":"server/server.go:34","MESSAGE":"Start Service API Metrics"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:08:30.421+0300","CALLER":"server/server.go:36","MESSAGE":"AppVersion: InfoLevel"}
+{"LEVEL":"ERROR","TIME":"2023-10-30T01:09:04.827+0300","CALLER":"server/server.go:33","MESSAGE":"sync /dev/stdout: inappropriate ioctl for device"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:09:04.828+0300","CALLER":"server/server.go:34","MESSAGE":"Start Service API Metrics"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:09:04.828+0300","CALLER":"server/server.go:36","MESSAGE":"AppVersion: InfoLevel"}
+{"LEVEL":"ERROR","TIME":"2023-10-30T01:10:07.678+0300","CALLER":"server/server.go:33","MESSAGE":"sync /dev/stdout: inappropriate ioctl for device"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:10:07.679+0300","CALLER":"server/server.go:34","MESSAGE":"Start Service API Metrics"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:10:07.679+0300","CALLER":"server/server.go:36","MESSAGE":"AppVersion: InfoLevel"}
+{"LEVEL":"ERROR","TIME":"2023-10-30T01:10:33.602+0300","CALLER":"server/server.go:33","MESSAGE":"sync /dev/stdout: inappropriate ioctl for device"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:10:33.603+0300","CALLER":"server/server.go:34","MESSAGE":"Start Service API Metrics"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:10:33.603+0300","CALLER":"server/server.go:36","MESSAGE":"AppVersion: InfoLevel"}

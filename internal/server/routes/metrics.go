@@ -29,12 +29,12 @@ func NewGinMetricsRoutesChange(metricsHandlers handlers.MetricsHandlers) []*GinR
 			Handler: metricsHandlers.Value,
 		},
 		{
-			Path:    "/update/", // Регистр нового
+			Path:    "/update", // Регистр нового
 			Method:  "post",
 			Handler: metricsHandlers.Update,
 		},
 		{
-			Path:    "/value/", // Логин
+			Path:    "/value", // Логин
 			Method:  "post",
 			Handler: metricsHandlers.Value,
 		},

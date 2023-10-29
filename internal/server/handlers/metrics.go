@@ -279,10 +279,12 @@ func (h *metricsHandlers) UpdateMetrics(c *gin.Context) {
 
 // Point Update
 func (h *metricsHandlers) Update(c *gin.Context) {
+
 	if c.Request.Header.Get("Content-Type") == "application/json" {
+		fmt.Println("Point Update JSON")
 		h.UpdateMetrics(c)
 	} else {
-
+		fmt.Println("Point Update NOT JSON")
 		typeMetric := c.Param("type")
 
 		switch val := typeMetric; val {

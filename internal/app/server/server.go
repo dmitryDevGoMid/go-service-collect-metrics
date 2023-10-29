@@ -53,7 +53,7 @@ func Run() {
 	//router := gin.New()
 
 	//Middleware Logger
-	router.Use(routes.LoggerMiddleware(appLogger))
+	//router.Use(routes.LoggerMiddleware(appLogger))
 
 	//Middleware Set Content TYPE
 	router.Use(routes.WriteContentType())
