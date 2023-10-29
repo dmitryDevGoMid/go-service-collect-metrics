@@ -4159,3 +4159,10 @@
 {"LEVEL":"ERROR","TIME":"2023-10-30T01:10:33.602+0300","CALLER":"server/server.go:33","MESSAGE":"sync /dev/stdout: inappropriate ioctl for device"}
 {"LEVEL":"INFO","TIME":"2023-10-30T01:10:33.603+0300","CALLER":"server/server.go:34","MESSAGE":"Start Service API Metrics"}
 {"LEVEL":"INFO","TIME":"2023-10-30T01:10:33.603+0300","CALLER":"server/server.go:36","MESSAGE":"AppVersion: InfoLevel"}
+{"LEVEL":"ERROR","TIME":"2023-10-30T01:13:17.576+0300","CALLER":"server/server.go:33","MESSAGE":"sync /dev/stdout: inappropriate ioctl for device"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:13:17.577+0300","CALLER":"server/server.go:34","MESSAGE":"Start Service API Metrics"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:13:17.577+0300","CALLER":"server/server.go:36","MESSAGE":"AppVersion: InfoLevel"}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:13:21.279+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/Frees/724522 method POST duration 65.481µs status 200 size -1 content "}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:13:22.272+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/Frees/724522 method POST duration 20.372µs status 200 size -1 content "}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:13:34.432+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/OtherSys/724522 method POST duration 20.316µs status 200 size -1 content "}
+{"LEVEL":"INFO","TIME":"2023-10-30T01:15:13.571+0300","CALLER":"routes/middelware.go:47","MESSAGE":"uri /update/gauge/HeapInuse/745472 method POST duration 22.605µs status 200 size -1 content "}
