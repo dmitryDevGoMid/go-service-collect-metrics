@@ -37,13 +37,13 @@ type Config struct {
 }
 
 var (
-	address         string
-	reportInterval  int
-	pollInterval    int
-	logger_encoding string
-	logger_level    string
-	serialize_type  string
-	enable_gzip     bool
+	address        string
+	reportInterval int
+	pollInterval   int
+	loggerEncoding string
+	loggerLevel    string
+	serializeType  string
+	enableGzip     bool
 )
 
 func init() {
@@ -52,14 +52,14 @@ func init() {
 	flag.IntVar(&pollInterval, "p", 2, "interval for run metrics")
 
 	//	Logger
-	flag.StringVar(&logger_encoding, "logen", "full", "set logger config encoding")
-	flag.StringVar(&logger_level, "loglv", "InfoLevel", "set logger config level")
+	flag.StringVar(&loggerEncoding, "logen", "full", "set logger config encoding")
+	flag.StringVar(&loggerLevel, "loglv", "InfoLevel", "set logger config level")
 
 	//Serialize Type
-	flag.StringVar(&serialize_type, "sertype", "json", "set logger config encoding")
+	flag.StringVar(&serializeType, "sertype", "json", "set logger config encoding")
 
 	//Serialize Type
-	flag.BoolVar(&enable_gzip, "gzip", true, "set gzip for agent and server")
+	flag.BoolVar(&enableGzip, "gzip", true, "set gzip for agent and server")
 }
 
 // Разбираем конфигурацию по структурам
@@ -73,12 +73,12 @@ func ParseConfig() (*Config, error) {
 
 	config.Server.Address = address
 
-	config.Logger.Encoding = logger_encoding
-	config.Logger.Level = logger_level
+	config.Logger.Encoding = loggerEncoding
+	config.Logger.Level = loggerLevel
 
-	config.Serializer.SerType = serialize_type
+	config.Serializer.SerType = serializeType
 
-	config.Gzip.Enable = enable_gzip
+	config.Gzip.Enable = enableGzip
 
 	//Init by environment variables
 	env.Parse(&config.Metrics)
