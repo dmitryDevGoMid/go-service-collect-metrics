@@ -55,16 +55,3 @@ func LoggerMiddleware(appLogger *logger.ApiLogger) gin.HandlerFunc {
 		)
 	}
 }
-
-func CompDecompress() gin.HandlerFunc {
-	return func(c *gin.Context) {
-
-		content := c.Request.Header.Values("Accept-Encoding")
-
-		for _, val := range content {
-			if val == "gzip" {
-
-			}
-		}
-	}
-}
