@@ -23,6 +23,11 @@ func NewGinMetricsRoutesChange(metricsHandlers handlers.MetricsHandlers) []*GinR
 			Method:  "post",
 			Handler: metricsHandlers.Value,
 		},
+		{
+			Path:    "/value/:type/:metric", // Логин
+			Method:  "get",
+			Handler: metricsHandlers.Value,
+		},
 	}
 }
 
