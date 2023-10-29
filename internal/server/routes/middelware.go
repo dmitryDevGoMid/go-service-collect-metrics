@@ -11,7 +11,7 @@ import (
 func WriteContentType() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if c.FullPath() != "/" {
-			c.Writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			c.Writer.Header().Set("Content-Type", "application/json")
 		} else {
 			c.Writer.Header().Set("Content-Type", "text/html; charset=utf-8")
 		}
