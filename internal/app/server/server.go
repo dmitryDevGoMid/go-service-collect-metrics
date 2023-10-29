@@ -28,7 +28,7 @@ func Run() {
 	}
 
 	//Инициализируем логгер
-	appLogger := logger.NewApiLogger(cfg)
+	appLogger := logger.NewAPILogger(cfg)
 
 	appLogger.InitLogger()
 	appLogger.Info("Start Service API Metrics")

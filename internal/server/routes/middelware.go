@@ -32,7 +32,7 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 // Логируем request and response
-func LoggerMiddleware(appLogger *logger.ApiLogger) gin.HandlerFunc {
+func LoggerMiddleware(appLogger *logger.APILogger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		strat := time.Now()
 
