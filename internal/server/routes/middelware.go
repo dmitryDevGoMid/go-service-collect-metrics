@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"bytes"
+	"io"
 	"time"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/pkg/logger"
@@ -39,19 +41,25 @@ func LoggerMiddleware(appLogger *logger.APILogger) gin.HandlerFunc {
 		uri := c.Request.RequestURI
 		method := c.Request.Method
 		content := c.Request.Header.Get("Content-Type")
+		body, _ := io.ReadAll(c.Request.Body)
+
+		bodyString := string(body)
+
+		c.Request.Body = io.NopCloser(bytes.NewReader(body))
 
 		c.Next()
 
 		duration := time.Since(strat)
 
 		appLogger.Infof(
-			"uri %s method %s duration %s status %d size %d content %s",
+			"uri %s method %s duration %s status %d size %d content %s ",
 			uri,
 			method,
 			duration,
 			c.Writer.Status(),
 			c.Writer.Size(),
 			content,
+			bodyString,
 		)
 	}
 }
