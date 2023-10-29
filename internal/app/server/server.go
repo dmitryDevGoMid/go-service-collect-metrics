@@ -44,7 +44,7 @@ func Run() {
 	metricsRepository := repository.NewMetricsRepository(metricsModel)
 
 	//Обработчики
-	metricsHandlers := handlers.NewMetricsHandlers(metricsRepository, cfg)
+	metricsHandlers := handlers.NewMetricsHandlers(metricsRepository)
 
 	//Роутинг
 	metricsRotes := routes.NewGinMetricsRoutesChange(metricsHandlers)

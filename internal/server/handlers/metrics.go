@@ -2,16 +2,10 @@ package handlers
 
 import (
 	"fmt"
-	"io"
-
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/config"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/pkg/compress"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/pkg/decompress"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/pkg/serialize"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/pkg/unserialize"
+	"strconv"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository"
-
+	//"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/service"
 	"net/http"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/restutils"
@@ -21,11 +15,11 @@ import (
 
 // Интерфейс для обработчиков запросов
 type MetricsHandlers interface {
-	GetMetrics(c *gin.Context)
-	UpdateMetrics(c *gin.Context)
-
+	GetMetricsGauge(c *gin.Context)
+	GetMetricsCounter(c *gin.Context)
+	UpdateGauge(c *gin.Context)
+	UpdateCounter(c *gin.Context)
 	GetAllMetricsHTML(c *gin.Context)
-
 	Update(c *gin.Context)
 	Value(c *gin.Context)
 }
@@ -33,182 +27,102 @@ type MetricsHandlers interface {
 // Структура реализующая интерфейс
 type metricsHandlers struct {
 	metricsRepository repository.MetricsRepository
-	cfg               *config.Config
+	//metricsService service.MetricsService
 }
 
 // Конструктор
-func NewMetricsHandlers(metricsRepository repository.MetricsRepository, cfg *config.Config) MetricsHandlers {
-	return &metricsHandlers{metricsRepository: metricsRepository, cfg: cfg}
+func NewMetricsHandlers(metricsRepository repository.MetricsRepository) MetricsHandlers {
+	return &metricsHandlers{metricsRepository: metricsRepository}
 }
 
-func checkGzip(c *gin.Context) ([]byte, error) {
-	compress_ := false
+// endPointsMetricsHandlers GetMetricsGauge
+func (h *metricsHandlers) GetMetricsGauge(c *gin.Context) {
+	metricName := c.Param("metric")
 
-	content := c.Request.Header.Values("Content-Encoding")
-
-	for _, val := range content {
-		if val == "gzip" {
-			compress_ = true
-		}
-	}
-
-	body, _ := io.ReadAll(c.Request.Body)
-
-	if compress_ {
-
-		decompr, _ := decompress.DecompressGzip(body)
-
-		return decompr, nil
-	}
-
-	return body, nil
-}
-
-// Point Serialize Data by Request
-func (h *metricsHandlers) unSerializerRequest(c *gin.Context) unserialize.Metrics {
-	if c.Request.Body == nil {
-		restutils.GinWriteError(c, http.StatusBadRequest, restutils.ErrEmptyBody.Error())
-		return unserialize.Metrics{}
-	}
-
-	// В конце закрываем запрос
-	defer c.Request.Body.Close()
-
-	body, err := checkGzip(c)
-
-	if err != nil {
-		restutils.GinWriteError(c, http.StatusBadRequest, err.Error())
-		return unserialize.Metrics{}
-	}
-
-	var metrics unserialize.Metrics
-
-	unserializeData := unserialize.NewUnSerializer(h.cfg)
-
-	unserializeError := unserializeData.SetData(&body).GetData(&metrics)
-
-	if unserializeError.Errors() != nil {
-		panic(unserializeError.Errors().Error())
-	}
-
-	return metrics
-}
-
-// Point Serialize Data for Send
-func (h *metricsHandlers) serializerResponse(metricsSData *serialize.Metrics) *serialize.Metrics {
-
-	serializer := serialize.NewSerializer(h.cfg)
-
-	var sendStringMetrics string
-
-	serializeErr := serializer.SetData(metricsSData).GetData(&sendStringMetrics)
-
-	if serializeErr.Errors() != nil {
-		panic(serializeErr.Errors().Error())
-	}
-
-	return metricsSData
-
-}
-
-// endPointsMetricsHandlers GetMetrics
-func (h *metricsHandlers) GetMetrics(c *gin.Context) {
-	metrics := h.unSerializerRequest(c)
-
-	if metrics == (unserialize.Metrics{}) {
-		return
-	}
-
-	typeMetric := metrics.MType
-
-	var respCounter int64
-	var respGauge float64
-	var err error
-
-	switch val := typeMetric; val {
-	case "gauge":
-		respGauge, err = h.metricsRepository.GetMetricGauge(metrics.ID)
-	case "counter":
-		respCounter, err = h.metricsRepository.GetMetricCounter(metrics.ID)
-	default:
-		c.Status(http.StatusBadRequest)
-	}
+	resp, err := h.metricsRepository.GetMetricGauge(metricName)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, err.Error())
-		return
+	} else {
+		c.JSON(http.StatusOK, resp)
 	}
-
-	var metricsSData serialize.Metrics
-
-	switch val := typeMetric; val {
-	case "gauge":
-		metricsSData = serialize.Metrics{ID: metrics.ID, MType: typeMetric, Delta: nil, Value: &respGauge}
-	case "counter":
-		metricsSData = serialize.Metrics{ID: metrics.ID, MType: typeMetric, Delta: &respCounter, Value: nil}
-	default:
-		c.Status(http.StatusBadRequest)
-	}
-
-	sendData := h.serializerResponse(&metricsSData)
-
-	c.JSON(http.StatusOK, sendData)
 }
 
-// endPointsMetricsHandlers UpdateMetrics
-func (h *metricsHandlers) UpdateMetrics(c *gin.Context) {
-	metrics := h.unSerializerRequest(c)
+// endPointsMetricsHandlers GetMetricsCounter
+func (h *metricsHandlers) GetMetricsCounter(c *gin.Context) {
+	metricName := c.Param("metric")
 
-	if metrics == (unserialize.Metrics{}) {
-		return
-	}
-
-	typeMetric := metrics.MType
-
-	var respCounter int64
-	var respGauge float64
-	var err error
-
-	switch val := typeMetric; val {
-	case "gauge":
-		h.metricsRepository.UpdateMetricGauge(metrics.ID, *metrics.Value)
-		respGauge, err = h.metricsRepository.GetMetricGauge(metrics.ID)
-	case "counter":
-		h.metricsRepository.UpdateMetricCounter(metrics.ID, *metrics.Delta)
-		respCounter, err = h.metricsRepository.GetMetricCounter(metrics.ID)
-	default:
-		c.Status(http.StatusBadRequest)
-	}
+	resp, err := h.metricsRepository.GetMetricCounter(metricName)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, err.Error())
+	} else {
+		c.JSON(http.StatusOK, resp)
+	}
+}
+
+// End Points MetricsHandlers UpdateGauge
+func (h *metricsHandlers) UpdateGauge(c *gin.Context) {
+	metricName := c.Param("metric")
+
+	metricValue, err := strconv.ParseFloat(c.Param("value"), 64)
+	if err != nil {
+		restutils.GinWriteError(c, http.StatusBadRequest, `Неверный параметр метрики!`)
 		return
 	}
 
-	var metricsSData serialize.Metrics
+	h.metricsRepository.UpdateMetricGauge(metricName, metricValue)
 
-	switch val := typeMetric; val {
-	case "gauge":
-		metricsSData = serialize.Metrics{ID: metrics.ID, MType: typeMetric, Delta: nil, Value: &respGauge}
-	case "counter":
-		metricsSData = serialize.Metrics{ID: metrics.ID, MType: typeMetric, Delta: &respCounter, Value: nil}
-	default:
-		c.Status(http.StatusBadRequest)
-	}
-
-	sendData := h.serializerResponse(&metricsSData)
-
-	c.JSON(http.StatusOK, sendData)
+	c.Status(http.StatusOK)
 }
 
-// Point Update
+// End Points MetricsHandlers UpdateCounter
+func (h *metricsHandlers) UpdateCounter(c *gin.Context) {
+
+	metric := c.Param("metric")
+	value := c.Param("value")
+
+	fmt.Println("Получили:", value)
+
+	metricValue, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		restutils.GinWriteError(c, http.StatusBadRequest, `Неверный параметр метрики!`)
+		return
+	}
+
+	fmt.Println("Типизация:", metricValue)
+
+	h.metricsRepository.UpdateMetricCounter(metric, metricValue)
+
+	c.Status(http.StatusOK)
+}
+
 func (h *metricsHandlers) Update(c *gin.Context) {
-	h.UpdateMetrics(c)
+
+	typeMetric := c.Param("type")
+
+	switch val := typeMetric; val {
+	case "gauge":
+		h.UpdateGauge(c)
+	case "counter":
+		h.UpdateCounter(c)
+	default:
+		c.Status(http.StatusBadRequest)
+	}
 }
 
-// Point Value
 func (h *metricsHandlers) Value(c *gin.Context) {
-	h.GetMetrics(c)
+
+	typeMetric := c.Param("type")
+
+	switch val := typeMetric; val {
+	case "gauge":
+		h.GetMetricsGauge(c)
+	case "counter":
+		h.GetMetricsCounter(c)
+	default:
+		c.Status(http.StatusBadRequest)
+	}
 }
 
 // End Points MetricsHandlers GetAllMetricsHtml
@@ -221,23 +135,5 @@ func (h *metricsHandlers) GetAllMetricsHTML(c *gin.Context) {
 	for key, val := range metrics.Gauge {
 		html += fmt.Sprintf("<div>%s => %v </div>", key, val)
 	}
-
-	compress_ := false
-
-	content := c.Request.Header.Values("Accept-Encoding")
-
-	for _, val := range content {
-		if val == "gzip" {
-			compress_ = true
-		}
-	}
-
-	if compress_ {
-		c.Writer.Header().Set("Content-Encoding", "gzip")
-		dataCompress, _ := compress.CompressGzip([]byte(html))
-		c.Data(http.StatusOK, "", dataCompress)
-		return
-	}
-
 	c.Data(http.StatusOK, "", []byte(html))
 }

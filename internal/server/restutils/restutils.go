@@ -1,14 +1,7 @@
 package restutils
 
 import (
-	"errors"
-
 	"github.com/gin-gonic/gin"
-)
-
-var (
-	ErrEmptyBody    = errors.New("empty body")
-	ErrUnauthorized = errors.New("unauthorized")
 )
 
 type response struct {
