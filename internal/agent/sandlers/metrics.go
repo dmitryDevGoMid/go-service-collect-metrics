@@ -98,7 +98,8 @@ func (rm *sandlerMetrics) SendMetrics() {
 			panic(serializeErr.Errors().Error())
 		}
 
-		url := fmt.Sprintf("http://%s/update", cfg.Server.Address)
+		//url := fmt.Sprintf("http://%s/update", cfg.Server.Address)
+		url := fmt.Sprintf("http://%s/update/gauge/%s/%v", cfg.Server.Address, key, val)
 
 		var err error
 		if cfg.Gzip.Enable {
@@ -134,7 +135,8 @@ func (rm *sandlerMetrics) SendMetrics() {
 			panic(serializeErr.Errors().Error())
 		}
 
-		url := fmt.Sprintf("http://%s/update", cfg.Server.Address)
+		//url := fmt.Sprintf("http://%s/update", cfg.Server.Address)
+		url := fmt.Sprintf("http://%s/update/counter/%s/%v", cfg.Server.Address, key, val)
 
 		var err error
 		if cfg.Gzip.Enable {
