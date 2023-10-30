@@ -98,7 +98,7 @@ func (l *APILogger) InitLogger() {
 	//Параметры для кодировщика формат времени
 	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
 
-	var core zapcore.Core
+	//var core zapcore.Core
 
 	//NewCore создает ядро, которое записывает журналы в WriteSyncer.
 	/*if l.cfg.Logger.Encoding == "full" {
@@ -113,7 +113,7 @@ func (l *APILogger) InitLogger() {
 		core = zapcore.NewCore(encoder["json"], logWriter, zap.NewAtomicLevelAt(logLevel))
 	}*/
 
-	core = zapcore.NewCore(encoder["console"], zapcore.AddSync(os.Stdout), zap.NewAtomicLevelAt(logLevel))
+	core := zapcore.NewCore(encoder["console"], zapcore.AddSync(os.Stdout), zap.NewAtomicLevelAt(logLevel))
 
 	//New создает новый регистратор из предоставленных zapcore.Core и Options.
 	//Если переданный zapcore.Core равен нулю, он возвращается к использованию бездействующей реализации.
