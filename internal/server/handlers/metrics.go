@@ -147,9 +147,6 @@ func (h *metricsHandlers) unSerializerRequest(c *gin.Context) unserialize.Metric
 		return unserialize.Metrics{}
 	}
 
-	// В конце закрываем запрос
-	defer c.Request.Body.Close()
-
 	body, err := checkGzip(c)
 
 	if err != nil {
@@ -190,6 +187,9 @@ func (h *metricsHandlers) serializerResponse(metricsSData *serialize.Metrics) *s
 // endPointsMetricsHandlers GetMetrics
 func (h *metricsHandlers) GetMetrics(c *gin.Context) {
 	metrics := h.unSerializerRequest(c)
+
+	// В конце закрываем запрос
+	defer c.Request.Body.Close()
 
 	if metrics == (unserialize.Metrics{}) {
 		return
@@ -234,6 +234,9 @@ func (h *metricsHandlers) GetMetrics(c *gin.Context) {
 // endPointsMetricsHandlers UpdateMetrics
 func (h *metricsHandlers) UpdateMetrics(c *gin.Context) {
 	metrics := h.unSerializerRequest(c)
+
+	// В конце закрываем запрос
+	defer c.Request.Body.Close()
 
 	if metrics == (unserialize.Metrics{}) {
 		return
