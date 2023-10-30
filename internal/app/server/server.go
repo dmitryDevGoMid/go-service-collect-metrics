@@ -59,7 +59,7 @@ func Run() {
 	router.Use(routes.WriteContentType())
 
 	//Middleware CORS
-	router.Use(routes.CORSMiddleware())
+	//router.Use(routes.CORSMiddleware())
 
 	//Инициализируем роуты
 	routes.InstallRouteGin(router, metricsRotes)
