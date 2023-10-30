@@ -35,7 +35,9 @@ func (config *Client) OnBeforeRequest() {
 
 		// Проверяем конфигурацию по умолчанию идет сжатие GZIP
 		if config.cfg.Gzip.Enable {
+
 			c.SetHeader("Content-Encoding", "gzip")
+
 		}
 
 		// Now you have access to Client and current Request object
