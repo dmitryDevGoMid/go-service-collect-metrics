@@ -189,7 +189,7 @@ func (h *metricsHandlers) GetMetrics(c *gin.Context) {
 	metrics := h.unSerializerRequest(c)
 
 	// В конце закрываем запрос
-	defer c.Request.Body.Close()
+	//defer c.Request.Body.Close()
 
 	if metrics == (unserialize.Metrics{}) {
 		return
@@ -236,7 +236,7 @@ func (h *metricsHandlers) UpdateMetrics(c *gin.Context) {
 	metrics := h.unSerializerRequest(c)
 
 	// В конце закрываем запрос
-	defer c.Request.Body.Close()
+	//defer c.Request.Body.Close()
 
 	if metrics == (unserialize.Metrics{}) {
 		return
