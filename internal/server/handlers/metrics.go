@@ -37,6 +37,9 @@ type MetricsHandlers interface {
 
 	Update(c *gin.Context)
 	Value(c *gin.Context)
+
+	UpdatePostJson(c *gin.Context)
+	ValuePostJson(c *gin.Context)
 }
 
 // Структура реализующая интерфейс
@@ -280,45 +283,42 @@ func (h *metricsHandlers) UpdateMetrics(c *gin.Context) {
 	c.JSON(http.StatusOK, sendData)
 }
 
+func (h *metricsHandlers) UpdatePostJson(c *gin.Context) {
+	h.UpdateMetrics(c)
+	return
+}
+
 // Point Update
 func (h *metricsHandlers) Update(c *gin.Context) {
-
-	if c.Request.Header.Get("Content-Type") == "application/json" {
-		fmt.Println("UPDATE Content-Type JSON")
-		h.UpdateMetrics(c)
-	} else {
-		fmt.Println("UPDATE Content-Type NOT JSON")
-		typeMetric := c.Param("type")
-
-		switch val := typeMetric; val {
-		case "gauge":
-			h.UpdateGauge(c)
-		case "counter":
-			h.UpdateCounter(c)
-		default:
-			c.Status(http.StatusBadRequest)
-		}
+	typeMetric := c.Param("type")
+	switch val := typeMetric; val {
+	case "gauge":
+		h.UpdateGauge(c)
+	case "counter":
+		h.UpdateCounter(c)
+	default:
+		c.Status(http.StatusBadRequest)
 	}
+	return
+}
+func (h *metricsHandlers) ValuePostJson(c *gin.Context) {
+	h.GetMetrics(c)
+	return
 }
 
 // Point Value
 func (h *metricsHandlers) Value(c *gin.Context) {
-	if c.Request.Header.Get("Content-Type") == "application/json" {
-		fmt.Println("VALUE Content-Type  JSON")
-		h.GetMetrics(c)
-	} else {
-		fmt.Println("VALUE Content-Type NOT JSON")
-		typeMetric := c.Param("type")
-
-		switch val := typeMetric; val {
-		case "gauge":
-			h.GetMetricsGauge(c)
-		case "counter":
-			h.GetMetricsCounter(c)
-		default:
-			c.Status(http.StatusBadRequest)
-		}
+	fmt.Println("VALUE Content-Type NOT JSON")
+	typeMetric := c.Param("type")
+	switch val := typeMetric; val {
+	case "gauge":
+		h.GetMetricsGauge(c)
+	case "counter":
+		h.GetMetricsCounter(c)
+	default:
+		c.Status(http.StatusBadRequest)
 	}
+	return
 }
 
 // End Points MetricsHandlers GetAllMetricsHtml
