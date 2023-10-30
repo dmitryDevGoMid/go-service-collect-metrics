@@ -285,7 +285,6 @@ func (h *metricsHandlers) UpdateMetrics(c *gin.Context) {
 
 func (h *metricsHandlers) UpdatePostJSON(c *gin.Context) {
 	h.UpdateMetrics(c)
-	return
 }
 
 // Point Update
@@ -299,11 +298,9 @@ func (h *metricsHandlers) Update(c *gin.Context) {
 	default:
 		c.Status(http.StatusBadRequest)
 	}
-	return
 }
 func (h *metricsHandlers) ValuePostJSON(c *gin.Context) {
 	h.GetMetrics(c)
-	return
 }
 
 // Point Value
@@ -318,7 +315,6 @@ func (h *metricsHandlers) Value(c *gin.Context) {
 	default:
 		c.Status(http.StatusBadRequest)
 	}
-	return
 }
 
 // End Points MetricsHandlers GetAllMetricsHtml
