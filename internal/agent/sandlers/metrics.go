@@ -114,8 +114,11 @@ func (rm *sandlerMetrics) SendMetrics() {
 		}
 
 		if err != nil {
+			if errors.Is(err, syscall.EPIPE) {
+				log.Print("Вот такая вот ошибка: This is broken pipe error")
+			}
 			if !errors.Is(err, syscall.ECONNREFUSED) {
-				log.Fatal(err)
+				log.Print("Ошибка не: ECONNREFUSED", err.Error()) //log.Fatal(err)
 			} else {
 				log.Println("ECONNREFUSED")
 				break
@@ -149,9 +152,13 @@ func (rm *sandlerMetrics) SendMetrics() {
 				SetBody(sendStringMetrics).
 				Post(url)
 		}
+
 		if err != nil {
+			if errors.Is(err, syscall.EPIPE) {
+				log.Print("Вот такая вот ошибка: This is broken pipe error")
+			}
 			if !errors.Is(err, syscall.ECONNREFUSED) {
-				log.Fatal(err)
+				log.Print("Ошибка не: ECONNREFUSED", err.Error()) //log.Fatal(err)
 			} else {
 				log.Println("ECONNREFUSED")
 				break
