@@ -38,8 +38,8 @@ type MetricsHandlers interface {
 	Update(c *gin.Context)
 	Value(c *gin.Context)
 
-	UpdatePostJson(c *gin.Context)
-	ValuePostJson(c *gin.Context)
+	UpdatePostJSON(c *gin.Context)
+	ValuePostJSON(c *gin.Context)
 }
 
 // Структура реализующая интерфейс
@@ -283,7 +283,7 @@ func (h *metricsHandlers) UpdateMetrics(c *gin.Context) {
 	c.JSON(http.StatusOK, sendData)
 }
 
-func (h *metricsHandlers) UpdatePostJson(c *gin.Context) {
+func (h *metricsHandlers) UpdatePostJSON(c *gin.Context) {
 	h.UpdateMetrics(c)
 	return
 }
@@ -301,7 +301,7 @@ func (h *metricsHandlers) Update(c *gin.Context) {
 	}
 	return
 }
-func (h *metricsHandlers) ValuePostJson(c *gin.Context) {
+func (h *metricsHandlers) ValuePostJSON(c *gin.Context) {
 	h.GetMetrics(c)
 	return
 }
