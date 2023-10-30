@@ -49,8 +49,8 @@ func Run() {
 	//Роутинг
 	metricsRotes := routes.NewGinMetricsRoutesChange(metricsHandlers)
 
-	router := gin.Default()
-	//router := gin.New()
+	//router := gin.Default()
+	router := gin.New()
 
 	//Middleware Logger
 	router.Use(routes.LoggerMiddleware(appLogger))
