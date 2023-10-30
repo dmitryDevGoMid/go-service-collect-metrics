@@ -8,7 +8,6 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
-	"time"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/middleware"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/repository"
@@ -58,7 +57,7 @@ func MonitorMetricsRun() {
 	cancel()
 
 	//Даем время для завершения всех горутин которые были запущены
-	time.Sleep(time.Second * 10)
+	//time.Sleep(time.Second * 10)
 
 	log.Println("Shutdown Agent ...")
 }
