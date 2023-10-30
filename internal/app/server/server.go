@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/config"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/pkg/logger"
@@ -21,6 +20,8 @@ import (
 )
 
 func Run() {
+	ctx, cancel := context.WithCancel(context.Background())
+
 	cfg, err := config.ParseConfig()
 
 	if err != nil {
@@ -88,7 +89,7 @@ func Run() {
 	log.Println("Shutdown Server ...")
 
 	// Line 49
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	//ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	// Line 51
