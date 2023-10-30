@@ -284,10 +284,10 @@ func (h *metricsHandlers) UpdateMetrics(c *gin.Context) {
 func (h *metricsHandlers) Update(c *gin.Context) {
 
 	if c.Request.Header.Get("Content-Type") == "application/json" {
-		fmt.Println("Point Update JSON")
+		fmt.Println("UPDATE Content-Type JSON")
 		h.UpdateMetrics(c)
 	} else {
-		fmt.Println("Point Update NOT JSON")
+		fmt.Println("UPDATE Content-Type NOT JSON")
 		typeMetric := c.Param("type")
 
 		switch val := typeMetric; val {
@@ -304,8 +304,10 @@ func (h *metricsHandlers) Update(c *gin.Context) {
 // Point Value
 func (h *metricsHandlers) Value(c *gin.Context) {
 	if c.Request.Header.Get("Content-Type") == "application/json" {
+		fmt.Println("VALUE Content-Type  JSON")
 		h.GetMetrics(c)
 	} else {
+		fmt.Println("VALUE Content-Type NOT JSON")
 		typeMetric := c.Param("type")
 
 		switch val := typeMetric; val {
