@@ -2,8 +2,10 @@ package sandlers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"syscall"
 	"time"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/repository"
@@ -111,7 +113,12 @@ func (rm *sandlerMetrics) SendMetrics() {
 		}
 
 		if err != nil {
-			log.Fatal(err.Error())
+			if !errors.Is(err, syscall.ECONNREFUSED) {
+				log.Fatal(err)
+			} else {
+				log.Println("ECONNREFUSED")
+				break
+			}
 		}
 		//fmt.Println(response)
 	}
@@ -141,7 +148,12 @@ func (rm *sandlerMetrics) SendMetrics() {
 				Post(url)
 		}
 		if err != nil {
-			log.Fatal(err)
+			if !errors.Is(err, syscall.ECONNREFUSED) {
+				log.Fatal(err)
+			} else {
+				log.Println("ECONNREFUSED")
+				break
+			}
 		}
 		//fmt.Println(response)
 	}
