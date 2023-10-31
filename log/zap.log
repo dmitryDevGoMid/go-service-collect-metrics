@@ -878,3 +878,12 @@
 {"LEVEL":"INFO","TIME":"2023-10-30T10:30:44.787+0300","CALLER":"routes/middelware.go:58","MESSAGE":"uri /update method POST duration 111.356µs status 200 size 44 content application/json %!(EXTRA string={\"id\":\"Alloc\",\"type\":\"gauge\",\"value\":759760})"}
 {"LEVEL":"INFO","TIME":"2023-10-30T10:30:44.787+0300","CALLER":"routes/middelware.go:58","MESSAGE":"uri /update method POST duration 48.311µs status 200 size 47 content application/json %!(EXTRA string={\"id\":\"StackSys\",\"type\":\"gauge\",\"value\":425984})"}
 {"LEVEL":"INFO","TIME":"2023-10-30T10:30:44.788+0300","CALLER":"routes/middelware.go:58","MESSAGE":"uri /update method POST duration 36.738µs status 200 size 46 content application/json %!(EXTRA string={\"id\":\"PollCount\",\"type\":\"counter\",\"delta\":11})"}
+{"LEVEL":"ERROR","TIME":"2023-10-31T15:29:46.936+0300","CALLER":"server/server.go:35","MESSAGE":"sync /dev/stdout: inappropriate ioctl for device"}
+{"LEVEL":"INFO","TIME":"2023-10-31T15:29:46.936+0300","CALLER":"server/server.go:36","MESSAGE":"Start Service API Metrics"}
+{"LEVEL":"INFO","TIME":"2023-10-31T15:29:46.936+0300","CALLER":"server/server.go:38","MESSAGE":"AppVersion: InfoLevel"}
+{"LEVEL":"ERROR","TIME":"2023-10-31T15:30:36.782+0300","CALLER":"server/server.go:35","MESSAGE":"sync /dev/stdout: inappropriate ioctl for device"}
+{"LEVEL":"INFO","TIME":"2023-10-31T15:30:36.783+0300","CALLER":"server/server.go:36","MESSAGE":"Start Service API Metrics"}
+{"LEVEL":"INFO","TIME":"2023-10-31T15:30:36.783+0300","CALLER":"server/server.go:38","MESSAGE":"AppVersion: InfoLevel"}
+{"LEVEL":"ERROR","TIME":"2023-10-31T15:31:26.668+0300","CALLER":"server/server.go:35","MESSAGE":"sync /dev/stdout: inappropriate ioctl for device"}
+{"LEVEL":"INFO","TIME":"2023-10-31T15:31:26.669+0300","CALLER":"server/server.go:36","MESSAGE":"Start Service API Metrics"}
+{"LEVEL":"INFO","TIME":"2023-10-31T15:31:26.669+0300","CALLER":"server/server.go:38","MESSAGE":"AppVersion: InfoLevel"}

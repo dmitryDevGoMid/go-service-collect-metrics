@@ -8,10 +8,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/config"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/compress"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/serialize"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/repository"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/config"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/pkg/compress"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/pkg/serialize"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -98,8 +98,8 @@ func (rm *sandlerMetrics) SendMetrics() {
 			panic(serializeErr.Errors().Error())
 		}
 
-		//url := fmt.Sprintf("http://%s/update", cfg.Server.Address)
-		url := fmt.Sprintf("http://%s/update/gauge/%s/%v", cfg.Server.Address, key, val)
+		url := fmt.Sprintf("http://%s/update", cfg.Server.Address)
+		//url = fmt.Sprintf("http://%s/update/gauge/%s/%v", cfg.Server.Address, key, val)
 
 		var err error
 		if cfg.Gzip.Enable {
@@ -116,54 +116,56 @@ func (rm *sandlerMetrics) SendMetrics() {
 		if err != nil {
 			if errors.Is(err, syscall.EPIPE) {
 				log.Print("Вот такая вот ошибка: This is broken pipe error")
+				if !errors.Is(err, syscall.ECONNREFUSED) {
+					log.Print("Ошибка не: ECONNREFUSED", err.Error())
+					//log.Fatal(err)
+				} else {
+					log.Println("ECONNREFUSED")
+					break
+				}
 			}
-			if !errors.Is(err, syscall.ECONNREFUSED) {
-				log.Print("Ошибка не: ECONNREFUSED", err.Error()) //log.Fatal(err)
+			//fmt.Println(response)
+		}
+
+		metrics, _ = rm.repository.GetCounterMetricsAll()
+
+		//Send metrics COUNTER
+		for key, val := range metrics.Counter {
+			metricsSData := serialize.Metrics{ID: key, MType: "counter", Delta: &val, Value: nil}
+			serializeErr := serializer.SetData(&metricsSData).GetData(&sendStringMetrics)
+
+			if serializeErr.Errors() != nil {
+				panic(serializeErr.Errors().Error())
+			}
+
+			url := fmt.Sprintf("http://%s/update", cfg.Server.Address)
+			//url = fmt.Sprintf("http://%s/update/counter/%s/%v", cfg.Server.Address, key, val)
+
+			var err error
+			if cfg.Gzip.Enable {
+				sendDataCompress, _ := compress.CompressGzip([]byte(sendStringMetrics))
+				_, err = client.R().
+					SetBody(sendDataCompress).
+					Post(url)
 			} else {
-				log.Println("ECONNREFUSED")
-				break
+				_, err = client.R().
+					SetBody(sendStringMetrics).
+					Post(url)
 			}
-		}
-		//fmt.Println(response)
-	}
+			if err != nil {
+				if errors.Is(err, syscall.EPIPE) {
+					log.Print("Вот такая вот ошибка: This is broken pipe error")
 
-	metrics, _ = rm.repository.GetCounterMetricsAll()
-
-	//Send metrics COUNTER
-	for key, val := range metrics.Counter {
-		metricsSData := serialize.Metrics{ID: key, MType: "counter", Delta: &val, Value: nil}
-		serializeErr := serializer.SetData(&metricsSData).GetData(&sendStringMetrics)
-
-		if serializeErr.Errors() != nil {
-			panic(serializeErr.Errors().Error())
-		}
-
-		//url := fmt.Sprintf("http://%s/update", cfg.Server.Address)
-		url := fmt.Sprintf("http://%s/update/counter/%s/%v", cfg.Server.Address, key, val)
-
-		var err error
-		if cfg.Gzip.Enable {
-			sendDataCompress, _ := compress.CompressGzip([]byte(sendStringMetrics))
-			_, err = client.R().
-				SetBody(sendDataCompress).
-				Post(url)
-		} else {
-			_, err = client.R().
-				SetBody(sendStringMetrics).
-				Post(url)
-		}
-
-		if err != nil {
-			if errors.Is(err, syscall.EPIPE) {
-				log.Print("Вот такая вот ошибка: This is broken pipe error")
+					if !errors.Is(err, syscall.ECONNREFUSED) {
+						//log.Fatal(err)
+						log.Print("Ошибка не: ECONNREFUSED", err.Error())
+					} else {
+						log.Println("ECONNREFUSED")
+						break
+					}
+				}
 			}
-			if !errors.Is(err, syscall.ECONNREFUSED) {
-				log.Print("Ошибка не: ECONNREFUSED", err.Error()) //log.Fatal(err)
-			} else {
-				log.Println("ECONNREFUSED")
-				break
-			}
+			//fmt.Println(response)
 		}
-		//fmt.Println(response)
 	}
 }

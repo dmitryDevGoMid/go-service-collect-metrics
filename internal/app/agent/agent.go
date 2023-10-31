@@ -9,11 +9,11 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/config"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/middleware"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/repository"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/sandlers"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/storage"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/config"
 	"github.com/go-resty/resty/v2"
 )
 

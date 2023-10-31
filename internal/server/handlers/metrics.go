@@ -5,11 +5,11 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/config"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/pkg/compress"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/pkg/decompress"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/pkg/serialize"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/pkg/unserialize"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/compress"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/decompress"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/serialize"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/unserialize"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository"
 
@@ -38,8 +38,8 @@ type MetricsHandlers interface {
 	Update(c *gin.Context)
 	Value(c *gin.Context)
 
-	UpdatePostJSON(c *gin.Context)
-	ValuePostJSON(c *gin.Context)
+	UpdatePostJson(c *gin.Context)
+	ValuePostJson(c *gin.Context)
 }
 
 // Структура реализующая интерфейс
@@ -194,6 +194,8 @@ func (h *metricsHandlers) GetMetrics(c *gin.Context) {
 	// В конце закрываем запрос
 	//defer c.Request.Body.Close()
 
+	fmt.Println(metrics)
+
 	if metrics == (unserialize.Metrics{}) {
 		return
 	}
@@ -283,13 +285,14 @@ func (h *metricsHandlers) UpdateMetrics(c *gin.Context) {
 	c.JSON(http.StatusOK, sendData)
 }
 
-func (h *metricsHandlers) UpdatePostJSON(c *gin.Context) {
+func (h *metricsHandlers) UpdatePostJson(c *gin.Context) {
 	h.UpdateMetrics(c)
 }
 
 // Point Update
 func (h *metricsHandlers) Update(c *gin.Context) {
 	typeMetric := c.Param("type")
+
 	switch val := typeMetric; val {
 	case "gauge":
 		h.UpdateGauge(c)
@@ -299,14 +302,17 @@ func (h *metricsHandlers) Update(c *gin.Context) {
 		c.Status(http.StatusBadRequest)
 	}
 }
-func (h *metricsHandlers) ValuePostJSON(c *gin.Context) {
+
+func (h *metricsHandlers) ValuePostJson(c *gin.Context) {
 	h.GetMetrics(c)
 }
 
 // Point Value
 func (h *metricsHandlers) Value(c *gin.Context) {
+
 	fmt.Println("VALUE Content-Type NOT JSON")
 	typeMetric := c.Param("type")
+
 	switch val := typeMetric; val {
 	case "gauge":
 		h.GetMetricsGauge(c)

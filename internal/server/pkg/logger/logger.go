@@ -3,7 +3,8 @@ package logger
 import (
 	"os"
 
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/config"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config"
+	"gopkg.in/natefinch/lumberjack.v2"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -61,7 +62,7 @@ func (l *APILogger) getLoggerLevel(cfg *config.Config) zapcore.Level {
 
 func (l *APILogger) InitLogger() {
 	//Название файла куда пишем логи
-	//fileName := "log/zap.log"
+	fileName := "./internal/server/log/zap.log"
 	//Получаем уровень логирования
 	logLevel := l.getLoggerLevel(l.cfg)
 
@@ -69,13 +70,13 @@ func (l *APILogger) InitLogger() {
 	//Выполняем ротацию журналов с помощью lumberjack
 	//Пишем логи в файл
 
-	/*logWriter := zapcore.AddSync(&lumberjack.Logger{
+	logWriter := zapcore.AddSync(&lumberjack.Logger{
 		Filename: fileName,
 		//MaxSize:   1 << 30, //1G
 		MaxSize:   1, //1M
 		LocalTime: true,
 		Compress:  true,
-	})*/
+	})
 
 	//var encoderCfg zapcore.EncoderConfig
 
@@ -98,10 +99,10 @@ func (l *APILogger) InitLogger() {
 	//Параметры для кодировщика формат времени
 	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
 
-	//var core zapcore.Core
+	var core zapcore.Core
 
 	//NewCore создает ядро, которое записывает журналы в WriteSyncer.
-	/*if l.cfg.Logger.Encoding == "full" {
+	if l.cfg.Logger.Encoding == "full" {
 		//Пишем как в консоль так и в файл
 		core = zapcore.NewTee(zapcore.NewCore(encoder["json"], logWriter, zap.NewAtomicLevelAt(logLevel)),
 			zapcore.NewCore(encoder["console"], zapcore.AddSync(os.Stdout), zap.NewAtomicLevelAt(logLevel)))
@@ -111,9 +112,9 @@ func (l *APILogger) InitLogger() {
 	} else {
 		// Пишем только в файл
 		core = zapcore.NewCore(encoder["json"], logWriter, zap.NewAtomicLevelAt(logLevel))
-	}*/
+	}
 
-	core := zapcore.NewCore(encoder["console"], zapcore.AddSync(os.Stdout), zap.NewAtomicLevelAt(logLevel))
+	//core := zapcore.NewCore(encoder["console"], zapcore.AddSync(os.Stdout), zap.NewAtomicLevelAt(logLevel))
 
 	//New создает новый регистратор из предоставленных zapcore.Core и Options.
 	//Если переданный zapcore.Core равен нулю, он возвращается к использованию бездействующей реализации.
