@@ -20,6 +20,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+/*
+	Unmarshal - строка в структуру
+	Marshal - структруа в строку
+*/
+
 // Интерфейс для обработчиков запросов
 type MetricsHandlers interface {
 
@@ -172,7 +177,7 @@ func (h *metricsHandlers) unSerializerRequest(c *gin.Context) unserialize.Metric
 }
 
 // Point Serialize Data for Send
-func (h *metricsHandlers) serializerResponse(metricsSData *serialize.Metrics) *serialize.Metrics {
+func (h *metricsHandlers) serializerResponse(metricsSData *serialize.Metrics) string {
 
 	serializer := serialize.NewSerializer(h.cfg)
 
@@ -184,7 +189,7 @@ func (h *metricsHandlers) serializerResponse(metricsSData *serialize.Metrics) *s
 		panic(serializeErr.Errors().Error())
 	}
 
-	return metricsSData
+	return sendStringMetrics
 
 }
 
