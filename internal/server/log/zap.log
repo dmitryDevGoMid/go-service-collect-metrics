@@ -504,3 +504,4 @@
 {"LEVEL":"INFO","TIME":"2023-11-01T01:31:48.318+0300","CALLER":"routes/middelware.go:157","MESSAGE":"uri /value method POST duration 187.489µs status 200 size 76 %!(EXTRA string=application/json)"}
 {"LEVEL":"INFO","TIME":"2023-11-01T01:31:54.460+0300","CALLER":"routes/middelware.go:157","MESSAGE":"uri /value method POST duration 78.677µs status 200 size 52 %!(EXTRA string=application/json)"}
 {"LEVEL":"INFO","TIME":"2023-11-01T01:31:58.318+0300","CALLER":"routes/middelware.go:157","MESSAGE":"uri /value method POST duration 880.397µs status 200 size 76 %!(EXTRA string=application/json)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T01:34:20.022+0300","CALLER":"routes/middelware.go:157","MESSAGE":"uri /value method POST duration 622.527µs status 200 size 76 %!(EXTRA string=application/json)"}
