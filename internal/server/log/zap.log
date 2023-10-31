@@ -5183,3 +5183,32 @@
 {"LEVEL":"INFO","TIME":"2023-11-01T00:00:23.228+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /value method POST duration 80.459µs status 200 size 48 %!(EXTRA string=)"}
 {"LEVEL":"INFO","TIME":"2023-11-01T00:00:27.314+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /value method POST duration 62.05µs status 200 size 48 %!(EXTRA string=application/json)"}
 {"LEVEL":"INFO","TIME":"2023-11-01T00:00:29.487+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /value method POST duration 50.246µs status 200 size 48 %!(EXTRA string=application/json)"}
+{"LEVEL":"ERROR","TIME":"2023-11-01T00:06:26.321+0300","CALLER":"server/server.go:35","MESSAGE":"sync /dev/stdout: inappropriate ioctl for device"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:06:26.322+0300","CALLER":"server/server.go:36","MESSAGE":"Start Service API Metrics"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:06:26.322+0300","CALLER":"server/server.go:38","MESSAGE":"AppVersion: InfoLevel"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:06:32.626+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /value method POST duration 265.406µs status 200 size 60 %!(EXTRA string=application/json)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:06:40.912+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /value method POST duration 50.813µs status 200 size 60 %!(EXTRA string=application/json)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:06:44.358+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /value method POST duration 71.082µs status 200 size 62 %!(EXTRA string=application/json)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:07:09.555+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /value method POST duration 89.804µs status 200 size 62 %!(EXTRA string=application/json)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:07:21.955+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /value method POST duration 51.757µs status 200 size 60 %!(EXTRA string=application/json)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:07:25.927+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /update method POST duration 147.728µs status 200 size 64 %!(EXTRA string=application/json)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:07:29.320+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /update method POST duration 70.804µs status 200 size 62 %!(EXTRA string=application/json)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:07:30.501+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /update method POST duration 164.286µs status 200 size 62 %!(EXTRA string=application/json)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:07:32.789+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /update/counter/testSetGet40123/843 method POST duration 23.645µs status 200 size -1 %!(EXTRA string=)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:07:35.985+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /value/counter/testSetGet40123 method GET duration 35.305µs status 200 size 4 %!(EXTRA string=)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:07:38.601+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /value/gauge/HeapObjects method GET duration 50.663µs status 200 size 5 %!(EXTRA string=)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:07:42.055+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri / method GET duration 266.041µs status 200 size 1010 %!(EXTRA string=)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:09:10.005+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /value method POST duration 91.7µs status 200 size 61 %!(EXTRA string=application/json)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:09:11.135+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /value method POST duration 144.796µs status 200 size 61 %!(EXTRA string=application/json)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:12:14.838+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /value method POST duration 76.831µs status 200 size 61 %!(EXTRA string=application/json)"}
+{"LEVEL":"ERROR","TIME":"2023-11-01T00:12:30.991+0300","CALLER":"server/server.go:35","MESSAGE":"sync /dev/stdout: inappropriate ioctl for device"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:12:30.993+0300","CALLER":"server/server.go:36","MESSAGE":"Start Service API Metrics"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:12:30.993+0300","CALLER":"server/server.go:38","MESSAGE":"AppVersion: InfoLevel"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:12:32.963+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /value method POST duration 109.826µs status 200 size 49 %!(EXTRA string=application/json)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:12:33.992+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /value method POST duration 78.175µs status 200 size 49 %!(EXTRA string=application/json)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:12:36.716+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /value method POST duration 72.671µs status 200 size 50 %!(EXTRA string=application/json)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:12:37.751+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /value method POST duration 56.789µs status 200 size 50 %!(EXTRA string=application/json)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:12:40.681+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /update method POST duration 51.449µs status 200 size 52 %!(EXTRA string=application/json)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:12:41.413+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /update method POST duration 67.445µs status 200 size 52 %!(EXTRA string=application/json)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:12:43.506+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /update/gauge/HeapObjects/65656.656 method POST duration 7.252µs status 200 size -1 %!(EXTRA string=)"}
+{"LEVEL":"INFO","TIME":"2023-11-01T00:12:45.947+0300","CALLER":"routes/middelware.go:151","MESSAGE":"uri /update method POST duration 84.598µs status 200 size 50 %!(EXTRA string=application/json)"}

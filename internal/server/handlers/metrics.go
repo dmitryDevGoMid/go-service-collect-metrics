@@ -237,9 +237,9 @@ func (h *metricsHandlers) GetMetrics(c *gin.Context) {
 		c.Status(http.StatusBadRequest)
 	}
 
-	sendData := h.serializerResponse(&metricsSData)
+	//sendData := h.serializerResponse(&metricsSData)
 
-	c.JSON(http.StatusOK, sendData)
+	c.JSON(http.StatusOK, metricsSData)
 }
 
 // endPointsMetricsHandlers UpdateMetrics
@@ -286,9 +286,9 @@ func (h *metricsHandlers) UpdateMetrics(c *gin.Context) {
 		c.Status(http.StatusBadRequest)
 	}
 
-	sendData := h.serializerResponse(&metricsSData)
+	//sendData := h.serializerResponse(&metricsSData)
 
-	c.JSON(http.StatusOK, sendData)
+	c.JSON(http.StatusOK, metricsSData)
 }
 
 func (h *metricsHandlers) UpdatePostJSON(c *gin.Context) {
