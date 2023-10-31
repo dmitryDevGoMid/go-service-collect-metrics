@@ -82,7 +82,7 @@ func ToolsGroupPermission() gin.HandlerFunc {
 			wb.Write(dataCompress)
 			wb.ResponseWriter.Write(wb.body.Bytes())
 
-			fmt.Println("Replace BODY:", wb.body)
+			//fmt.Println("Replace BODY:", wb.body)
 
 			//c.Data(http.StatusOK, "text/plain", []byte("replace data"))
 		} else {
@@ -168,13 +168,13 @@ func SaveFileToDisk(config *config.Config, file file.WorkerFile) gin.HandlerFunc
 
 		c.Next()
 
-		fmt.Println("AFTRE:", afterPath[0])
-		fmt.Println("Before:", beforePath)
+		//fmt.Println("AFTRE:", afterPath[0])
+		//fmt.Println("Before:", beforePath)
 
 		if afterPath[0] == "/" {
 			if c.Writer.Status() == 200 && config.File.StoreInterval == 0 {
 				file.SaveAllMetrics()
-				fmt.Println("SaveFileToDisk: Записали данные на диск")
+				//fmt.Println("SaveFileToDisk: Записали данные на диск")
 			}
 		}
 	}
