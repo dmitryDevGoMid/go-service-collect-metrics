@@ -31,7 +31,7 @@ func StreamToByte(stream io.Reader) []byte {
 func (config *Client) OnBeforeRequest() {
 	// Registering Request Middleware
 	config.client.OnBeforeRequest(func(c *resty.Client, req *resty.Request) error {
-		c.SetHeader("Content-Type", "application/json")
+		c.SetHeader("Content-Type", "application/json").SetHeader("Accept", "application/json")
 
 		// Проверяем конфигурацию по умолчанию идет сжатие GZIP
 		//if config.cfg.Gzip.Enable {

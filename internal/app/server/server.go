@@ -71,9 +71,9 @@ func Run() {
 	//Middleware CORS
 	router.Use(routes.CORSMiddleware())
 
-	router.Use(routes.DecompressMiddleware())
+	//router.Use(routes.DecompressMiddleware())
 
-	router.Use(routes.ToolsGroupPermission())
+	//router.Use(routes.ToolsGroupPermission())
 
 	//Инициализируем роуты
 	routes.InstallRouteGin(router, metricsRotes)

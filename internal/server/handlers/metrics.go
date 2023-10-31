@@ -177,7 +177,7 @@ func (h *metricsHandlers) unSerializerRequest(c *gin.Context) unserialize.Metric
 }
 
 // Point Serialize Data for Send
-func (h *metricsHandlers) serializerResponse(metricsSData *serialize.Metrics) string {
+/*func (h *metricsHandlers) serializerResponse(metricsSData *serialize.Metrics) string {
 
 	serializer := serialize.NewSerializer(h.cfg)
 
@@ -191,7 +191,7 @@ func (h *metricsHandlers) serializerResponse(metricsSData *serialize.Metrics) st
 
 	return sendStringMetrics
 
-}
+}*/
 
 // endPointsMetricsHandlers GetMetrics
 func (h *metricsHandlers) GetMetrics(c *gin.Context) {

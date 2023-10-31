@@ -69,6 +69,8 @@ func ToolsGroupPermission() gin.HandlerFunc {
 
 			c.Next()
 
+			c.Writer.Header().Set("Content-Encoding", "gzip")
+
 			originBytes := wb.body
 			fmt.Printf("%s", originBytes)
 			fmt.Println("")
