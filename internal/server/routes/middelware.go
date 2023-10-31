@@ -60,6 +60,7 @@ func checkHeader(c *gin.Context, nameHeader string, keyHeader string) bool {
 // Передаем данные сжатые, если есть соответствующий заголовок
 func ToolsGroupPermission() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		fmt.Println("dataCompress")
 		if checkHeader(c, "Accept-Encoding", "gzip") {
 			wb := &toolBodyWriter{
 				body:           &bytes.Buffer{},
@@ -84,9 +85,12 @@ func ToolsGroupPermission() gin.HandlerFunc {
 			wb.Write(dataCompress)
 			wb.ResponseWriter.Write(wb.body.Bytes())
 
+			fmt.Println(string(dataCompress))
+			fmt.Println("dataCompress")
+
 			//fmt.Println("Replace BODY:", wb.body)
 
-			//c.Data(http.StatusOK, "text/plain", []byte("replace data"))
+			//c.Data(http.StatusOK, "application/json", dataCompress)
 		} else {
 			c.Next()
 		}

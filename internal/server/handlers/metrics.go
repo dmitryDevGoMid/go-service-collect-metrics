@@ -177,7 +177,7 @@ func (h *metricsHandlers) unSerializerRequest(c *gin.Context) unserialize.Metric
 }
 
 // Point Serialize Data for Send
-/*func (h *metricsHandlers) serializerResponse(metricsSData *serialize.Metrics) string {
+func (h *metricsHandlers) serializerResponse(metricsSData *serialize.Metrics) string {
 
 	serializer := serialize.NewSerializer(h.cfg)
 
@@ -191,7 +191,7 @@ func (h *metricsHandlers) unSerializerRequest(c *gin.Context) unserialize.Metric
 
 	return sendStringMetrics
 
-}*/
+}
 
 // endPointsMetricsHandlers GetMetrics
 func (h *metricsHandlers) GetMetrics(c *gin.Context) {
@@ -237,9 +237,10 @@ func (h *metricsHandlers) GetMetrics(c *gin.Context) {
 		c.Status(http.StatusBadRequest)
 	}
 
-	//sendData := h.serializerResponse(&metricsSData)
+	sendData := h.serializerResponse(&metricsSData)
 
-	c.JSON(http.StatusOK, metricsSData)
+	//c.Data(http.StatusOK, "application/json", []byte(sendData))
+	gZipAccept([]byte(sendData), c)
 }
 
 // endPointsMetricsHandlers UpdateMetrics
@@ -286,9 +287,10 @@ func (h *metricsHandlers) UpdateMetrics(c *gin.Context) {
 		c.Status(http.StatusBadRequest)
 	}
 
-	//sendData := h.serializerResponse(&metricsSData)
+	sendData := h.serializerResponse(&metricsSData)
 
-	c.JSON(http.StatusOK, metricsSData)
+	//c.Data(http.StatusOK, "application/json", []byte(sendData))
+	gZipAccept([]byte(sendData), c)
 }
 
 func (h *metricsHandlers) UpdatePostJSON(c *gin.Context) {
@@ -357,5 +359,26 @@ func (h *metricsHandlers) GetAllMetricsHTML(c *gin.Context) {
 		return
 	}
 
-	c.Data(http.StatusOK, "", []byte(html))
+	c.Data(http.StatusOK, "text/html", []byte(html))
+}
+
+func gZipAccept(data []byte, c *gin.Context) {
+	compress_ := false
+
+	content := c.Request.Header.Values("Accept-Encoding")
+
+	for _, val := range content {
+		if val == "gzip" {
+			compress_ = true
+		}
+	}
+
+	if compress_ {
+		c.Writer.Header().Set("Content-Encoding", "gzip")
+		dataCompress, _ := compress.CompressGzip([]byte(data))
+		c.Data(http.StatusOK, "application/json", dataCompress)
+		return
+	}
+
+	c.Data(http.StatusOK, "application/json", []byte(data))
 }
