@@ -73,10 +73,10 @@ func init() {
 	flag.BoolVar(&enableGzip, "gzip", false, "set gzip for agent and server")
 
 	//File
-	flag.BoolVar(&restoreFile, "r", false, "restore file")
+	flag.BoolVar(&restoreFile, "r", true, "restore file")
 	//flag.StringVar(&fileStoragePath, "f", "/tmp/metrics-db.json", "path file")
-	flag.StringVar(&fileStoragePath, "f", "", "path file")
-	flag.IntVar(&storeIntervalFile, "i", 5, "store interval file")
+	flag.StringVar(&fileStoragePath, "f", "/tmp/metrics-db.json", "path file")
+	flag.IntVar(&storeIntervalFile, "i", 300, "store interval file")
 }
 
 // Разбираем конфигурацию по структурам
