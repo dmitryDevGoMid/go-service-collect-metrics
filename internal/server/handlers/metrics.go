@@ -240,7 +240,8 @@ func (h *metricsHandlers) GetMetrics(c *gin.Context) {
 	sendData := h.serializerResponse(&metricsSData)
 
 	//c.Data(http.StatusOK, "application/json", []byte(sendData))
-	gZipAccept([]byte(sendData), c)
+	data := gZipAccept([]byte(sendData), c)
+	c.Data(http.StatusOK, "application/json", []byte(data))
 }
 
 // endPointsMetricsHandlers UpdateMetrics
@@ -290,7 +291,8 @@ func (h *metricsHandlers) UpdateMetrics(c *gin.Context) {
 	sendData := h.serializerResponse(&metricsSData)
 
 	//c.Data(http.StatusOK, "application/json", []byte(sendData))
-	gZipAccept([]byte(sendData), c)
+	data := gZipAccept([]byte(sendData), c)
+	c.Data(http.StatusOK, "application/json", []byte(data))
 }
 
 func (h *metricsHandlers) UpdatePostJSON(c *gin.Context) {
@@ -362,7 +364,7 @@ func (h *metricsHandlers) GetAllMetricsHTML(c *gin.Context) {
 	c.Data(http.StatusOK, "text/html", []byte(html))
 }
 
-func gZipAccept(data []byte, c *gin.Context) {
+func gZipAccept(data []byte, c *gin.Context) []byte {
 	compress_ := false
 
 	content := c.Request.Header.Values("Accept-Encoding")
@@ -376,9 +378,8 @@ func gZipAccept(data []byte, c *gin.Context) {
 	if compress_ {
 		c.Writer.Header().Set("Content-Encoding", "gzip")
 		dataCompress, _ := compress.CompressGzip(data)
-		c.Data(http.StatusOK, "application/json", dataCompress)
-		return
+		return dataCompress
 	}
 
-	c.Data(http.StatusOK, "application/json", data)
+	return data
 }
