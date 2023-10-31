@@ -7,22 +7,22 @@ import (
 )
 
 type File struct {
-	Restore         bool   `env:"RESTORE,omitempty"`
-	FileStoragePath string `env:"FILE_STORAGE_PATH,omitempty"`
-	StoreInterval   int    `env:"STORE_INTERVAL,omitempty"`
+	Restore         bool   `env:"RESTORE"`
+	FileStoragePath string `env:"FILE_STORAGE_PATH"`
+	StoreInterval   int    `env:"STORE_INTERVAL"`
 }
 
 type Gzip struct {
-	Enable bool `env:"GZIP,omitempty"`
+	Enable bool `env:"GZIP"`
 }
 
 type Serializer struct {
-	SerType string `env:"SER_TYPE,omitempty"`
+	SerType string `env:"SER_TYPE"`
 }
 
 type Logger struct {
-	Encoding string `env:"LOG_ENCODING,omitempty"`
-	Level    string `env:"LOG_LEVEL,omitempty"`
+	Encoding string `env:"LOG_ENCODING"`
+	Level    string `env:"LOG_LEVEL"`
 }
 
 type Metrics struct {

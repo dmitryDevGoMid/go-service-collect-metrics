@@ -151,6 +151,7 @@ func (h *metricsHandlers) unSerializerRequest(c *gin.Context) unserialize.Metric
 	}
 
 	body, err := checkGzip(c)
+	//body, err := io.ReadAll(c.Request.Body)
 
 	if err != nil {
 		restutils.GinWriteError(c, http.StatusBadRequest, err.Error())
