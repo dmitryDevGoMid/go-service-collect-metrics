@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/config"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/config"
 )
 
 // Тип общия как для получателя Server так и для отправля Agent
