@@ -75,7 +75,8 @@ func ToolsGroupPermission() gin.HandlerFunc {
 
 			// clear Origin Buffer
 			wb.body = &bytes.Buffer{}
-			dataCompress, _ := gzipCompress([]byte(fmt.Sprintf("%s", originBytes)))
+			//bodyString := obj.String("%s", originBytes.String())
+			dataCompress, _ := gzipCompress([]byte(originBytes.String()))
 
 			wb.Write(dataCompress)
 			wb.ResponseWriter.Write(wb.body.Bytes())
