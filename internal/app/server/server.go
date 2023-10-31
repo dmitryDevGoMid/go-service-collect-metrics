@@ -73,7 +73,7 @@ func Run() {
 
 	//router.Use(routes.DecompressMiddleware())
 
-	router.Use(routes.ToolsGroupPermission())
+	//router.Use(routes.ToolsGroupPermission())
 
 	//Инициализируем роуты
 	routes.InstallRouteGin(router, metricsRotes)

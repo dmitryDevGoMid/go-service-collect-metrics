@@ -375,10 +375,10 @@ func gZipAccept(data []byte, c *gin.Context) {
 
 	if compress_ {
 		c.Writer.Header().Set("Content-Encoding", "gzip")
-		dataCompress, _ := compress.CompressGzip([]byte(data))
+		dataCompress, _ := compress.CompressGzip(data)
 		c.Data(http.StatusOK, "application/json", dataCompress)
 		return
 	}
 
-	c.Data(http.StatusOK, "application/json", []byte(data))
+	c.Data(http.StatusOK, "application/json", data)
 }
