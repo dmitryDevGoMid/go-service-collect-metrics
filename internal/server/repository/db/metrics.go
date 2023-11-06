@@ -13,7 +13,7 @@ import (
 
 type MetricsRepository interface {
 	repository.MetricsRepository
-	GetMetricsTypeIdByName(nameMetric string) (int, error)
+	GetMetricsTypeIDByName(nameMetric string) (int, error)
 }
 
 type metricsRepository struct {
@@ -43,7 +43,7 @@ func (connect *metricsRepository) GetMetricGauge(nameMetric string) (float64, er
 func (connect *metricsRepository) UpdateMetricGauge(nameMetric string, value float64) error {
 	fmt.Println("DB UpdateMetricGauge")
 
-	metricsTypeId, err := connect.GetMetricsTypeIdByName("gauge")
+	metricsTypeID, err := connect.GetMetricsTypeIDByName("gauge")
 	if err != nil {
 		fmt.Println("error get metrics type by name:", err)
 		return fmt.Errorf("error get metrics type by name: %v", err)
@@ -52,7 +52,7 @@ func (connect *metricsRepository) UpdateMetricGauge(nameMetric string, value flo
 	fmt.Println("DB UpdateMetricGauge: ", 1)
 
 	sqlStatement := `UPDATE metrics_gauge SET value = $2 WHERE type_id = $3 AND name = $1;`
-	res, err := connect.db.Exec(sqlStatement, nameMetric, value, metricsTypeId)
+	res, err := connect.db.Exec(sqlStatement, nameMetric, value, metricsTypeID)
 	if err != nil {
 		return fmt.Errorf("error update metrics: %v", err)
 	}
@@ -63,7 +63,7 @@ func (connect *metricsRepository) UpdateMetricGauge(nameMetric string, value flo
 	if !(count > 0) {
 		_, err = connect.db.ExecContext(context.TODO(),
 			"INSERT INTO metrics_gauge(value, type_id, name) VALUES (@value, @type_id, @name)",
-			pgx.NamedArgs{"value": value, "type_id": metricsTypeId, "name": nameMetric})
+			pgx.NamedArgs{"value": value, "type_id": metricsTypeID, "name": nameMetric})
 	}
 
 	if err != nil {
@@ -89,7 +89,7 @@ func (connect *metricsRepository) UpdateMetricCounter(nameMetric string, value i
 
 	var deltaMetricCalc int64
 
-	metricsTypeId, err := connect.GetMetricsTypeIdByName("counter")
+	metricsTypeID, err := connect.GetMetricsTypeIDByName("counter")
 
 	if err != nil {
 		fmt.Println("error get metrics type by name:", err)
@@ -111,7 +111,7 @@ func (connect *metricsRepository) UpdateMetricCounter(nameMetric string, value i
 	fmt.Println("DB UpdateMetricGauge: ", 1)
 
 	sqlStatement := `UPDATE metrics_counter SET delta = $2 WHERE type_id = $3 AND name = $1;`
-	res, err := connect.db.Exec(sqlStatement, nameMetric, deltaMetricCalc, metricsTypeId)
+	res, err := connect.db.Exec(sqlStatement, nameMetric, deltaMetricCalc, metricsTypeID)
 	if err != nil {
 		return fmt.Errorf("error update metrics: %v", err)
 	}
@@ -124,7 +124,7 @@ func (connect *metricsRepository) UpdateMetricCounter(nameMetric string, value i
 			"INSERT INTO metrics_counter(delta, type_id, name) VALUES (@delta, @type_id, @name)",
 			pgx.NamedArgs{
 				"delta":   deltaMetricCalc,
-				"type_id": metricsTypeId,
+				"type_id": metricsTypeID,
 				"name":    nameMetric,
 			})
 	}
@@ -144,6 +144,11 @@ func (connect *metricsRepository) GetAllMetrics() (*models.MemStorage, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error select all metrics gauge: %v", err)
 	}
+
+	defer func() {
+		_ = rowsMetrics.Close()
+		_ = rowsMetrics.Err()
+	}() // or modify return value}
 
 	var valueMetricGauge float64
 	var nameMetric string
@@ -178,7 +183,7 @@ func (connect *metricsRepository) GetAllMetrics() (*models.MemStorage, error) {
 	return modelsMemStorage, nil
 }
 
-func (connect *metricsRepository) GetMetricsTypeIdByName(nameMetric string) (int, error) {
+func (connect *metricsRepository) GetMetricsTypeIDByName(nameMetric string) (int, error) {
 	var id int
 
 	fmt.Println("GetMetricsTypeIdByName Metrics => ", nameMetric)

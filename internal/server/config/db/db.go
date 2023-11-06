@@ -70,7 +70,7 @@ func (c *conn) Ping() error {
 func GetPostgresConnection(cfg *config.Config) (*sql.DB, error) {
 	postgresOnce.Do(func() {
 
-		connectPostgres, err = sql.Open("pgx", cfg.DataBase.DatabaseUrl)
+		connectPostgres, err = sql.Open("pgx", cfg.DataBase.DatabaseURL)
 		if err != nil {
 			fmt.Println("Error opening database: ", err)
 		}

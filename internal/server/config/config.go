@@ -7,7 +7,7 @@ import (
 )
 
 type DataBase struct {
-	DatabaseUrl string `env:"DATABASE_DSN"`
+	DatabaseURL string `env:"DATABASE_DSN"`
 }
 
 type File struct {
@@ -61,7 +61,7 @@ var (
 	storeIntervalFile int
 	fileStoragePath   string
 
-	databaseUrl string
+	databaseURL string
 )
 
 func init() {
@@ -91,7 +91,7 @@ func init() {
 		      - POSTGRES_USER=manager
 		      - POSTGRES_DB=metrics
 	*/
-	flag.StringVar(&databaseUrl, "d", "postgres://manager:M45fgMetr@localhost:5432/metrics?sslmode=disable", "database url for conection postgress")
+	flag.StringVar(&databaseURL, "d", "postgres://manager:M45fgMetr@localhost:5432/metrics?sslmode=disable", "database url for conection postgress")
 }
 
 // Разбираем конфигурацию по структурам
@@ -116,7 +116,7 @@ func ParseConfig() (*Config, error) {
 	config.File.Restore = restoreFile
 	config.File.StoreInterval = storeIntervalFile
 
-	config.DataBase.DatabaseUrl = databaseUrl
+	config.DataBase.DatabaseURL = databaseURL
 
 	//Init by environment variables
 	env.Parse(&config.Metrics)
