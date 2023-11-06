@@ -26,6 +26,7 @@ import (
 )
 
 func Run() {
+
 	ctx, cancel := context.WithCancel(context.Background())
 
 	cfg, err := config.ParseConfig()
