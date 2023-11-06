@@ -8,10 +8,11 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/config"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/handlers"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/file"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/logger"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/routes"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/storage"
@@ -20,11 +21,24 @@ import (
 )
 
 func Run() {
+	ctx, cancel := context.WithCancel(context.Background())
+
 	cfg, err := config.ParseConfig()
 
 	if err != nil {
 		fmt.Println("Config", err)
 	}
+
+	//Инициализируем логгер
+	appLogger := logger.NewAPILogger(cfg)
+
+	appLogger.InitLogger()
+	appLogger.Info("Start Service API Metrics")
+
+	appLogger.Infof(
+		"AppVersion: %s",
+		cfg.Logger.Level,
+	)
 
 	metricsModel := storage.NewMemStorage()
 
@@ -32,13 +46,24 @@ func Run() {
 	metricsRepository := repository.NewMetricsRepository(metricsModel)
 
 	//Обработчики
-	metricsHandlers := handlers.NewMetricsHandlers(metricsRepository)
+	metricsHandlers := handlers.NewMetricsHandlers(metricsRepository, cfg)
 
 	//Роутинг
 	metricsRotes := routes.NewGinMetricsRoutesChange(metricsHandlers)
 
-	router := gin.Default()
-	//router := gin.New()
+	//router := gin.Default()
+	router := gin.New()
+
+	// Работаем с временным файлом для сохранения данных из сервера
+	workFile := file.NewWorkFile(metricsRepository, cfg, ctx)
+
+	// Запускаем процесс чтения и записи
+	workFile.RunWorker()
+
+	router.Use(routes.SaveFileToDisk(cfg, workFile))
+
+	//Middleware Logger
+	router.Use(routes.LoggerMiddleware(appLogger))
 
 	//Middleware Set Content TYPE
 	router.Use(routes.WriteContentType())
@@ -46,11 +71,12 @@ func Run() {
 	//Middleware CORS
 	router.Use(routes.CORSMiddleware())
 
+	router.Use(routes.DecompressMiddleware())
+
+	//router.Use(routes.ToolsGroupPermission())
+
 	//Инициализируем роуты
 	routes.InstallRouteGin(router, metricsRotes)
-
-	// Сервер
-	//router.Run(cfg.Server.Address)
 
 	// Line 27
 	srv := &http.Server{
@@ -72,9 +98,7 @@ func Run() {
 	<-signalChannel
 	log.Println("Shutdown Server ...")
 
-	// Line 49
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	cancel()
 
 	// Line 51
 	if err := srv.Shutdown(ctx); err != nil {
