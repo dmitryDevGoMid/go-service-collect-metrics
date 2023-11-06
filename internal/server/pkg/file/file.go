@@ -113,7 +113,7 @@ func (wf *workerFile) SaveAllMetrics() {
 
 	wf.SetFolder()
 
-	allMetrics := wf.metricsRepository.GetAllMetrics()
+	allMetrics, _ := wf.metricsRepository.GetAllMetrics()
 
 	typeMetric := "gauge"
 

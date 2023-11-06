@@ -1,24 +1,17 @@
-package repository
+package memory
 
 import (
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/models"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/validator"
 )
-
-type MetricsRepository interface {
-	GetMetricGauge(nameMetric string) (float64, error)
-	GetMetricCounter(nameMetric string) (int64, error)
-	UpdateMetricGauge(nameMetric string, value float64) error
-	UpdateMetricCounter(nameMetric string, value int64) error
-	GetAllMetrics() *models.MemStorage
-}
 
 type metricsRepository struct {
 	metrics *models.MemStorage
 }
 
 // Contruct
-func NewMetricsRepository(metrics *models.MemStorage) MetricsRepository {
+func NewMetricsRepository(metrics *models.MemStorage) repository.MetricsRepository {
 	return &metricsRepository{
 		metrics: metrics,
 	}
@@ -82,6 +75,10 @@ func (mr *metricsRepository) UpdateMetricCounter(nameMetric string, value int64)
 }
 
 // Get All Metrics
-func (mr *metricsRepository) GetAllMetrics() *models.MemStorage {
-	return mr.metrics
+func (mr *metricsRepository) GetAllMetrics() (*models.MemStorage, error) {
+	return mr.metrics, nil
+}
+
+func (mr *metricsRepository) PingDatabase() error {
+	return validator.ErrPingDataBase
 }

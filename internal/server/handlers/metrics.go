@@ -45,6 +45,8 @@ type MetricsHandlers interface {
 
 	UpdatePostJSON(c *gin.Context)
 	ValuePostJSON(c *gin.Context)
+
+	Ping(c *gin.Context)
 }
 
 // Структура реализующая интерфейс
@@ -336,7 +338,13 @@ func (h *metricsHandlers) Value(c *gin.Context) {
 // End Points MetricsHandlers GetAllMetricsHtml
 func (h *metricsHandlers) GetAllMetricsHTML(c *gin.Context) {
 	html := ""
-	metrics := h.metricsRepository.GetAllMetrics()
+	metrics, err := h.metricsRepository.GetAllMetrics()
+
+	if err != nil {
+		restutils.GinWriteError(c, http.StatusBadRequest, restutils.ErrEmptyBody.Error())
+		return
+	}
+
 	for key, val := range metrics.Counter {
 		html += fmt.Sprintf("<div>%s => %d </div>", key, val)
 	}
@@ -382,4 +390,16 @@ func gZipAccept(data []byte, c *gin.Context) []byte {
 	}
 
 	return data
+}
+
+// Ping Data Base Postgres Server
+func (h *metricsHandlers) Ping(c *gin.Context) {
+	err := h.metricsRepository.PingDatabase()
+
+	if err != nil {
+		c.Data(500, "Ping failed", []byte("Failed to ping database"))
+		return
+	}
+
+	c.Data(200, "Ping successful", []byte("Success to ping database"))
 }

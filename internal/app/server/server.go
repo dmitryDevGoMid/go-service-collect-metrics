@@ -10,12 +10,17 @@ import (
 	"syscall"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config/db"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/handlers"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/migration"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/file"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/logger"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/routes"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/storage"
+
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository"
+	repositoryDb "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/db"
+	repositoryM "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/memory"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/routes"
 
 	"github.com/gin-gonic/gin"
 )
@@ -40,10 +45,16 @@ func Run() {
 		cfg.Logger.Level,
 	)
 
-	metricsModel := storage.NewMemStorage()
+	var metricsRepository repository.MetricsRepository
 
-	//Репозетарий
-	metricsRepository := repository.NewMetricsRepository(metricsModel)
+	dbConnection := db.NewConnection(cfg)
+	err = dbConnection.Ping()
+	if err != nil {
+		metricsModel := storage.NewMemStorage()
+		metricsRepository = repositoryM.NewMetricsRepository(metricsModel)
+	} else {
+		metricsRepository = repositoryDb.NewMetricsRepository(dbConnection.DB())
+	}
 
 	//Обработчики
 	metricsHandlers := handlers.NewMetricsHandlers(metricsRepository, cfg)
@@ -78,6 +89,11 @@ func Run() {
 	//Инициализируем роуты
 	routes.InstallRouteGin(router, metricsRotes)
 
+	dbMigration := migration.NewMigration(dbConnection.DB())
+
+	dbMigration.RunDrop(ctx)
+	dbMigration.RunCreate(ctx)
+
 	// Line 27
 	srv := &http.Server{
 		Addr:    cfg.Server.Address,
@@ -99,6 +115,8 @@ func Run() {
 	log.Println("Shutdown Server ...")
 
 	cancel()
+
+	dbConnection.Close()
 
 	// Line 51
 	if err := srv.Shutdown(ctx); err != nil {

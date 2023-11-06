@@ -1,4 +1,4 @@
-package repository
+package memory
 
 import (
 	"testing"
@@ -265,7 +265,8 @@ func TestGetAllMetrics(t *testing.T) {
 
 	metricsRepository := NewMetricsRepository(metricsModel)
 
-	allMetrics := metricsRepository.GetAllMetrics()
+	allMetrics, err := metricsRepository.GetAllMetrics()
+	assert.NoError(t, err)
 	assert.NotNil(t, allMetrics)
 	assert.NotEmpty(t, allMetrics)
 

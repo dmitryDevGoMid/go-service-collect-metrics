@@ -6,6 +6,10 @@ import (
 	"github.com/caarlos0/env/v6"
 )
 
+type DataBase struct {
+	DatabaseUrl string `env:"DATABASE_DSN"`
+}
+
 type File struct {
 	Restore         bool   `env:"RESTORE"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
@@ -41,11 +45,12 @@ type Config struct {
 	Serializer Serializer
 	Gzip       Gzip
 	File       File
+	DataBase   DataBase
 }
 
 var (
-	address        string
-	reportInterval int
+	address string
+	//reportInterval int
 	pollInterval   int
 	loggerEncoding string
 	loggerLevel    string
@@ -55,6 +60,8 @@ var (
 	restoreFile       bool
 	storeIntervalFile int
 	fileStoragePath   string
+
+	databaseUrl string
 )
 
 func init() {
@@ -63,7 +70,7 @@ func init() {
 	flag.IntVar(&pollInterval, "p", 200, "interval for run metrics")
 
 	//	Logger
-	flag.StringVar(&loggerEncoding, "logen", "full", "set logger config encoding")
+	flag.StringVar(&loggerEncoding, "logen", "console", "set logger config encoding")
 	flag.StringVar(&loggerLevel, "loglv", "InfoLevel", "set logger config level")
 
 	//Serialize Type
@@ -77,6 +84,14 @@ func init() {
 	//flag.StringVar(&fileStoragePath, "f", "/tmp/metrics-db.json", "path file")
 	flag.StringVar(&fileStoragePath, "f", "/tmp/metrics-db.json", "path file")
 	flag.IntVar(&storeIntervalFile, "i", 300, "store interval file")
+
+	//Connection Database
+	/*
+			  - POSTGRES_PASSWORD=M45fgMetr
+		      - POSTGRES_USER=manager
+		      - POSTGRES_DB=metrics
+	*/
+	flag.StringVar(&databaseUrl, "d", "postgres://manager:M45fgMetr@localhost:5432/metrics?sslmode=disable", "database url for conection postgress")
 }
 
 // Разбираем конфигурацию по структурам
@@ -101,6 +116,8 @@ func ParseConfig() (*Config, error) {
 	config.File.Restore = restoreFile
 	config.File.StoreInterval = storeIntervalFile
 
+	config.DataBase.DatabaseUrl = databaseUrl
+
 	//Init by environment variables
 	env.Parse(&config.Metrics)
 	env.Parse(&config.Server)
@@ -108,6 +125,7 @@ func ParseConfig() (*Config, error) {
 	env.Parse(&config.Serializer)
 	env.Parse(&config.Gzip)
 	env.Parse(&config.File)
+	env.Parse(&config.DataBase)
 
 	return &config, nil
 }
