@@ -30,6 +30,7 @@ type sandlerMetrics struct {
 	cfg         *config.Config
 	listMetrics []string
 	urlMetrics  string
+	sendBatch   bool
 }
 
 func NewMetricsSendler(repository repository.RepositoryMetrics, client *resty.Client,
@@ -112,20 +113,41 @@ func (rm *sandlerMetrics) GetSliceStringMetrics() []string {
 	return listMetricsString
 }
 
+func (rm *sandlerMetrics) serverPing() {
+
+	rm.sendBatch = false
+
+	url := fmt.Sprintf("http://%s/ping", rm.cfg.Server.Address)
+	resp, err := rm.client.R().Get(url)
+	if err != nil {
+		log.Println("Ошибка не: ECONNREFUSED", err.Error())
+	}
+
+	if resp.IsError() {
+		if resp.StatusCode() == 200 {
+			rm.sendBatch = true
+		}
+		fmt.Println(resp.StatusCode()) // prints 404
+	}
+
+}
+
 func (rm *sandlerMetrics) setMetrics() {
 	cfg := rm.cfg
 
 	var listMetrics []string
 
-	if cfg.Metrics.SendMeticsBatch {
+	rm.serverPing()
+
+	if rm.sendBatch {
+		fmt.Println("Send One Batch metrics")
 		rm.urlMetrics = fmt.Sprintf("http://%s/updates", cfg.Server.Address)
 		listMetrics = rm.GetBatchStringMetrics()
 	} else {
+		fmt.Println("Send Single request metrics")
 		rm.urlMetrics = fmt.Sprintf("http://%s/update", cfg.Server.Address)
 		listMetrics = rm.GetSliceStringMetrics()
 	}
-
-	//fmt.Println(listMetrics)
 
 	rm.listMetrics = listMetrics
 }
