@@ -1,6 +1,9 @@
 package repository
 
-import "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/models"
+import (
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/models"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/unserialize"
+)
 
 type MetricsRepository interface {
 	GetMetricGauge(nameMetric string) (float64, error)
@@ -10,4 +13,5 @@ type MetricsRepository interface {
 	//GetAllMetrics() *models.MemStorage
 	GetAllMetrics() (*models.MemStorage, error)
 	PingDatabase() error
+	SaveMetricsBatch(metrics []unserialize.Metrics) error
 }

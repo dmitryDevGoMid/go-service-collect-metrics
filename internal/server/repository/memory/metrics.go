@@ -1,24 +1,31 @@
 package memory
 
 import (
+	"sync"
+
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/models"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/unserialize"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/validator"
 )
 
 type metricsRepository struct {
 	metrics *models.MemStorage
+	mutex   *sync.Mutex
 }
 
 // Contruct
 func NewMetricsRepository(metrics *models.MemStorage) repository.MetricsRepository {
-	return &metricsRepository{
-		metrics: metrics,
-	}
+	return &metricsRepository{metrics: metrics}
 }
 
 // Get matrics Gauge
 func (mr *metricsRepository) GetMetricGauge(nameMetric string) (float64, error) {
+
+	defer mr.mutex.Unlock()
+
+	mr.mutex.Lock()
+
 	if nameMetric == "" {
 		return 0, validator.ErrEmptyNameMetrics
 	}
@@ -34,6 +41,11 @@ func (mr *metricsRepository) GetMetricGauge(nameMetric string) (float64, error) 
 
 // Get metrics Counter
 func (mr *metricsRepository) GetMetricCounter(nameMetric string) (int64, error) {
+
+	defer mr.mutex.Unlock()
+
+	mr.mutex.Lock()
+
 	if nameMetric == "" {
 		return 0, validator.ErrEmptyNameMetrics
 	}
@@ -49,6 +61,11 @@ func (mr *metricsRepository) GetMetricCounter(nameMetric string) (int64, error) 
 
 // Upodate metrics Gauge
 func (mr *metricsRepository) UpdateMetricGauge(nameMetric string, value float64) error {
+
+	defer mr.mutex.Unlock()
+
+	mr.mutex.Lock()
+
 	if nameMetric == "" {
 		return validator.ErrEmptyNameMetrics
 	}
@@ -59,6 +76,11 @@ func (mr *metricsRepository) UpdateMetricGauge(nameMetric string, value float64)
 
 // Upodate metrics Counter
 func (mr *metricsRepository) UpdateMetricCounter(nameMetric string, value int64) error {
+
+	defer mr.mutex.Unlock()
+
+	mr.mutex.Lock()
+
 	if nameMetric == "" {
 		return validator.ErrEmptyNameMetrics
 	}
@@ -76,9 +98,18 @@ func (mr *metricsRepository) UpdateMetricCounter(nameMetric string, value int64)
 
 // Get All Metrics
 func (mr *metricsRepository) GetAllMetrics() (*models.MemStorage, error) {
+
+	defer mr.mutex.Unlock()
+
+	mr.mutex.Lock()
+
 	return mr.metrics, nil
 }
 
 func (mr *metricsRepository) PingDatabase() error {
 	return validator.ErrPingDataBase
+}
+
+func (mr *metricsRepository) SaveMetricsBatch(metrics []unserialize.Metrics) error {
+	return validator.ErrPingBatchDataBase
 }

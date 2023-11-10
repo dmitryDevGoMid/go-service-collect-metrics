@@ -83,16 +83,13 @@ func (wf *workerFile) SaveMetricsByTime() {
 	for {
 		select {
 		case <-wf.ctx.Done():
-			fmt.Println("SaveMetricsByTime -> Эй! Энштейн! Спасибо, что остановили мою горутину :)")
+			fmt.Println("SaveMetricsByTime Stop")
 			return
 		// Run change metrics before sleep 2 seconds
 		default:
 			{
 				time.Sleep(secondChange * time.Second)
 				wf.SaveAllMetrics()
-				//wf.GetAllMetricsByFile()
-				//i++
-				//wf.WriteToFile(i)
 			}
 		}
 	}
@@ -123,10 +120,6 @@ func (wf *workerFile) SaveAllMetrics() {
 		metricsSData := serialize.Metrics{ID: key, MType: typeMetric, Delta: nil, Value: &val}
 		sendData := serializer.SerializerResponse(&metricsSData)
 
-		//fmt.Fprintf(wf.f, "%s\n", *sendData)
-		//curcurrentTime := time.Now()
-		//timeAndDate := fmt.Sprintf("YYYY-MM-DD hh:mm:ss : ", curcurrentTime.Format("2006-01-02 15:04:05"))
-		//if _, err := wf.f.WriteString(fmt.Sprintf("%s<=>%s\n", timeAndDate, *sendData)); err != nil {
 		if _, err := wf.f.WriteString(fmt.Sprintf("%s\n", *sendData)); err != nil {
 			log.Println(err)
 		}
@@ -137,12 +130,7 @@ func (wf *workerFile) SaveAllMetrics() {
 	for key, val := range allMetrics.Counter {
 		metricsSData := serialize.Metrics{ID: key, MType: typeMetric, Delta: &val, Value: nil}
 		sendData := serializer.SerializerResponse(&metricsSData)
-		/*if _, err := f.WriteString(fmt.Sprintf("%s\n", *sendData)); err != nil {
-			log.Println(err)
-		}*/
-		//curcurrentTime := time.Now()
-		//timeAndDate := fmt.Sprintf("YYYY-MM-DD hh:mm:ss : ", curcurrentTime.Format("2006-01-02 15:04:05"))
-		//if _, err := wf.f.WriteString(fmt.Sprintf("%s<=>%s\n", timeAndDate, *sendData)); err != nil {
+
 		if _, err := wf.f.WriteString(fmt.Sprintf("%s\n", *sendData)); err != nil {
 			log.Println(err)
 		}

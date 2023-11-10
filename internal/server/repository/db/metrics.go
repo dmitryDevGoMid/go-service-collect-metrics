@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/models"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/unserialize"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/storage"
 	"github.com/jackc/pgx/v5"
@@ -145,10 +146,11 @@ func (connect *metricsRepository) GetAllMetrics() (*models.MemStorage, error) {
 		return nil, fmt.Errorf("error select all metrics gauge: %v", err)
 	}
 
+	// Закрываем rowsMetrics
 	defer func() {
 		_ = rowsMetrics.Close()
 		_ = rowsMetrics.Err()
-	}() // or modify return value}
+	}()
 
 	var valueMetricGauge float64
 	var nameMetric string
@@ -192,7 +194,7 @@ func (connect *metricsRepository) GetMetricsTypeIDByName(nameMetric string) (int
 	// Query for a value based on a single row.
 	sqlStatement := `SELECT id FROM metrics_type WHERE name = $1`
 	//row := db.QueryRow(sqlStatement, id).scan
-	if err := connect.db.QueryRow(sqlStatement, nameMetric).Scan(&id); err != nil {
+	if err := connect.db.QueryRowContext(context.TODO(), sqlStatement, nameMetric).Scan(&id); err != nil {
 		if err == sql.ErrNoRows {
 			fmt.Println("GetMetricsTypeIdByName => ", id)
 			return 0, fmt.Errorf("can purchase %s: unknown metrics", nameMetric)
@@ -207,4 +209,146 @@ func (connect *metricsRepository) GetMetricsTypeIDByName(nameMetric string) (int
 
 func (connect *metricsRepository) PingDatabase() error {
 	return connect.db.Ping()
+}
+
+// Можно разбить на две части этот кода для большей детализации и ясности
+func (connect *metricsRepository) SaveMetricsBatch(metrics []unserialize.Metrics) error {
+	tx, err := connect.db.Begin()
+
+	if err != nil {
+		return err
+	}
+	// можно вызвать Rollback в defer,
+	// если Commit будет раньше, то откат проигнорируется
+	defer func() {
+		err := tx.Rollback()
+		if err != nil {
+			fmt.Printf("error Rollback metrics: %v", err)
+		}
+	}()
+
+	//var countUpdate = 0
+	insertMetrisAfterUpdate, err := updateBatch(tx, metrics)
+
+	if err != nil {
+		fmt.Printf("error Update metrics: %v", err)
+		return err
+	}
+
+	err = insertBatch(tx, insertMetrisAfterUpdate)
+	if err != nil {
+		fmt.Printf("error Insert metrics: %v", err)
+		return err
+	}
+
+	err = tx.Commit()
+
+	if err != nil {
+		fmt.Printf("error Commite metrics: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+func insertBatch(tx *sql.Tx, insertMetrisAfterUpdate []unserialize.Metrics) error {
+
+	if len(insertMetrisAfterUpdate) > 0 {
+
+		gaugeInsert, err := tx.PrepareContext(context.TODO(),
+			"INSERT INTO metrics_gauge(value, type_id, name)"+
+				" VALUES($1,$2,$3)")
+		if err != nil {
+			fmt.Printf("error Set insert gauge metrics: %v", err)
+			return err
+		}
+
+		counterInsert, err := tx.PrepareContext(context.TODO(),
+			"INSERT INTO metrics_counter(delta, type_id, name)"+
+				" VALUES($1,$2,$3)")
+		if err != nil {
+			fmt.Printf("error Set insert counter metrics: %v", err)
+			return err
+		}
+		defer gaugeInsert.Close()
+		defer counterInsert.Close()
+
+		for _, v := range insertMetrisAfterUpdate {
+			if v.MType == "gauge" {
+				//fmt.Println("GAUGE VALUE SAVE METRICS", v.Value)
+				_, err := gaugeInsert.ExecContext(context.TODO(), v.Value, 1, v.ID)
+				if err != nil {
+					fmt.Printf("error insert gauge metrics: %v", err)
+					return err
+				}
+			}
+
+			if v.MType == "counter" {
+				_, err := counterInsert.ExecContext(context.TODO(), *v.Delta, 2, v.ID)
+				if err != nil {
+					fmt.Printf("error insert counter metrics: %v", err)
+					return err
+				}
+			}
+
+		}
+	}
+
+	return nil
+}
+
+func updateBatch(tx *sql.Tx, metrics []unserialize.Metrics) ([]unserialize.Metrics, error) {
+	var insertMetrisAfterUpdate []unserialize.Metrics
+
+	gaugeUpdate, err := tx.PrepareContext(context.TODO(),
+		"UPDATE metrics_gauge SET value = $1 WHERE type_id = $2 AND name = $3;")
+	if err != nil {
+		fmt.Printf("error SET update gauge metrics: %v", err)
+		return nil, err
+	}
+	counterUpdate, err := tx.PrepareContext(context.TODO(),
+		"UPDATE metrics_counter SET delta = $1 WHERE type_id = $2 AND name = $3;")
+	if err != nil {
+		fmt.Printf("error Set update counter metrics: %v", err)
+		return nil, err
+	}
+	//fmt.Println("Подготовили запросы:")
+
+	defer gaugeUpdate.Close()
+	defer counterUpdate.Close()
+
+	for _, v := range metrics {
+		if v.MType == "gauge" {
+			res, err := gaugeUpdate.ExecContext(context.TODO(), *v.Value, 1, v.ID)
+			if err != nil {
+				return nil, err
+			}
+			count, err := res.RowsAffected()
+			if err != nil {
+				fmt.Printf("error update gauge metrics: %v", err)
+				return nil, fmt.Errorf("error get rows affected metrics: %v", err)
+			}
+			if !(count > 0) {
+				insertMetrisAfterUpdate = append(insertMetrisAfterUpdate, v)
+			}
+		}
+
+		if v.MType == "counter" {
+			res, err := counterUpdate.ExecContext(context.TODO(), *v.Delta, 2, v.ID)
+			if err != nil {
+				return nil, err
+			}
+			count, err := res.RowsAffected()
+			if err != nil {
+				fmt.Printf("error update counter metrics: %v", err)
+				return nil, fmt.Errorf("error get rows affected metrics: %v", err)
+			}
+			if !(count > 0) {
+				insertMetrisAfterUpdate = append(insertMetrisAfterUpdate, v)
+			}
+		}
+
+	}
+
+	return insertMetrisAfterUpdate, nil
 }

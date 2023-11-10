@@ -33,6 +33,7 @@ type MetricsHandlers interface {
 	GetMetricsCounter(c *gin.Context)
 	UpdateGauge(c *gin.Context)
 	UpdateCounter(c *gin.Context)
+	Updates(c *gin.Context)
 	//######### NOT JSON ###########
 
 	GetMetrics(c *gin.Context)
@@ -151,6 +152,34 @@ func checkGzip(c *gin.Context) ([]byte, error) {
 }
 
 // Point Serialize Data by Request
+func (h *metricsHandlers) unSerializerRequestBatch(c *gin.Context) []unserialize.Metrics {
+	if c.Request.Body == nil {
+		restutils.GinWriteError(c, http.StatusBadRequest, restutils.ErrEmptyBody.Error())
+		return []unserialize.Metrics{}
+	}
+
+	body, err := checkGzip(c)
+	//body, err := io.ReadAll(c.Request.Body)
+
+	if err != nil {
+		restutils.GinWriteError(c, http.StatusBadRequest, err.Error())
+		return []unserialize.Metrics{}
+	}
+
+	var metrics []unserialize.Metrics
+
+	unserializeData := unserialize.NewUnSerializer(h.cfg)
+
+	unserializeError := unserializeData.SetData(&body).GetDataBatch(&metrics)
+
+	if unserializeError.Errors() != nil {
+		panic(unserializeError.Errors().Error())
+	}
+
+	return metrics
+}
+
+// Point Serialize Data by Request
 func (h *metricsHandlers) unSerializerRequest(c *gin.Context) unserialize.Metrics {
 	if c.Request.Body == nil {
 		restutils.GinWriteError(c, http.StatusBadRequest, restutils.ErrEmptyBody.Error())
@@ -202,7 +231,7 @@ func (h *metricsHandlers) GetMetrics(c *gin.Context) {
 	// В конце закрываем запрос
 	//defer c.Request.Body.Close()
 
-	fmt.Println(metrics)
+	//fmt.Println(metrics)
 
 	if metrics == (unserialize.Metrics{}) {
 		return
@@ -322,7 +351,7 @@ func (h *metricsHandlers) ValuePostJSON(c *gin.Context) {
 // Point Value
 func (h *metricsHandlers) Value(c *gin.Context) {
 
-	fmt.Println("VALUE Content-Type NOT JSON")
+	//fmt.Println("VALUE Content-Type NOT JSON")
 	typeMetric := c.Param("type")
 
 	switch val := typeMetric; val {
@@ -364,7 +393,10 @@ func (h *metricsHandlers) GetAllMetricsHTML(c *gin.Context) {
 
 	if compress_ {
 		c.Writer.Header().Set("Content-Encoding", "gzip")
-		dataCompress, _ := compress.CompressGzip([]byte(html))
+		dataCompress, err := compress.CompressGzip([]byte(html))
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
 		c.Data(http.StatusOK, "", dataCompress)
 		return
 	}
@@ -385,7 +417,10 @@ func gZipAccept(data []byte, c *gin.Context) []byte {
 
 	if compress_ {
 		c.Writer.Header().Set("Content-Encoding", "gzip")
-		dataCompress, _ := compress.CompressGzip(data)
+		dataCompress, err := compress.CompressGzip(data)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
 		return dataCompress
 	}
 
@@ -402,4 +437,18 @@ func (h *metricsHandlers) Ping(c *gin.Context) {
 	}
 
 	c.Data(200, "Ping successful", []byte("Success to ping database"))
+}
+
+func (h *metricsHandlers) Updates(c *gin.Context) {
+	metrics := h.unSerializerRequestBatch(c)
+
+	err := h.metricsRepository.SaveMetricsBatch(metrics)
+
+	if err != nil {
+		fmt.Println("Error Save Metrics: ", err)
+		restutils.GinWriteError(c, http.StatusBadRequest, restutils.ErrEmptyBody.Error())
+		return
+	}
+
+	c.Data(200, "Updates successful", []byte("Success get to Updates"))
 }

@@ -2,6 +2,7 @@ package sandlers
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -23,10 +24,12 @@ type SandlerMetrics interface {
 }
 
 type sandlerMetrics struct {
-	repository repository.RepositoryMetrics
-	client     *resty.Client
-	ctx        context.Context
-	cfg        *config.Config
+	repository  repository.RepositoryMetrics
+	client      *resty.Client
+	ctx         context.Context
+	cfg         *config.Config
+	listMetrics []string
+	urlMetrics  string
 }
 
 func NewMetricsSendler(repository repository.RepositoryMetrics, client *resty.Client,
@@ -40,7 +43,7 @@ func (rm *sandlerMetrics) ChangeMetricsByTime() {
 	for {
 		select {
 		case <-rm.ctx.Done():
-			fmt.Println("ChangeMetricsByTime -> Эй! Энштейн! Спасибо, что остановили мою горутину :)")
+			fmt.Println("ChangeMetricsByTime stop")
 			return
 		// Run change metrics before sleep 2 seconds
 		default:
@@ -59,7 +62,7 @@ func (rm *sandlerMetrics) SendMetricsByTime() {
 	for {
 		select {
 		case <-rm.ctx.Done():
-			fmt.Println("SendMetricsByTime -> Эй! Энштейн! Спасибо, что остановили мою горутину :)")
+			fmt.Println("SendMetricsByTime stop")
 			return
 		// Run change metrics before sleep 2 seconds
 		default:
@@ -72,45 +75,86 @@ func (rm *sandlerMetrics) SendMetricsByTime() {
 	}
 }
 
-// Send metrics to server http://localhost:8080
+// SendMetrics sends Batched metrics to local server
+func (rm *sandlerMetrics) GetBatchStringMetrics() []string {
+	listMetrics := rm.getListMetrics()
+
+	json, err := json.Marshal(listMetrics)
+	if err != nil {
+		fmt.Println("Marshal failed: ", err)
+	}
+	jsonString := string(json)
+
+	fmt.Println(jsonString)
+
+	return []string{jsonString}
+}
+
+// SendMetrics sends Slices to local server
+func (rm *sandlerMetrics) GetSliceStringMetrics() []string {
+	listMetrics := rm.getListMetrics()
+
+	//fmt.Println("listMetrics")
+	//fmt.Println(listMetrics)
+	//fmt.Println("listMetrics")
+
+	var listMetricsString []string
+
+	for _, m := range listMetrics {
+		//fmt.Println("listMetrics=>>>>", *m.Value)
+
+		sendStringMetrics := rm.serializeMetrics(m)
+		listMetricsString = append(listMetricsString, sendStringMetrics)
+	}
+
+	fmt.Println("listMetrics=>>>>", listMetricsString)
+
+	return listMetricsString
+}
+
+func (rm *sandlerMetrics) setMetrics() {
+	cfg := rm.cfg
+
+	var listMetrics []string
+
+	if cfg.Metrics.SendMeticsBatch {
+		rm.urlMetrics = fmt.Sprintf("http://%s/updates", cfg.Server.Address)
+		listMetrics = rm.GetBatchStringMetrics()
+	} else {
+		rm.urlMetrics = fmt.Sprintf("http://%s/update", cfg.Server.Address)
+		listMetrics = rm.GetSliceStringMetrics()
+	}
+
+	//fmt.Println(listMetrics)
+
+	rm.listMetrics = listMetrics
+}
+
 func (rm *sandlerMetrics) SendMetrics() {
 	cfg := rm.cfg
 
-	serializer := serialize.NewSerializer(rm.cfg)
+	rm.setMetrics()
 
-	fmt.Printf("Запустили отправку метрик: http://%s\n", cfg.Server.Address)
+	fmt.Printf("Запустили отправку метрик: %s\n", rm.urlMetrics)
 
-	defer fmt.Printf("Завершили отправку метрик: http://%s\n", cfg.Server.Address)
+	defer fmt.Printf("Завершили отправку метрик: %s\n", rm.urlMetrics)
 
 	client := rm.client
 
-	metrics, _ := rm.repository.GetGaugeMetricsAll()
+	//url := fmt.Sprintf("http://%s/update", cfg.Server.Address)
 
-	var sendStringMetrics string
+	var err error
 
-	//Send metrics GAUGE
-	for key, val := range metrics.Gauge {
-
-		metricsSData := serialize.Metrics{ID: key, MType: "gauge", Delta: nil, Value: &val}
-		serializeErr := serializer.SetData(&metricsSData).GetData(&sendStringMetrics)
-
-		if serializeErr.Errors() != nil {
-			panic(serializeErr.Errors().Error())
-		}
-
-		url := fmt.Sprintf("http://%s/update", cfg.Server.Address)
-		//url = fmt.Sprintf("http://%s/update/gauge/%s/%v", cfg.Server.Address, key, val)
-
-		var err error
+	for _, sendStringMetrics := range rm.listMetrics {
 		if cfg.Gzip.Enable {
 			sendDataCompress, _ := compress.CompressGzip([]byte(sendStringMetrics))
 			_, err = client.R().
 				SetBody(sendDataCompress).
-				Post(url)
+				Post(rm.urlMetrics)
 		} else {
 			_, err = client.R().
 				SetBody(sendStringMetrics).
-				Post(url)
+				Post(rm.urlMetrics)
 		}
 
 		if err != nil {
@@ -121,51 +165,77 @@ func (rm *sandlerMetrics) SendMetrics() {
 					//log.Fatal(err)
 				} else {
 					log.Println("ECONNREFUSED")
-					break
-				}
-			}
-			//fmt.Println(response)
-		}
-
-		metrics, _ = rm.repository.GetCounterMetricsAll()
-
-		//Send metrics COUNTER
-		for key, val := range metrics.Counter {
-			metricsSData := serialize.Metrics{ID: key, MType: "counter", Delta: &val, Value: nil}
-			serializeErr := serializer.SetData(&metricsSData).GetData(&sendStringMetrics)
-
-			if serializeErr.Errors() != nil {
-				panic(serializeErr.Errors().Error())
-			}
-
-			url := fmt.Sprintf("http://%s/update", cfg.Server.Address)
-			//url = fmt.Sprintf("http://%s/update/counter/%s/%v", cfg.Server.Address, key, val)
-
-			var err error
-			if cfg.Gzip.Enable {
-				sendDataCompress, _ := compress.CompressGzip([]byte(sendStringMetrics))
-				_, err = client.R().
-					SetBody(sendDataCompress).
-					Post(url)
-			} else {
-				_, err = client.R().
-					SetBody(sendStringMetrics).
-					Post(url)
-			}
-			if err != nil {
-				if errors.Is(err, syscall.EPIPE) {
-					log.Println("Вот такая вот ошибка: This is broken pipe error")
-
-					if !errors.Is(err, syscall.ECONNREFUSED) {
-						//log.Fatal(err)
-						log.Println("Ошибка не: ECONNREFUSED", err.Error())
-					} else {
-						log.Println("ECONNREFUSED")
-						break
-					}
 				}
 			}
 			//fmt.Println(response)
 		}
 	}
+
 }
+
+// Send metrics to server http://localhost:8080
+func (rm *sandlerMetrics) getListMetrics() []serialize.Metrics {
+
+	metrics, _ := rm.repository.GetGaugeMetricsAll()
+
+	var collectMetrics []serialize.Metrics
+
+	//Send metrics GAUGE
+	for key, val := range metrics.Gauge {
+
+		//fmt.Println("value:", val)
+
+		valNew := val
+
+		metricsSData := serialize.Metrics{ID: key, MType: "gauge", Delta: nil, Value: &valNew}
+
+		//fmt.Println(metricsSData)
+		//fmt.Println("value =>>>", *metricsSData.Value)
+
+		collectMetrics = append(collectMetrics, metricsSData)
+	}
+
+	//os.Exit(1)
+
+	metrics, _ = rm.repository.GetCounterMetricsAll()
+
+	//Send metrics COUNTER
+	for key, val := range metrics.Counter {
+
+		deltaNew := val
+
+		metricsSData := serialize.Metrics{ID: key, MType: "counter", Delta: &deltaNew, Value: nil}
+
+		collectMetrics = append(collectMetrics, metricsSData)
+
+	}
+
+	fmt.Println(collectMetrics)
+	//var collectMetrics []serialize.Metrics
+
+	return collectMetrics
+
+}
+
+func (rm *sandlerMetrics) serializeMetrics(metricsSData serialize.Metrics) string {
+
+	//data := metricsSData
+
+	serializer := serialize.NewSerializer(rm.cfg)
+
+	var sendStringMetrics string
+
+	serializeErr := serializer.SetData(&metricsSData).GetData(&sendStringMetrics)
+
+	if serializeErr.Errors() != nil {
+		panic(serializeErr.Errors().Error())
+	}
+
+	//fmt.Println("serializeMetrics====>", sendStringMetrics)
+
+	return sendStringMetrics
+}
+
+/*
+
+ */

@@ -13,8 +13,8 @@ import (
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config/db"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/handlers"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/migration"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/file"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/logger"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/file"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/storage"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository"
@@ -50,6 +50,7 @@ func Run() {
 
 	dbConnection := db.NewConnection(cfg)
 	err = dbConnection.Ping()
+
 	if err != nil {
 		metricsModel := storage.NewMemStorage()
 		metricsRepository = repositoryM.NewMetricsRepository(metricsModel)
@@ -63,8 +64,8 @@ func Run() {
 	//Роутинг
 	metricsRotes := routes.NewGinMetricsRoutesChange(metricsHandlers)
 
-	//router := gin.Default()
-	router := gin.New()
+	router := gin.Default()
+	//router := gin.New()
 
 	// Работаем с временным файлом для сохранения данных из сервера
 	workFile := file.NewWorkFile(metricsRepository, cfg, ctx)

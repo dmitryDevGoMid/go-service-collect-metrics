@@ -10,8 +10,8 @@ import (
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/compress"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/decompress"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/file"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/logger"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/file"
 	"github.com/gin-gonic/gin"
 )
 
@@ -149,19 +149,21 @@ func LoggerMiddleware(appLogger *logger.APILogger) gin.HandlerFunc {
 		uri := c.Request.RequestURI
 		method := c.Request.Method
 		content := c.Request.Header.Get("Content-Type")
+		body := c.Request.Body
 
 		c.Next()
 
 		duration := time.Since(strat)
 
 		appLogger.Infof(
-			"uri %s method %s duration %s status %d size %d ",
+			"uri %s method %s duration %s status %d size %d body %v",
 			uri,
 			method,
 			duration,
 			c.Writer.Status(),
 			c.Writer.Size(),
 			content,
+			body,
 		)
 	}
 }
@@ -173,9 +175,6 @@ func SaveFileToDisk(config *config.Config, file file.WorkerFile) gin.HandlerFunc
 		afterPath := strings.Split(beforePath, "update")
 
 		c.Next()
-
-		//fmt.Println("AFTRE:", afterPath[0])
-		//fmt.Println("Before:", beforePath)
 
 		if afterPath[0] == "/" {
 			if c.Writer.Status() == 200 && config.File.StoreInterval == 0 {

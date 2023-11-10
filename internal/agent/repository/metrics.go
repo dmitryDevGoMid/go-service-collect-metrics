@@ -127,7 +127,14 @@ func (rp repositoryMetrics) GetGaugeMetricsAll() (*models.AllMetrics, error) {
 	rp.metricsAll.Gauge["TotalAlloc"] = rp.metrics.Gauge.TotalAlloc
 	rp.metricsAll.Gauge["RandomValue"] = rp.metrics.Gauge.RandomValue
 
+	//fmt.Println(rp.metricsAll)
+
+	//var metrics models.AllMetrics
+
+	//metrics := *rp.metricsAll
+
 	return rp.metricsAll, nil
+	//return &metrics, nil
 }
 
 // Get all COUNTER metrics, use reflection for get Name and Value by Map
