@@ -307,7 +307,7 @@ func updateBatch(tx *sql.Tx, metrics []unserialize.Metrics) ([]unserialize.Metri
 		return nil, err
 	}
 	counterUpdate, err := tx.PrepareContext(context.TODO(),
-		"UPDATE metrics_counter SET delta = $1 WHERE type_id = $2 AND name = $3;")
+		"UPDATE metrics_counter SET delta = delta + $1 WHERE type_id = $2 AND name = $3;")
 	if err != nil {
 		fmt.Printf("error Set update counter metrics: %v", err)
 		return nil, err

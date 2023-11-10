@@ -71,6 +71,7 @@ func (rm *sandlerMetrics) SendMetricsByTime() {
 				// Run change metrics before sleep 2 seconds
 				time.Sleep(secondSend * time.Second)
 				rm.SendMetrics()
+				rm.repository.SetZeroPollCount()
 			}
 		}
 	}
