@@ -124,10 +124,11 @@ func (rm *sandlerMetrics) serverPing() {
 	}
 
 	if resp.IsError() {
-		if resp.StatusCode() == 200 {
-			rm.sendBatch = true
-		}
-		fmt.Println(resp.StatusCode()) // prints 404
+		fmt.Println("Status Error:", resp.StatusCode()) // prints 404
+	}
+
+	if resp.StatusCode() == 200 {
+		rm.sendBatch = true
 	}
 
 }
