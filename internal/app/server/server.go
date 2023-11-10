@@ -64,8 +64,8 @@ func Run() {
 	//Роутинг
 	metricsRotes := routes.NewGinMetricsRoutesChange(metricsHandlers)
 
-	//router := gin.Default()
-	router := gin.New()
+	router := gin.Default()
+	//router := gin.New()
 
 	// Работаем с временным файлом для сохранения данных из сервера
 	workFile := file.NewWorkFile(metricsRepository, cfg, ctx)
@@ -93,7 +93,7 @@ func Run() {
 
 	dbMigration := migration.NewMigration(dbConnection.DB())
 
-	dbMigration.RunDrop(ctx)
+	//dbMigration.RunDrop(ctx)
 	dbMigration.RunCreate(ctx)
 
 	// Line 27
