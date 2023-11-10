@@ -20,17 +20,18 @@ import (
 type SandlerMetrics interface {
 	ChangeMetricsByTime()
 	SendMetricsByTime()
-	SendMetrics()
+	SendMetrics([]string)
 }
 
 type sandlerMetrics struct {
-	repository  repository.RepositoryMetrics
-	client      *resty.Client
-	ctx         context.Context
-	cfg         *config.Config
-	listMetrics []string
-	urlMetrics  string
-	sendBatch   bool
+	repository       repository.RepositoryMetrics
+	client           *resty.Client
+	ctx              context.Context
+	cfg              *config.Config
+	listMetrics      []string
+	listMetricsBatch []string
+	urlMetrics       string
+	sendBatch        bool
 }
 
 func NewMetricsSendler(repository repository.RepositoryMetrics, client *resty.Client,
@@ -70,7 +71,9 @@ func (rm *sandlerMetrics) SendMetricsByTime() {
 			{
 				// Run change metrics before sleep 2 seconds
 				time.Sleep(secondSend * time.Second)
-				rm.SendMetrics()
+				rm.setMetrics()
+				rm.SendMetrics(rm.listMetrics)
+				rm.SendMetrics(rm.listMetricsBatch)
 				rm.repository.SetZeroPollCount()
 			}
 		}
@@ -114,7 +117,7 @@ func (rm *sandlerMetrics) GetSliceStringMetrics() []string {
 	return listMetricsString
 }
 
-func (rm *sandlerMetrics) serverPing() {
+/*func (rm *sandlerMetrics) serverPing() {
 
 	rm.sendBatch = false
 
@@ -132,32 +135,32 @@ func (rm *sandlerMetrics) serverPing() {
 		rm.sendBatch = true
 	}
 
-}
+}*/
 
 func (rm *sandlerMetrics) setMetrics() {
 	cfg := rm.cfg
 
-	var listMetrics []string
+	//var listMetrics []string
 
-	rm.serverPing()
+	//rm.serverPing()
 
-	if rm.sendBatch {
-		fmt.Println("Send One Batch metrics")
-		rm.urlMetrics = fmt.Sprintf("http://%s/updates", cfg.Server.Address)
-		listMetrics = rm.GetBatchStringMetrics()
-	} else {
-		fmt.Println("Send Single request metrics")
-		rm.urlMetrics = fmt.Sprintf("http://%s/update", cfg.Server.Address)
-		listMetrics = rm.GetSliceStringMetrics()
-	}
+	//if rm.sendBatch {
+	fmt.Println("Send One Batch metrics")
+	rm.urlMetrics = fmt.Sprintf("http://%s/updates", cfg.Server.Address)
+	rm.listMetricsBatch = rm.GetBatchStringMetrics()
+	//} else {
+	fmt.Println("Send Single request metrics")
+	rm.urlMetrics = fmt.Sprintf("http://%s/update", cfg.Server.Address)
+	rm.listMetrics = rm.GetSliceStringMetrics()
+	//}
 
-	rm.listMetrics = listMetrics
+	//rm.listMetrics = listMetrics
 }
 
-func (rm *sandlerMetrics) SendMetrics() {
+func (rm *sandlerMetrics) SendMetrics(listMetrics []string) {
 	cfg := rm.cfg
 
-	rm.setMetrics()
+	//rm.setMetrics()
 
 	fmt.Printf("Запустили отправку метрик: %s\n", rm.urlMetrics)
 
@@ -169,7 +172,7 @@ func (rm *sandlerMetrics) SendMetrics() {
 
 	var err error
 
-	for _, sendStringMetrics := range rm.listMetrics {
+	for _, sendStringMetrics := range listMetrics {
 		if cfg.Gzip.Enable {
 			sendDataCompress, _ := compress.CompressGzip([]byte(sendStringMetrics))
 			_, err = client.R().

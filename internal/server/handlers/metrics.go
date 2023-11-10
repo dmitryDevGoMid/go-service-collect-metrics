@@ -10,8 +10,8 @@ import (
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/decompress"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/serialize"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/unserialize"
-
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/mrepository"
 
 	"net/http"
 
@@ -52,18 +52,27 @@ type MetricsHandlers interface {
 
 // Структура реализующая интерфейс
 type metricsHandlers struct {
+	managerRepository mrepository.ManagerRepository
 	metricsRepository repository.MetricsRepository
 	cfg               *config.Config
 }
 
 // Конструктор
-func NewMetricsHandlers(metricsRepository repository.MetricsRepository, cfg *config.Config) MetricsHandlers {
-	return &metricsHandlers{metricsRepository: metricsRepository, cfg: cfg}
+func NewMetricsHandlers(
+	managerRepository mrepository.ManagerRepository,
+	metricsRepository repository.MetricsRepository,
+	cfg *config.Config) MetricsHandlers {
+	return &metricsHandlers{metricsRepository: metricsRepository, managerRepository: managerRepository, cfg: cfg}
+}
+func (h *metricsHandlers) setRepository() {
+	h.metricsRepository = h.managerRepository.GetRepositoryActive()
 }
 
 // ####################### POST NOT JSON ######################
 // endPointsMetricsHandlers GetMetricsGauge
 func (h *metricsHandlers) GetMetricsGauge(c *gin.Context) {
+	h.setRepository()
+
 	metricName := c.Param("metric")
 
 	resp, err := h.metricsRepository.GetMetricGauge(metricName)
@@ -77,8 +86,9 @@ func (h *metricsHandlers) GetMetricsGauge(c *gin.Context) {
 
 // endPointsMetricsHandlers GetMetricsCounter
 func (h *metricsHandlers) GetMetricsCounter(c *gin.Context) {
-	metricName := c.Param("metric")
+	h.setRepository()
 
+	metricName := c.Param("metric")
 	resp, err := h.metricsRepository.GetMetricCounter(metricName)
 
 	if err != nil {
@@ -90,6 +100,8 @@ func (h *metricsHandlers) GetMetricsCounter(c *gin.Context) {
 
 // End Points MetricsHandlers UpdateGauge
 func (h *metricsHandlers) UpdateGauge(c *gin.Context) {
+	h.setRepository()
+
 	metricName := c.Param("metric")
 
 	metricValue, err := strconv.ParseFloat(c.Param("value"), 64)
@@ -105,7 +117,7 @@ func (h *metricsHandlers) UpdateGauge(c *gin.Context) {
 
 // End Points MetricsHandlers UpdateCounter
 func (h *metricsHandlers) UpdateCounter(c *gin.Context) {
-
+	h.setRepository()
 	metric := c.Param("metric")
 	value := c.Param("value")
 
@@ -201,7 +213,8 @@ func (h *metricsHandlers) unSerializerRequest(c *gin.Context) unserialize.Metric
 	unserializeError := unserializeData.SetData(&body).GetData(&metrics)
 
 	if unserializeError.Errors() != nil {
-		panic(unserializeError.Errors().Error())
+		//panic(unserializeError.Errors().Error())
+		fmt.Println(unserializeError.Errors().Error())
 	}
 
 	return metrics
@@ -226,6 +239,8 @@ func (h *metricsHandlers) serializerResponse(metricsSData *serialize.Metrics) st
 
 // endPointsMetricsHandlers GetMetrics
 func (h *metricsHandlers) GetMetrics(c *gin.Context) {
+	h.setRepository()
+
 	metrics := h.unSerializerRequest(c)
 
 	// В конце закрываем запрос
@@ -277,6 +292,8 @@ func (h *metricsHandlers) GetMetrics(c *gin.Context) {
 
 // endPointsMetricsHandlers UpdateMetrics
 func (h *metricsHandlers) UpdateMetrics(c *gin.Context) {
+	h.setRepository()
+
 	metrics := h.unSerializerRequest(c)
 
 	// В конце закрываем запрос
@@ -366,6 +383,8 @@ func (h *metricsHandlers) Value(c *gin.Context) {
 
 // End Points MetricsHandlers GetAllMetricsHtml
 func (h *metricsHandlers) GetAllMetricsHTML(c *gin.Context) {
+	h.setRepository()
+
 	html := ""
 	metrics, err := h.metricsRepository.GetAllMetrics()
 
@@ -429,6 +448,8 @@ func gZipAccept(data []byte, c *gin.Context) []byte {
 
 // Ping Data Base Postgres Server
 func (h *metricsHandlers) Ping(c *gin.Context) {
+	h.setRepository()
+
 	err := h.metricsRepository.PingDatabase()
 
 	if err != nil {

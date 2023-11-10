@@ -88,5 +88,20 @@ func (mr *metricsRepository) PingDatabase() error {
 }
 
 func (mr *metricsRepository) SaveMetricsBatch(metrics []unserialize.Metrics) error {
-	return validator.ErrPingBatchDataBase
+	for _, val := range metrics {
+		if val.MType == "gauge" {
+			err := mr.UpdateMetricGauge(val.ID, *val.Value)
+			if err != nil {
+				return err
+			}
+		}
+		if val.MType == "counter" {
+			err := mr.UpdateMetricCounter(val.ID, *val.Delta)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }

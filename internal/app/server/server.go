@@ -15,9 +15,9 @@ import (
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/migration"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/logger"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/file"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/mrepository"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/storage"
 
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository"
 	repositoryDb "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/db"
 	repositoryM "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/memory"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/routes"
@@ -46,20 +46,26 @@ func Run() {
 		cfg.Logger.Level,
 	)
 
-	var metricsRepository repository.MetricsRepository
+	//var metricsRepository repository.MetricsRepository
 
 	dbConnection := db.NewConnection(cfg)
-	err = dbConnection.Ping()
+	//err = dbConnection.Ping()
 
-	if err != nil {
-		metricsModel := storage.NewMemStorage()
-		metricsRepository = repositoryM.NewMetricsRepository(metricsModel)
-	} else {
-		metricsRepository = repositoryDb.NewMetricsRepository(dbConnection.DB())
-	}
+	metricsModel := storage.NewMemStorage()
+
+	metricsRepositoryLocal := repositoryM.NewMetricsRepository(metricsModel)
+
+	metricsRepositoryDB := repositoryDb.NewMetricsRepository(dbConnection.DB())
+
+	managerRepository := mrepository.NewMamangerRepository(
+		metricsRepositoryDB,
+		metricsRepositoryLocal,
+		dbConnection)
+
+	activeRepository := managerRepository.GetRepositoryActive()
 
 	//Обработчики
-	metricsHandlers := handlers.NewMetricsHandlers(metricsRepository, cfg)
+	metricsHandlers := handlers.NewMetricsHandlers(managerRepository, activeRepository, cfg)
 
 	//Роутинг
 	metricsRotes := routes.NewGinMetricsRoutesChange(metricsHandlers)
@@ -68,7 +74,7 @@ func Run() {
 	//router := gin.New()
 
 	// Работаем с временным файлом для сохранения данных из сервера
-	workFile := file.NewWorkFile(metricsRepository, cfg, ctx)
+	workFile := file.NewWorkFile(metricsRepositoryLocal, cfg, ctx)
 
 	// Запускаем процесс чтения и записи
 	workFile.RunWorker()
