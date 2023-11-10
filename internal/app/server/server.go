@@ -64,8 +64,8 @@ func Run() {
 	//Роутинг
 	metricsRotes := routes.NewGinMetricsRoutesChange(metricsHandlers)
 
-	router := gin.Default()
-	//router := gin.New()
+	//router := gin.Default()
+	router := gin.New()
 
 	// Работаем с временным файлом для сохранения данных из сервера
 	workFile := file.NewWorkFile(metricsRepository, cfg, ctx)
