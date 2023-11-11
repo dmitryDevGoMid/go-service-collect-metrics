@@ -99,7 +99,7 @@ func Run() {
 
 	dbMigration := migration.NewMigration(dbConnection.DB())
 
-	dbMigration.RunDrop(ctx)
+	//dbMigration.RunDrop(ctx)
 	dbMigration.RunCreate(ctx)
 
 	// Line 27
