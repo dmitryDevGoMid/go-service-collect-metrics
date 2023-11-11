@@ -228,18 +228,18 @@ func (connect *metricsRepository) SaveMetricsBatch(metrics []unserialize.Metrics
 	}()
 
 	//var countUpdate = 0
-	insertMetrisAfterUpdate, err := updateBatch(tx, metrics)
+	_, err = updateBatch(tx, metrics)
 
 	if err != nil {
 		fmt.Printf("error Update metrics: %v", err)
 		return err
 	}
 
-	err = insertBatch(tx, insertMetrisAfterUpdate)
+	/*err = insertBatch(tx, insertMetrisAfterUpdate)
 	if err != nil {
 		fmt.Printf("error Insert metrics: %v", err)
 		return err
-	}
+	}*/
 
 	err = tx.Commit()
 
@@ -298,7 +298,7 @@ func insertBatch(tx *sql.Tx, insertMetrisAfterUpdate []unserialize.Metrics) erro
 }
 
 func updateBatch(tx *sql.Tx, metrics []unserialize.Metrics) ([]unserialize.Metrics, error) {
-	var insertMetrisAfterUpdate []unserialize.Metrics
+	//var insertMetrisAfterUpdate []unserialize.Metrics
 
 	gaugeUpdate, err := tx.PrepareContext(context.TODO(),
 		"UPDATE metrics_gauge SET value = $1 WHERE type_id = $2 AND name = $3;")
@@ -329,7 +329,8 @@ func updateBatch(tx *sql.Tx, metrics []unserialize.Metrics) ([]unserialize.Metri
 				return nil, fmt.Errorf("error get rows affected metrics: %v", err)
 			}
 			if !(count > 0) {
-				insertMetrisAfterUpdate = append(insertMetrisAfterUpdate, v)
+				//insertMetrisAfterUpdate = append(insertMetrisAfterUpdate, v)
+				insertBatch(tx, []unserialize.Metrics{v})
 			}
 		}
 
@@ -344,11 +345,12 @@ func updateBatch(tx *sql.Tx, metrics []unserialize.Metrics) ([]unserialize.Metri
 				return nil, fmt.Errorf("error get rows affected metrics: %v", err)
 			}
 			if !(count > 0) {
-				insertMetrisAfterUpdate = append(insertMetrisAfterUpdate, v)
+				//insertMetrisAfterUpdate = append(insertMetrisAfterUpdate, v)
+				insertBatch(tx, []unserialize.Metrics{v})
 			}
 		}
 
 	}
 
-	return insertMetrisAfterUpdate, nil
+	return nil, nil
 }

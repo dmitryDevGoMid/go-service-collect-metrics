@@ -31,7 +31,7 @@ type sandlerMetrics struct {
 	listMetrics      []string
 	listMetricsBatch []string
 	urlMetrics       string
-	sendBatch        bool
+	//sendBatch        bool
 }
 
 func NewMetricsSendler(repository repository.RepositoryMetrics, client *resty.Client,
@@ -99,10 +99,6 @@ func (rm *sandlerMetrics) GetBatchStringMetrics() []string {
 func (rm *sandlerMetrics) GetSliceStringMetrics() []string {
 	listMetrics := rm.getListMetrics()
 
-	//fmt.Println("listMetrics")
-	//fmt.Println(listMetrics)
-	//fmt.Println("listMetrics")
-
 	var listMetricsString []string
 
 	for _, m := range listMetrics {
@@ -160,15 +156,11 @@ func (rm *sandlerMetrics) setMetrics() {
 func (rm *sandlerMetrics) SendMetrics(listMetrics []string) {
 	cfg := rm.cfg
 
-	//rm.setMetrics()
-
 	fmt.Printf("Запустили отправку метрик: %s\n", rm.urlMetrics)
 
 	defer fmt.Printf("Завершили отправку метрик: %s\n", rm.urlMetrics)
 
 	client := rm.client
-
-	//url := fmt.Sprintf("http://%s/update", cfg.Server.Address)
 
 	var err error
 
@@ -189,12 +181,10 @@ func (rm *sandlerMetrics) SendMetrics(listMetrics []string) {
 				log.Print("Вот такая вот ошибка: This is broken pipe error")
 				if !errors.Is(err, syscall.ECONNREFUSED) {
 					log.Print("Ошибка не: ECONNREFUSED", err.Error())
-					//log.Fatal(err)
 				} else {
 					log.Println("ECONNREFUSED")
 				}
 			}
-			//fmt.Println(response)
 		}
 	}
 
