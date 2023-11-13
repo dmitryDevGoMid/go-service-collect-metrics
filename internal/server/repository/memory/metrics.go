@@ -1,6 +1,8 @@
 package memory
 
 import (
+	"context"
+
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/models"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/unserialize"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository"
@@ -17,7 +19,7 @@ func NewMetricsRepository(metrics *models.MemStorage) repository.MetricsReposito
 }
 
 // Get matrics Gauge
-func (mr *metricsRepository) GetMetricGauge(nameMetric string) (float64, error) {
+func (mr *metricsRepository) GetMetricGauge(ctx context.Context, nameMetric string) (float64, error) {
 
 	if nameMetric == "" {
 		return 0, validator.ErrEmptyNameMetrics
@@ -33,7 +35,7 @@ func (mr *metricsRepository) GetMetricGauge(nameMetric string) (float64, error) 
 }
 
 // Get metrics Counter
-func (mr *metricsRepository) GetMetricCounter(nameMetric string) (int64, error) {
+func (mr *metricsRepository) GetMetricCounter(ctx context.Context, nameMetric string) (int64, error) {
 
 	if nameMetric == "" {
 		return 0, validator.ErrEmptyNameMetrics
@@ -49,7 +51,7 @@ func (mr *metricsRepository) GetMetricCounter(nameMetric string) (int64, error) 
 }
 
 // Upodate metrics Gauge
-func (mr *metricsRepository) UpdateMetricGauge(nameMetric string, value float64) error {
+func (mr *metricsRepository) UpdateMetricGauge(ctx context.Context, nameMetric string, value float64) error {
 
 	if nameMetric == "" {
 		return validator.ErrEmptyNameMetrics
@@ -60,7 +62,7 @@ func (mr *metricsRepository) UpdateMetricGauge(nameMetric string, value float64)
 }
 
 // Upodate metrics Counter
-func (mr *metricsRepository) UpdateMetricCounter(nameMetric string, value int64) error {
+func (mr *metricsRepository) UpdateMetricCounter(ctx context.Context, nameMetric string, value int64) error {
 
 	if nameMetric == "" {
 		return validator.ErrEmptyNameMetrics
@@ -78,25 +80,25 @@ func (mr *metricsRepository) UpdateMetricCounter(nameMetric string, value int64)
 }
 
 // Get All Metrics
-func (mr *metricsRepository) GetAllMetrics() (*models.MemStorage, error) {
+func (mr *metricsRepository) GetAllMetrics(ctx context.Context) (*models.MemStorage, error) {
 
 	return mr.metrics, nil
 }
 
-func (mr *metricsRepository) PingDatabase() error {
+func (mr *metricsRepository) PingDatabase(ctx context.Context) error {
 	return validator.ErrPingDataBase
 }
 
-func (mr *metricsRepository) SaveMetricsBatch(metrics []unserialize.Metrics) error {
+func (mr *metricsRepository) SaveMetricsBatch(ctx context.Context, metrics []unserialize.Metrics) error {
 	for _, val := range metrics {
 		if val.MType == "gauge" {
-			err := mr.UpdateMetricGauge(val.ID, *val.Value)
+			err := mr.UpdateMetricGauge(ctx, val.ID, *val.Value)
 			if err != nil {
 				return err
 			}
 		}
 		if val.MType == "counter" {
-			err := mr.UpdateMetricCounter(val.ID, *val.Delta)
+			err := mr.UpdateMetricCounter(ctx, val.ID, *val.Delta)
 			if err != nil {
 				return err
 			}

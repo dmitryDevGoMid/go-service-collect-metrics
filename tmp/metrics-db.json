@@ -1,6 +1,6 @@
+{"id":"HeapIdle","type":"gauge","value":5529600}
 {"id":"OtherSys","type":"gauge","value":750827}
 {"id":"GCCPUFraction","type":"gauge","value":0.00005077717404852682}
 {"id":"Sys","type":"gauge","value":18070544}
 {"id":"Lookups","type":"gauge","value":0}
 {"id":"NumForcedGC","type":"gauge","value":0}
-{"id":"HeapIdle","type":"gauge","value":5529600}

@@ -75,7 +75,7 @@ func (h *metricsHandlers) GetMetricsGauge(c *gin.Context) {
 
 	metricName := c.Param("metric")
 
-	resp, err := h.metricsRepository.GetMetricGauge(metricName)
+	resp, err := h.metricsRepository.GetMetricGauge(c, metricName)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, err.Error())
@@ -89,7 +89,7 @@ func (h *metricsHandlers) GetMetricsCounter(c *gin.Context) {
 	h.setRepository()
 
 	metricName := c.Param("metric")
-	resp, err := h.metricsRepository.GetMetricCounter(metricName)
+	resp, err := h.metricsRepository.GetMetricCounter(c, metricName)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, err.Error())
@@ -110,7 +110,7 @@ func (h *metricsHandlers) UpdateGauge(c *gin.Context) {
 		return
 	}
 
-	h.metricsRepository.UpdateMetricGauge(metricName, metricValue)
+	h.metricsRepository.UpdateMetricGauge(c, metricName, metricValue)
 
 	c.Status(http.StatusOK)
 }
@@ -131,7 +131,7 @@ func (h *metricsHandlers) UpdateCounter(c *gin.Context) {
 
 	fmt.Println("Типизация:", metricValue)
 
-	h.metricsRepository.UpdateMetricCounter(metric, metricValue)
+	h.metricsRepository.UpdateMetricCounter(c, metric, metricValue)
 
 	c.Status(http.StatusOK)
 }
@@ -260,9 +260,9 @@ func (h *metricsHandlers) GetMetrics(c *gin.Context) {
 
 	switch val := typeMetric; val {
 	case "gauge":
-		respGauge, err = h.metricsRepository.GetMetricGauge(metrics.ID)
+		respGauge, err = h.metricsRepository.GetMetricGauge(c, metrics.ID)
 	case "counter":
-		respCounter, err = h.metricsRepository.GetMetricCounter(metrics.ID)
+		respCounter, err = h.metricsRepository.GetMetricCounter(c, metrics.ID)
 	default:
 		c.Status(http.StatusBadRequest)
 	}
@@ -311,11 +311,11 @@ func (h *metricsHandlers) UpdateMetrics(c *gin.Context) {
 
 	switch val := typeMetric; val {
 	case "gauge":
-		h.metricsRepository.UpdateMetricGauge(metrics.ID, *metrics.Value)
-		respGauge, err = h.metricsRepository.GetMetricGauge(metrics.ID)
+		h.metricsRepository.UpdateMetricGauge(c, metrics.ID, *metrics.Value)
+		respGauge, err = h.metricsRepository.GetMetricGauge(c, metrics.ID)
 	case "counter":
-		h.metricsRepository.UpdateMetricCounter(metrics.ID, *metrics.Delta)
-		respCounter, err = h.metricsRepository.GetMetricCounter(metrics.ID)
+		h.metricsRepository.UpdateMetricCounter(c, metrics.ID, *metrics.Delta)
+		respCounter, err = h.metricsRepository.GetMetricCounter(c, metrics.ID)
 	default:
 		c.Status(http.StatusBadRequest)
 	}
@@ -386,7 +386,7 @@ func (h *metricsHandlers) GetAllMetricsHTML(c *gin.Context) {
 	h.setRepository()
 
 	html := ""
-	metrics, err := h.metricsRepository.GetAllMetrics()
+	metrics, err := h.metricsRepository.GetAllMetrics(c)
 
 	if err != nil {
 		restutils.GinWriteError(c, http.StatusBadRequest, restutils.ErrEmptyBody.Error())
@@ -450,7 +450,7 @@ func gZipAccept(data []byte, c *gin.Context) []byte {
 func (h *metricsHandlers) Ping(c *gin.Context) {
 	h.setRepository()
 
-	err := h.metricsRepository.PingDatabase()
+	err := h.metricsRepository.PingDatabase(c)
 
 	if err != nil {
 		c.Data(500, "Ping failed", []byte("Failed to ping database"))
@@ -463,7 +463,7 @@ func (h *metricsHandlers) Ping(c *gin.Context) {
 func (h *metricsHandlers) Updates(c *gin.Context) {
 	metrics := h.unSerializerRequestBatch(c)
 
-	err := h.metricsRepository.SaveMetricsBatch(metrics)
+	err := h.metricsRepository.SaveMetricsBatch(c, metrics)
 
 	if err != nil {
 		fmt.Println("Error Save Metrics: ", err)

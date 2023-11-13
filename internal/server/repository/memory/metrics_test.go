@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"context"
 	"testing"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/storage"
@@ -61,7 +62,7 @@ func TestGetMetricGauge(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			metricsModel.Gauge[tt.metricNameStorage] = tt.metricValue
-			metricValue, err := metricsRepository.GetMetricGauge(tt.metricName)
+			metricValue, err := metricsRepository.GetMetricGauge(context.TODO(), tt.metricName)
 			tt.checkError(tt.want, metricValue, err)
 		})
 	}
@@ -121,7 +122,7 @@ func TestGetMetricCounter(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			metricsModel.Counter[tt.metricNameStorage] = tt.metricValue
-			metricValue, err := metricsRepository.GetMetricCounter(tt.metricName)
+			metricValue, err := metricsRepository.GetMetricCounter(context.TODO(), tt.metricName)
 			tt.checkError(tt.want, metricValue, err)
 		})
 	}
@@ -190,9 +191,9 @@ func TestUpdateMetricCounter(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := metricsRepository.UpdateMetricCounter(tt.metricNameStorage, tt.metricValue)
+			err := metricsRepository.UpdateMetricCounter(context.TODO(), tt.metricNameStorage, tt.metricValue)
 			assert.NoError(t, err)
-			metricValue, err := metricsRepository.GetMetricCounter(tt.metricName)
+			metricValue, err := metricsRepository.GetMetricCounter(context.TODO(), tt.metricName)
 			tt.checkError(tt.want, metricValue, err)
 		})
 	}
@@ -250,9 +251,9 @@ func TestUpdateMetricGauge(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := metricsRepository.UpdateMetricGauge(tt.metricNameStorage, tt.metricValue)
+			err := metricsRepository.UpdateMetricGauge(context.TODO(), tt.metricNameStorage, tt.metricValue)
 			assert.NoError(t, err)
-			metricValue, err := metricsRepository.GetMetricGauge(tt.metricName)
+			metricValue, err := metricsRepository.GetMetricGauge(context.TODO(), tt.metricName)
 			tt.checkError(tt.want, metricValue, err)
 		})
 	}
@@ -265,7 +266,7 @@ func TestGetAllMetrics(t *testing.T) {
 
 	metricsRepository := NewMetricsRepository(metricsModel)
 
-	allMetrics, err := metricsRepository.GetAllMetrics()
+	allMetrics, err := metricsRepository.GetAllMetrics(context.TODO())
 	assert.NoError(t, err)
 	assert.NotNil(t, allMetrics)
 	assert.NotEmpty(t, allMetrics)

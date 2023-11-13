@@ -178,7 +178,7 @@ func SaveFileToDisk(config *config.Config, file file.WorkerFile) gin.HandlerFunc
 
 		if afterPath[0] == "/" {
 			if c.Writer.Status() == 200 && config.File.StoreInterval == 0 {
-				file.SaveAllMetrics()
+				file.SaveAllMetrics(c)
 				//fmt.Println("SaveFileToDisk: Записали данные на диск")
 			}
 		}

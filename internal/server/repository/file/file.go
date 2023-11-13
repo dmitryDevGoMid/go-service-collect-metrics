@@ -18,10 +18,9 @@ import (
 )
 
 type WorkerFile interface {
-	SaveMetricsByTime()
-	SaveAllMetrics()
-	SetFolder()
-	RunWorker()
+	SaveMetricsByTime(ctx context.Context)
+	SaveAllMetrics(ctx context.Context)
+	RunWorker(ctx context.Context)
 }
 
 var mutex sync.Mutex
@@ -38,7 +37,7 @@ func NewWorkFile(metricsRepository repository.MetricsRepository, cfg *config.Con
 	return &workerFile{metricsRepository: metricsRepository, cfg: cfg, ctx: ctx}
 }
 
-func (wf *workerFile) SetFolder() {
+func (wf *workerFile) setFolder() {
 	folderPath := wf.cfg.File.FileStoragePath
 
 	d, err := os.Getwd()
@@ -65,19 +64,19 @@ func (wf *workerFile) SetFolder() {
 	wf.f = f
 }
 
-func (wf *workerFile) RunWorker() {
+func (wf *workerFile) RunWorker(ctx context.Context) {
 	wf.mutex = &mutex
 
 	if wf.cfg.File.Restore {
-		wf.GetAllMetricsByFile()
+		wf.GetAllMetricsByFile(ctx)
 	}
 
 	if wf.cfg.File.StoreInterval > 0 {
-		go wf.SaveMetricsByTime()
+		go wf.SaveMetricsByTime(ctx)
 	}
 }
 
-func (wf *workerFile) SaveMetricsByTime() {
+func (wf *workerFile) SaveMetricsByTime(ctx context.Context) {
 	secondChange := time.Duration(wf.cfg.File.StoreInterval)
 	//i := 0
 	for {
@@ -89,14 +88,14 @@ func (wf *workerFile) SaveMetricsByTime() {
 		default:
 			{
 				time.Sleep(secondChange * time.Second)
-				wf.SaveAllMetrics()
+				wf.SaveAllMetrics(ctx)
 			}
 		}
 	}
 }
 
 // Пишем метрики в файл
-func (wf *workerFile) SaveAllMetrics() {
+func (wf *workerFile) SaveAllMetrics(ctx context.Context) {
 
 	if wf.cfg.File.FileStoragePath == "" {
 		return
@@ -108,9 +107,9 @@ func (wf *workerFile) SaveAllMetrics() {
 
 	wf.mutex.Lock()
 
-	wf.SetFolder()
+	wf.setFolder()
 
-	allMetrics, _ := wf.metricsRepository.GetAllMetrics()
+	allMetrics, _ := wf.metricsRepository.GetAllMetrics(context.TODO())
 
 	typeMetric := "gauge"
 
@@ -139,7 +138,7 @@ func (wf *workerFile) SaveAllMetrics() {
 }
 
 // Поднимаем метрики из файл и пишем в хранилище
-func (wf *workerFile) GetAllMetricsByFile() {
+func (wf *workerFile) GetAllMetricsByFile(ctx context.Context) {
 
 	d, err := os.Getwd()
 
@@ -172,9 +171,9 @@ func (wf *workerFile) GetAllMetricsByFile() {
 
 		switch val := metrics.MType; val {
 		case "gauge":
-			wf.metricsRepository.UpdateMetricGauge(metrics.ID, *metrics.Value)
+			wf.metricsRepository.UpdateMetricGauge(context.TODO(), metrics.ID, *metrics.Value)
 		case "counter":
-			wf.metricsRepository.UpdateMetricCounter(metrics.ID, *metrics.Delta)
+			wf.metricsRepository.UpdateMetricCounter(context.TODO(), metrics.ID, *metrics.Delta)
 		default:
 			fmt.Println("Нет такого типа метрики!")
 		}

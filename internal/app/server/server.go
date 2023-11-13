@@ -77,7 +77,7 @@ func Run() {
 	workFile := file.NewWorkFile(metricsRepositoryLocal, cfg, ctx)
 
 	// Запускаем процесс чтения и записи
-	workFile.RunWorker()
+	workFile.RunWorker(ctx)
 
 	router.Use(routes.SaveFileToDisk(cfg, workFile))
 

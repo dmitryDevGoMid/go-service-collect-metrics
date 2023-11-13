@@ -6,6 +6,7 @@ require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-resty/resty/v2 v2.9.1
+	github.com/golang/mock v1.6.0
 	github.com/jackc/pgx/v5 v5.5.0
 	github.com/stretchr/testify v1.8.3
 	go.uber.org/zap v1.26.0
