@@ -28,6 +28,7 @@ type Decorator struct {
 
 func (d Decorator) GetMetricCounter(ctx context.Context, nameMetric string) (int64, error) {
 	var err error
+	var val int64
 	fmt.Println("Выполняем повторный запрос через секунду")
 	timeOut := make(map[int]int)
 	timeOut[0] = 1
@@ -41,7 +42,7 @@ func (d Decorator) GetMetricCounter(ctx context.Context, nameMetric string) (int
 		default:
 		}
 
-		val, err := d.IMetric.GetMetricCounter(ctx, nameMetric)
+		val, err = d.IMetric.GetMetricCounter(ctx, nameMetric)
 		if err == nil {
 			return val, nil
 		} else {
@@ -55,6 +56,7 @@ func (d Decorator) GetMetricCounter(ctx context.Context, nameMetric string) (int
 
 func (d Decorator) GetMetricGauge(ctx context.Context, nameMetric string) (float64, error) {
 	var err error
+	var val float64
 	fmt.Println("Выполняем повторный запрос через секунду")
 	timeOut := make(map[int]int)
 	timeOut[0] = 1
@@ -68,7 +70,7 @@ func (d Decorator) GetMetricGauge(ctx context.Context, nameMetric string) (float
 		default:
 		}
 
-		val, err := d.IMetric.GetMetricGauge(ctx, nameMetric)
+		val, err = d.IMetric.GetMetricGauge(ctx, nameMetric)
 		if err == nil {
 			return val, nil
 		} else {
