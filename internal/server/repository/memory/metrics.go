@@ -9,17 +9,19 @@ import (
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/validator"
 )
 
-type metricsRepository struct {
+type Decoretor repository.Decorator
+
+type MetricsRepository struct {
 	metrics *models.MemStorage
 }
 
 // Contruct
 func NewMetricsRepository(metrics *models.MemStorage) repository.MetricsRepository {
-	return &metricsRepository{metrics: metrics}
+	return &MetricsRepository{metrics: metrics}
 }
 
 // Get matrics Gauge
-func (mr *metricsRepository) GetMetricGauge(ctx context.Context, nameMetric string) (float64, error) {
+func (mr *MetricsRepository) GetMetricGauge(ctx context.Context, nameMetric string) (float64, error) {
 
 	if nameMetric == "" {
 		return 0, validator.ErrEmptyNameMetrics
@@ -35,7 +37,7 @@ func (mr *metricsRepository) GetMetricGauge(ctx context.Context, nameMetric stri
 }
 
 // Get metrics Counter
-func (mr *metricsRepository) GetMetricCounter(ctx context.Context, nameMetric string) (int64, error) {
+func (mr *MetricsRepository) GetMetricCounter(ctx context.Context, nameMetric string) (int64, error) {
 
 	if nameMetric == "" {
 		return 0, validator.ErrEmptyNameMetrics
@@ -51,7 +53,7 @@ func (mr *metricsRepository) GetMetricCounter(ctx context.Context, nameMetric st
 }
 
 // Upodate metrics Gauge
-func (mr *metricsRepository) UpdateMetricGauge(ctx context.Context, nameMetric string, value float64) error {
+func (mr *MetricsRepository) UpdateMetricGauge(ctx context.Context, nameMetric string, value float64) error {
 
 	if nameMetric == "" {
 		return validator.ErrEmptyNameMetrics
@@ -62,7 +64,7 @@ func (mr *metricsRepository) UpdateMetricGauge(ctx context.Context, nameMetric s
 }
 
 // Upodate metrics Counter
-func (mr *metricsRepository) UpdateMetricCounter(ctx context.Context, nameMetric string, value int64) error {
+func (mr *MetricsRepository) UpdateMetricCounter(ctx context.Context, nameMetric string, value int64) error {
 
 	if nameMetric == "" {
 		return validator.ErrEmptyNameMetrics
@@ -80,16 +82,16 @@ func (mr *metricsRepository) UpdateMetricCounter(ctx context.Context, nameMetric
 }
 
 // Get All Metrics
-func (mr *metricsRepository) GetAllMetrics(ctx context.Context) (*models.MemStorage, error) {
+func (mr *MetricsRepository) GetAllMetrics(ctx context.Context) (*models.MemStorage, error) {
 
 	return mr.metrics, nil
 }
 
-func (mr *metricsRepository) PingDatabase(ctx context.Context) error {
+func (mr *MetricsRepository) PingDatabase(ctx context.Context) error {
 	return validator.ErrPingDataBase
 }
 
-func (mr *metricsRepository) SaveMetricsBatch(ctx context.Context, metrics []unserialize.Metrics) error {
+func (mr *MetricsRepository) SaveMetricsBatch(ctx context.Context, metrics []unserialize.Metrics) error {
 	for _, val := range metrics {
 		if val.MType == "gauge" {
 			err := mr.UpdateMetricGauge(ctx, val.ID, *val.Value)

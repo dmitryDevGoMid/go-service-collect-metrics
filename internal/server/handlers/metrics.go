@@ -89,7 +89,11 @@ func (h *metricsHandlers) GetMetricsCounter(c *gin.Context) {
 	h.setRepository()
 
 	metricName := c.Param("metric")
-	resp, err := h.metricsRepository.GetMetricCounter(c, metricName)
+
+	retryTest := repository.Decorator{RetryCount: 3, IMetric: h.metricsRepository}
+	resp, err := retryTest.GetMetricCounter(c, metricName)
+
+	fmt.Println("Decorator get Metrics!")
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, err.Error())
@@ -262,7 +266,9 @@ func (h *metricsHandlers) GetMetrics(c *gin.Context) {
 	case "gauge":
 		respGauge, err = h.metricsRepository.GetMetricGauge(c, metrics.ID)
 	case "counter":
-		respCounter, err = h.metricsRepository.GetMetricCounter(c, metrics.ID)
+		//respCounter, err = h.metricsRepository.GetMetricCounter(c, metrics.ID)
+		retry := repository.Decorator{RetryCount: 3, IMetric: h.metricsRepository}
+		respCounter, err = retry.GetMetricCounter(c, metrics.ID)
 	default:
 		c.Status(http.StatusBadRequest)
 	}

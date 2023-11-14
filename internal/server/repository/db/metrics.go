@@ -12,6 +12,8 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+type Decoretor repository.Decorator
+
 type MetricsRepository interface {
 	repository.MetricsRepository
 	GetMetricsTypeIDByName(ctx context.Context, nameMetric string) (int, error)
