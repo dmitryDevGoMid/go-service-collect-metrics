@@ -58,14 +58,26 @@ type metricsHandlers struct {
 }
 
 // Конструктор
+/*func NewMetricsHandlers(
+	managerRepository mrepository.ManagerRepository,
+	metricsRepository repository.MetricsRepository,
+	cfg *config.Config) MetricsHandlers {
+	return &metricsHandlers{metricsRepository: metricsRepository, managerRepository: managerRepository, cfg: cfg}
+}*/
+
 func NewMetricsHandlers(
 	managerRepository mrepository.ManagerRepository,
 	metricsRepository repository.MetricsRepository,
 	cfg *config.Config) MetricsHandlers {
 	return &metricsHandlers{metricsRepository: metricsRepository, managerRepository: managerRepository, cfg: cfg}
 }
+
+// Change repository
 func (h *metricsHandlers) setRepository() {
-	h.metricsRepository = h.managerRepository.GetRepositoryActive()
+	//Если менеджер репозитария пустой, то используем репозитарий назначенный через конструктор
+	if h.managerRepository != nil {
+		h.metricsRepository = h.managerRepository.GetRepositoryActive()
+	}
 }
 
 // ####################### POST NOT JSON ######################
@@ -75,30 +87,33 @@ func (h *metricsHandlers) GetMetricsGauge(c *gin.Context) {
 
 	metricName := c.Param("metric")
 
-	resp, err := h.metricsRepository.GetMetricGauge(c, metricName)
+	retryTest := repository.Decorator{RetryCount: 3, IMetric: h.metricsRepository}
+	resp, err := retryTest.GetMetricGauge(c, metricName)
+
+	respString := fmt.Sprintf("%v", resp)
 
 	if err != nil {
-		c.JSON(http.StatusNotFound, err.Error())
+		c.Status(http.StatusNotFound)
 	} else {
-		c.JSON(http.StatusOK, resp)
+		c.Data(http.StatusOK, "text/plain", []byte(respString))
 	}
 }
 
 // endPointsMetricsHandlers GetMetricsCounter
 func (h *metricsHandlers) GetMetricsCounter(c *gin.Context) {
-	h.setRepository()
+	//h.setRepository()
 
 	metricName := c.Param("metric")
 
 	retryTest := repository.Decorator{RetryCount: 3, IMetric: h.metricsRepository}
 	resp, err := retryTest.GetMetricCounter(c, metricName)
 
-	fmt.Println("Decorator get Metrics!")
+	respString := fmt.Sprintf("%d", resp)
 
 	if err != nil {
-		c.JSON(http.StatusNotFound, err.Error())
+		c.Status(http.StatusNotFound)
 	} else {
-		c.JSON(http.StatusOK, resp)
+		c.Data(http.StatusOK, "text/plain", []byte(respString))
 	}
 }
 
@@ -271,10 +286,11 @@ func (h *metricsHandlers) GetMetrics(c *gin.Context) {
 		respCounter, err = retry.GetMetricCounter(c, metrics.ID)
 	default:
 		c.Status(http.StatusBadRequest)
+		return
 	}
 
 	if err != nil {
-		c.JSON(http.StatusNotFound, err.Error())
+		c.Status(http.StatusNotFound)
 		return
 	}
 
@@ -395,7 +411,7 @@ func (h *metricsHandlers) GetAllMetricsHTML(c *gin.Context) {
 	metrics, err := h.metricsRepository.GetAllMetrics(c)
 
 	if err != nil {
-		restutils.GinWriteError(c, http.StatusBadRequest, restutils.ErrEmptyBody.Error())
+		c.Status(http.StatusBadRequest)
 		return
 	}
 

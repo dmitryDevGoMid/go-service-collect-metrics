@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/models"
@@ -14,7 +13,6 @@ type MetricsRepository interface {
 	GetMetricCounter(ctx context.Context, nameMetric string) (int64, error)
 	UpdateMetricGauge(ctx context.Context, nameMetric string, value float64) error
 	UpdateMetricCounter(ctx context.Context, nameMetric string, value int64) error
-	//GetAllMetrics() *models.MemStorage
 	GetAllMetrics(ctx context.Context) (*models.MemStorage, error)
 	PingDatabase(ctx context.Context) error
 	SaveMetricsBatch(ctx context.Context, metrics []unserialize.Metrics) error
@@ -29,24 +27,20 @@ type Decorator struct {
 func (d Decorator) GetMetricCounter(ctx context.Context, nameMetric string) (int64, error) {
 	var err error
 	var val int64
-	fmt.Println("Выполняем повторный запрос через секунду")
 	timeOut := make(map[int]int)
 	timeOut[0] = 1
 	timeOut[1] = 2
 	timeOut[2] = 3
 	for i := 0; i < d.RetryCount; i++ {
-		fmt.Println("Выполняем повторный запрос через секунду", timeOut[i])
 		select {
 		case <-ctx.Done():
 			return 0, ctx.Err()
 		default:
 		}
-
 		val, err = d.IMetric.GetMetricCounter(ctx, nameMetric)
 		if err == nil {
 			return val, nil
 		} else {
-			fmt.Printf("Выполняем повторный запрос через : %d секунду", timeOut[i])
 			time.Sleep(time.Duration(timeOut[i]) * time.Second)
 		}
 	}
@@ -57,24 +51,20 @@ func (d Decorator) GetMetricCounter(ctx context.Context, nameMetric string) (int
 func (d Decorator) GetMetricGauge(ctx context.Context, nameMetric string) (float64, error) {
 	var err error
 	var val float64
-	fmt.Println("Выполняем повторный запрос через секунду")
 	timeOut := make(map[int]int)
 	timeOut[0] = 1
 	timeOut[1] = 2
 	timeOut[2] = 3
 	for i := 0; i < d.RetryCount; i++ {
-		fmt.Println("Выполняем повторный запрос через секунду", timeOut[i])
 		select {
 		case <-ctx.Done():
 			return 0, ctx.Err()
 		default:
 		}
-
 		val, err = d.IMetric.GetMetricGauge(ctx, nameMetric)
 		if err == nil {
 			return val, nil
 		} else {
-			fmt.Printf("Выполняем повторный запрос через : %d секунду", timeOut[i])
 			time.Sleep(time.Duration(timeOut[i]) * time.Second)
 		}
 	}
@@ -95,12 +85,10 @@ func (d Decorator) UpdateMetricGauge(ctx context.Context, nameMetric string, val
 			return ctx.Err()
 		default:
 		}
-
 		err := d.IMetric.UpdateMetricGauge(ctx, nameMetric, value)
 		if err == nil {
 			return nil
 		} else {
-			fmt.Printf("Выполняем UpdateMetricGauge повторный запрос через : %d секунду", timeOut[i])
 			time.Sleep(time.Duration(timeOut[i]) * time.Second)
 		}
 	}
@@ -111,24 +99,20 @@ func (d Decorator) UpdateMetricGauge(ctx context.Context, nameMetric string, val
 // UpdateMetricCounter(ctx context.Context, nameMetric string, value int64) error
 func (d Decorator) UpdateMetricCounter(ctx context.Context, nameMetric string, value int64) error {
 	var err error
-	fmt.Println("Выполняем повторный запрос через секунду")
 	timeOut := make(map[int]int)
 	timeOut[0] = 1
 	timeOut[1] = 2
 	timeOut[2] = 3
 	for i := 0; i < d.RetryCount; i++ {
-		fmt.Println("Выполняем повторный запрос через секунду", timeOut[i])
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
 		}
-
 		err := d.IMetric.UpdateMetricCounter(ctx, nameMetric, value)
 		if err == nil {
 			return nil
 		} else {
-			fmt.Printf("Выполняем повторный запрос через : %d секунду", timeOut[i])
 			time.Sleep(time.Duration(timeOut[i]) * time.Second)
 		}
 	}
@@ -139,24 +123,20 @@ func (d Decorator) UpdateMetricCounter(ctx context.Context, nameMetric string, v
 // GetAllMetrics(ctx context.Context) (*models.MemStorage, error)
 func (d Decorator) GetAllMetrics(ctx context.Context) (*models.MemStorage, error) {
 	var err error
-	fmt.Println("Выполняем повторный запрос через секунду")
 	timeOut := make(map[int]int)
 	timeOut[0] = 1
 	timeOut[1] = 2
 	timeOut[2] = 3
 	for i := 0; i < d.RetryCount; i++ {
-		fmt.Println("Выполняем повторный запрос через секунду", timeOut[i])
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		default:
 		}
-
 		val, err := d.IMetric.GetAllMetrics(ctx)
 		if err == nil {
 			return val, nil
 		} else {
-			fmt.Printf("Выполняем повторный запрос через : %d секунду", timeOut[i])
 			time.Sleep(time.Duration(timeOut[i]) * time.Second)
 		}
 	}

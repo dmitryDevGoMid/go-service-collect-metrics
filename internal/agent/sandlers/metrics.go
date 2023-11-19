@@ -41,41 +41,31 @@ func NewMetricsSendler(repository repository.RepositoryMetrics, client *resty.Cl
 
 // Change metrics
 func (rm *sandlerMetrics) ChangeMetricsByTime() {
-	secondChange := time.Duration(rm.cfg.Metrics.PollInterval)
+	ticker := time.NewTicker(time.Duration(rm.cfg.Metrics.PollInterval) * time.Second)
 	for {
 		select {
 		case <-rm.ctx.Done():
 			fmt.Println("ChangeMetricsByTime stop")
 			return
-		// Run change metrics before sleep 2 seconds
-		default:
-			{
-				time.Sleep(secondChange * time.Second)
-				rm.repository.ChangeMetrics()
-			}
+		case <-ticker.C:
+			rm.repository.ChangeMetrics()
 		}
 	}
 }
 
 // Send metrics
 func (rm *sandlerMetrics) SendMetricsByTime() {
-	secondSend := time.Duration(rm.cfg.Metrics.ReportInterval)
-
+	ticker := time.NewTicker(time.Duration(rm.cfg.Metrics.ReportInterval) * time.Second)
 	for {
 		select {
 		case <-rm.ctx.Done():
 			fmt.Println("SendMetricsByTime stop")
 			return
-		// Run change metrics before sleep 2 seconds
-		default:
-			{
-				// Run change metrics before sleep 2 seconds
-				time.Sleep(secondSend * time.Second)
-				rm.setMetrics()
-				rm.SendMetrics(rm.listMetrics)
-				rm.SendMetrics(rm.listMetricsBatch)
-				rm.repository.SetZeroPollCount()
-			}
+		case <-ticker.C:
+			rm.setMetrics()
+			rm.SendMetrics(rm.listMetrics)
+			rm.SendMetrics(rm.listMetricsBatch)
+			rm.repository.SetZeroPollCount()
 		}
 	}
 }
