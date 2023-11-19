@@ -583,7 +583,7 @@ func TestGetMetricsCounter(t *testing.T) {
 				mocks.EXPECT().GetMetricCounter(ctx, nameMetrics).Return(expectedReturn, validator.ErrMetricsKeyNotFound).AnyTimes()
 			},
 			statusCode:   404,
-			responseBody: fmt.Sprintf(``),
+			responseBody: "",
 		},
 		{
 			name: "get Metrics by name",
@@ -593,7 +593,7 @@ func TestGetMetricsCounter(t *testing.T) {
 				mocks.EXPECT().GetMetricCounter(ctx, nameMetrics).Return(expectedReturn, validator.ErrMetricsKeyNotFound).AnyTimes()
 			},
 			statusCode:   400,
-			responseBody: fmt.Sprintf(``),
+			responseBody: "",
 		},
 	}
 	for _, tt := range tests {
@@ -669,7 +669,7 @@ func TestGetMetricsGauge(t *testing.T) {
 				mocks.EXPECT().GetMetricGauge(ctx, nameMetrics).Return(expectedReturn, validator.ErrMetricsKeyNotFound).AnyTimes()
 			},
 			statusCode:   404,
-			responseBody: fmt.Sprintf(``),
+			responseBody: "",
 		},
 		{
 			name: "get Metrics by name",
@@ -679,7 +679,7 @@ func TestGetMetricsGauge(t *testing.T) {
 				mocks.EXPECT().GetMetricGauge(ctx, nameMetrics).Return(expectedReturn, validator.ErrMetricsKeyNotFound).AnyTimes()
 			},
 			statusCode:   400,
-			responseBody: fmt.Sprintf(``),
+			responseBody: "",
 		},
 	}
 	for _, tt := range tests {
@@ -757,7 +757,7 @@ func TestUpdateJsonPostCounter(t *testing.T) {
 				mocks.EXPECT().UpdateMetricCounter(ctx, nameMetrics, value).Return(validator.ErrNotFoundType).AnyTimes()
 			},
 			statusCode:   400,
-			responseBody: fmt.Sprintf(``),
+			responseBody: "",
 		},
 	}
 	for _, tt := range tests {
@@ -835,7 +835,7 @@ func TestUpdateJsonPostGauge(t *testing.T) {
 				mocks.EXPECT().UpdateMetricGauge(ctx, nameMetrics, value).Return(validator.ErrNotFoundType).AnyTimes()
 			},
 			statusCode:   400,
-			responseBody: fmt.Sprintf(``),
+			responseBody: "",
 		},
 	}
 	for _, tt := range tests {
