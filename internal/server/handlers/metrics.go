@@ -87,7 +87,7 @@ func (h *metricsHandlers) GetMetricsGauge(c *gin.Context) {
 
 	metricName := c.Param("metric")
 
-	retryTest := repository.Decorator{RetryCount: 3, IMetric: h.metricsRepository}
+	retryTest := repository.Decorator{IMetric: h.metricsRepository}
 	resp, err := retryTest.GetMetricGauge(c, metricName)
 
 	respString := fmt.Sprintf("%v", resp)
@@ -105,7 +105,7 @@ func (h *metricsHandlers) GetMetricsCounter(c *gin.Context) {
 
 	metricName := c.Param("metric")
 
-	retryTest := repository.Decorator{RetryCount: 3, IMetric: h.metricsRepository}
+	retryTest := repository.Decorator{IMetric: h.metricsRepository}
 	resp, err := retryTest.GetMetricCounter(c, metricName)
 
 	respString := fmt.Sprintf("%d", resp)
@@ -282,7 +282,7 @@ func (h *metricsHandlers) GetMetrics(c *gin.Context) {
 		respGauge, err = h.metricsRepository.GetMetricGauge(c, metrics.ID)
 	case "counter":
 		//respCounter, err = h.metricsRepository.GetMetricCounter(c, metrics.ID)
-		retry := repository.Decorator{RetryCount: 3, IMetric: h.metricsRepository}
+		retry := repository.Decorator{IMetric: h.metricsRepository}
 		respCounter, err = retry.GetMetricCounter(c, metrics.ID)
 	default:
 		c.Status(http.StatusBadRequest)

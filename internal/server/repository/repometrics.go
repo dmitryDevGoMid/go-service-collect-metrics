@@ -20,18 +20,16 @@ type MetricsRepository interface {
 
 // Декорируем каждый запрос к базе чтобы можно было повторно выполнять в случаи сбоя
 type Decorator struct {
-	RetryCount int
-	IMetric    MetricsRepository
+	IMetric MetricsRepository
 }
+
+// Кол-во попыток с интервалом между ними 1,2,3 секунды
+var countAttempt [4]int = [4]int{0, 1, 2, 3}
 
 func (d Decorator) GetMetricCounter(ctx context.Context, nameMetric string) (int64, error) {
 	var err error
 	var val int64
-	timeOut := make(map[int]int)
-	timeOut[0] = 1
-	timeOut[1] = 2
-	timeOut[2] = 3
-	for i := 0; i < d.RetryCount; i++ {
+	for i := 0; i < len(countAttempt); i++ {
 		select {
 		case <-ctx.Done():
 			return 0, ctx.Err()
@@ -41,7 +39,7 @@ func (d Decorator) GetMetricCounter(ctx context.Context, nameMetric string) (int
 		if err == nil {
 			return val, nil
 		} else {
-			time.Sleep(time.Duration(timeOut[i]) * time.Second)
+			time.Sleep(time.Duration(countAttempt[i]) * time.Second)
 		}
 	}
 
@@ -51,11 +49,7 @@ func (d Decorator) GetMetricCounter(ctx context.Context, nameMetric string) (int
 func (d Decorator) GetMetricGauge(ctx context.Context, nameMetric string) (float64, error) {
 	var err error
 	var val float64
-	timeOut := make(map[int]int)
-	timeOut[0] = 1
-	timeOut[1] = 2
-	timeOut[2] = 3
-	for i := 0; i < d.RetryCount; i++ {
+	for i := 0; i < len(countAttempt); i++ {
 		select {
 		case <-ctx.Done():
 			return 0, ctx.Err()
@@ -65,7 +59,7 @@ func (d Decorator) GetMetricGauge(ctx context.Context, nameMetric string) (float
 		if err == nil {
 			return val, nil
 		} else {
-			time.Sleep(time.Duration(timeOut[i]) * time.Second)
+			time.Sleep(time.Duration(countAttempt[i]) * time.Second)
 		}
 	}
 
@@ -75,11 +69,7 @@ func (d Decorator) GetMetricGauge(ctx context.Context, nameMetric string) (float
 // UpdateMetricGauge(ctx context.Context, nameMetric string, value float64) error
 func (d Decorator) UpdateMetricGauge(ctx context.Context, nameMetric string, value float64) error {
 	var err error
-	timeOut := make(map[int]int)
-	timeOut[0] = 1
-	timeOut[1] = 2
-	timeOut[2] = 3
-	for i := 0; i < d.RetryCount; i++ {
+	for i := 0; i < len(countAttempt); i++ {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -89,7 +79,7 @@ func (d Decorator) UpdateMetricGauge(ctx context.Context, nameMetric string, val
 		if err == nil {
 			return nil
 		} else {
-			time.Sleep(time.Duration(timeOut[i]) * time.Second)
+			time.Sleep(time.Duration(countAttempt[i]) * time.Second)
 		}
 	}
 
@@ -99,11 +89,7 @@ func (d Decorator) UpdateMetricGauge(ctx context.Context, nameMetric string, val
 // UpdateMetricCounter(ctx context.Context, nameMetric string, value int64) error
 func (d Decorator) UpdateMetricCounter(ctx context.Context, nameMetric string, value int64) error {
 	var err error
-	timeOut := make(map[int]int)
-	timeOut[0] = 1
-	timeOut[1] = 2
-	timeOut[2] = 3
-	for i := 0; i < d.RetryCount; i++ {
+	for i := 0; i < len(countAttempt); i++ {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -113,7 +99,7 @@ func (d Decorator) UpdateMetricCounter(ctx context.Context, nameMetric string, v
 		if err == nil {
 			return nil
 		} else {
-			time.Sleep(time.Duration(timeOut[i]) * time.Second)
+			time.Sleep(time.Duration(countAttempt[i]) * time.Second)
 		}
 	}
 
@@ -123,11 +109,7 @@ func (d Decorator) UpdateMetricCounter(ctx context.Context, nameMetric string, v
 // GetAllMetrics(ctx context.Context) (*models.MemStorage, error)
 func (d Decorator) GetAllMetrics(ctx context.Context) (*models.MemStorage, error) {
 	var err error
-	timeOut := make(map[int]int)
-	timeOut[0] = 1
-	timeOut[1] = 2
-	timeOut[2] = 3
-	for i := 0; i < d.RetryCount; i++ {
+	for i := 0; i < len(countAttempt); i++ {
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
@@ -137,7 +119,7 @@ func (d Decorator) GetAllMetrics(ctx context.Context) (*models.MemStorage, error
 		if err == nil {
 			return val, nil
 		} else {
-			time.Sleep(time.Duration(timeOut[i]) * time.Second)
+			time.Sleep(time.Duration(countAttempt[i]) * time.Second)
 		}
 	}
 
