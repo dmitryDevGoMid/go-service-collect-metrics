@@ -38,6 +38,16 @@ func NewGinMetricsRoutesChange(metricsHandlers handlers.MetricsHandlers) []*GinR
 			Method:  "post",
 			Handler: metricsHandlers.ValuePostJSON,
 		},
+		{
+			Path:    "/ping", // Логин
+			Method:  "get",
+			Handler: metricsHandlers.Ping,
+		},
+		{
+			Path:    "/updates", // Логин
+			Method:  "post",
+			Handler: metricsHandlers.Updates,
+		},
 	}
 }
 

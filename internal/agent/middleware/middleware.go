@@ -31,11 +31,12 @@ func StreamToByte(stream io.Reader) []byte {
 func (config *Client) OnBeforeRequest() {
 	// Registering Request Middleware
 	config.client.OnBeforeRequest(func(c *resty.Client, req *resty.Request) error {
-		c.SetHeader("Content-Type", "application/json").SetHeader("Accept", "application/json")
-
+		c.SetHeader("Content-Type", "application/json").
+			SetHeader("Accept", "application/json").
+			SetHeader("Accept-Encoding", "gzip")
 		// Проверяем конфигурацию по умолчанию идет сжатие GZIP
 		//if config.cfg.Gzip.Enable {
-		//c.SetHeader("Content-Encoding", "gzip")
+		//	c.SetHeader("Content-Encoding", "gzip")
 		//}
 
 		// Now you have access to Client and current Request object

@@ -18,15 +18,17 @@ type Metrics struct {
 type UnSerializeInterface interface {
 	SetData(data *[]byte) UnSerializeInterface
 	GetData(unserializeData *Metrics) UnSerializeInterface
+	GetDataBatch(unserializeData *[]Metrics) UnSerializeInterface
 	UnSerialize(body []byte) Metrics
 	Errors() error
 }
 
 type UnSerializer struct {
-	sourceData      *[]byte
-	unserializeData *Metrics
-	cfg             *config.Config
-	err             error
+	sourceData           *[]byte
+	unserializeData      *Metrics
+	unserializeDataBatch *[]Metrics
+	cfg                  *config.Config
+	err                  error
 }
 
 func NewUnSerializer(cfg *config.Config) UnSerializeInterface {
@@ -57,6 +59,31 @@ func (s *UnSerializer) GetData(unserializeData *Metrics) UnSerializeInterface {
 	}
 
 	return s
+}
+
+func (s *UnSerializer) GetDataBatch(unserializeData *[]Metrics) UnSerializeInterface {
+	s.unserializeDataBatch = unserializeData
+
+	switch val := s.cfg.Serializer.SerType; val {
+	case "json":
+		s.JSONBatch()
+	default:
+		s.err = errors.New("error not config Type Serialize")
+	}
+
+	return s
+}
+
+// Преобразуем
+func (s *UnSerializer) JSONBatch() {
+
+	err := json.Unmarshal(*s.sourceData, &s.unserializeDataBatch)
+
+	if err != nil {
+		//panic(err.Error())
+		s.err = err
+	}
+
 }
 
 // Преобразуем

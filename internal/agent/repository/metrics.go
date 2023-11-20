@@ -13,6 +13,7 @@ type RepositoryMetrics interface {
 	ChangeMetrics() error
 	GetGaugeMetricsAll() (*models.AllMetrics, error)
 	GetCounterMetricsAll() (*models.AllMetrics, error)
+	SetZeroPollCount()
 	calcPollCount() int64
 }
 
@@ -89,6 +90,10 @@ func (rp *repositoryMetrics) calcPollCount() int64 {
 	return rp.metrics.Counter.PollCount + 1
 }
 
+func (rp *repositoryMetrics) SetZeroPollCount() {
+	rp.metrics.Counter.PollCount = 0
+}
+
 // Get all GAUGE metrics, use reflection for get Name and Value by Map
 func (rp repositoryMetrics) GetGaugeMetricsAll() (*models.AllMetrics, error) {
 
@@ -127,7 +132,14 @@ func (rp repositoryMetrics) GetGaugeMetricsAll() (*models.AllMetrics, error) {
 	rp.metricsAll.Gauge["TotalAlloc"] = rp.metrics.Gauge.TotalAlloc
 	rp.metricsAll.Gauge["RandomValue"] = rp.metrics.Gauge.RandomValue
 
+	//fmt.Println(rp.metricsAll)
+
+	//var metrics models.AllMetrics
+
+	//metrics := *rp.metricsAll
+
 	return rp.metricsAll, nil
+	//return &metrics, nil
 }
 
 // Get all COUNTER metrics, use reflection for get Name and Value by Map

@@ -18,10 +18,9 @@ import (
 )
 
 type WorkerFile interface {
-	SaveMetricsByTime()
-	SaveAllMetrics()
-	SetFolder()
-	RunWorker()
+	SaveMetricsByTime(ctx context.Context)
+	SaveAllMetrics(ctx context.Context)
+	RunWorker(ctx context.Context)
 }
 
 var mutex sync.Mutex
@@ -38,7 +37,7 @@ func NewWorkFile(metricsRepository repository.MetricsRepository, cfg *config.Con
 	return &workerFile{metricsRepository: metricsRepository, cfg: cfg, ctx: ctx}
 }
 
-func (wf *workerFile) SetFolder() {
+func (wf *workerFile) setFolder() {
 	folderPath := wf.cfg.File.FileStoragePath
 
 	d, err := os.Getwd()
@@ -65,41 +64,38 @@ func (wf *workerFile) SetFolder() {
 	wf.f = f
 }
 
-func (wf *workerFile) RunWorker() {
+func (wf *workerFile) RunWorker(ctx context.Context) {
 	wf.mutex = &mutex
 
 	if wf.cfg.File.Restore {
-		wf.GetAllMetricsByFile()
+		wf.GetAllMetricsByFile(ctx)
 	}
 
 	if wf.cfg.File.StoreInterval > 0 {
-		go wf.SaveMetricsByTime()
+		go wf.SaveMetricsByTime(ctx)
 	}
 }
 
-func (wf *workerFile) SaveMetricsByTime() {
+func (wf *workerFile) SaveMetricsByTime(ctx context.Context) {
 	secondChange := time.Duration(wf.cfg.File.StoreInterval)
 	//i := 0
 	for {
 		select {
 		case <-wf.ctx.Done():
-			fmt.Println("SaveMetricsByTime -> Эй! Энштейн! Спасибо, что остановили мою горутину :)")
+			fmt.Println("SaveMetricsByTime Stop")
 			return
 		// Run change metrics before sleep 2 seconds
 		default:
 			{
 				time.Sleep(secondChange * time.Second)
-				wf.SaveAllMetrics()
-				//wf.GetAllMetricsByFile()
-				//i++
-				//wf.WriteToFile(i)
+				wf.SaveAllMetrics(ctx)
 			}
 		}
 	}
 }
 
 // Пишем метрики в файл
-func (wf *workerFile) SaveAllMetrics() {
+func (wf *workerFile) SaveAllMetrics(ctx context.Context) {
 
 	if wf.cfg.File.FileStoragePath == "" {
 		return
@@ -111,9 +107,9 @@ func (wf *workerFile) SaveAllMetrics() {
 
 	wf.mutex.Lock()
 
-	wf.SetFolder()
+	wf.setFolder()
 
-	allMetrics := wf.metricsRepository.GetAllMetrics()
+	allMetrics, _ := wf.metricsRepository.GetAllMetrics(context.TODO())
 
 	typeMetric := "gauge"
 
@@ -123,10 +119,6 @@ func (wf *workerFile) SaveAllMetrics() {
 		metricsSData := serialize.Metrics{ID: key, MType: typeMetric, Delta: nil, Value: &val}
 		sendData := serializer.SerializerResponse(&metricsSData)
 
-		//fmt.Fprintf(wf.f, "%s\n", *sendData)
-		//curcurrentTime := time.Now()
-		//timeAndDate := fmt.Sprintf("YYYY-MM-DD hh:mm:ss : ", curcurrentTime.Format("2006-01-02 15:04:05"))
-		//if _, err := wf.f.WriteString(fmt.Sprintf("%s<=>%s\n", timeAndDate, *sendData)); err != nil {
 		if _, err := wf.f.WriteString(fmt.Sprintf("%s\n", *sendData)); err != nil {
 			log.Println(err)
 		}
@@ -137,12 +129,7 @@ func (wf *workerFile) SaveAllMetrics() {
 	for key, val := range allMetrics.Counter {
 		metricsSData := serialize.Metrics{ID: key, MType: typeMetric, Delta: &val, Value: nil}
 		sendData := serializer.SerializerResponse(&metricsSData)
-		/*if _, err := f.WriteString(fmt.Sprintf("%s\n", *sendData)); err != nil {
-			log.Println(err)
-		}*/
-		//curcurrentTime := time.Now()
-		//timeAndDate := fmt.Sprintf("YYYY-MM-DD hh:mm:ss : ", curcurrentTime.Format("2006-01-02 15:04:05"))
-		//if _, err := wf.f.WriteString(fmt.Sprintf("%s<=>%s\n", timeAndDate, *sendData)); err != nil {
+
 		if _, err := wf.f.WriteString(fmt.Sprintf("%s\n", *sendData)); err != nil {
 			log.Println(err)
 		}
@@ -151,7 +138,7 @@ func (wf *workerFile) SaveAllMetrics() {
 }
 
 // Поднимаем метрики из файл и пишем в хранилище
-func (wf *workerFile) GetAllMetricsByFile() {
+func (wf *workerFile) GetAllMetricsByFile(ctx context.Context) {
 
 	d, err := os.Getwd()
 
@@ -184,9 +171,9 @@ func (wf *workerFile) GetAllMetricsByFile() {
 
 		switch val := metrics.MType; val {
 		case "gauge":
-			wf.metricsRepository.UpdateMetricGauge(metrics.ID, *metrics.Value)
+			wf.metricsRepository.UpdateMetricGauge(context.TODO(), metrics.ID, *metrics.Value)
 		case "counter":
-			wf.metricsRepository.UpdateMetricCounter(metrics.ID, *metrics.Delta)
+			wf.metricsRepository.UpdateMetricCounter(context.TODO(), metrics.ID, *metrics.Delta)
 		default:
 			fmt.Println("Нет такого типа метрики!")
 		}

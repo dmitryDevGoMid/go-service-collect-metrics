@@ -10,17 +10,23 @@ import (
 	"syscall"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config/db"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/handlers"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/file"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/migration"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/logger"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/routes"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/file"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/mrepository"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/storage"
+
+	repositoryDb "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/db"
+	repositoryM "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/memory"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/routes"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Run() {
+
 	ctx, cancel := context.WithCancel(context.Background())
 
 	cfg, err := config.ParseConfig()
@@ -40,25 +46,38 @@ func Run() {
 		cfg.Logger.Level,
 	)
 
+	//var metricsRepository repository.MetricsRepository
+
+	dbConnection := db.NewConnection(cfg)
+	//err = dbConnection.Ping()
+
 	metricsModel := storage.NewMemStorage()
 
-	//Репозетарий
-	metricsRepository := repository.NewMetricsRepository(metricsModel)
+	metricsRepositoryLocal := repositoryM.NewMetricsRepository(metricsModel)
+
+	metricsRepositoryDB := repositoryDb.NewMetricsRepository(dbConnection.DB())
+
+	managerRepository := mrepository.NewMamangerRepository(
+		metricsRepositoryDB,
+		metricsRepositoryLocal,
+		dbConnection)
+
+	activeRepository := managerRepository.GetRepositoryActive()
 
 	//Обработчики
-	metricsHandlers := handlers.NewMetricsHandlers(metricsRepository, cfg)
+	metricsHandlers := handlers.NewMetricsHandlers(managerRepository, activeRepository, cfg)
 
 	//Роутинг
 	metricsRotes := routes.NewGinMetricsRoutesChange(metricsHandlers)
 
-	//router := gin.Default()
-	router := gin.New()
+	router := gin.Default()
+	//router := gin.New()
 
 	// Работаем с временным файлом для сохранения данных из сервера
-	workFile := file.NewWorkFile(metricsRepository, cfg, ctx)
+	workFile := file.NewWorkFile(metricsRepositoryLocal, cfg, ctx)
 
 	// Запускаем процесс чтения и записи
-	workFile.RunWorker()
+	workFile.RunWorker(ctx)
 
 	router.Use(routes.SaveFileToDisk(cfg, workFile))
 
@@ -77,6 +96,11 @@ func Run() {
 
 	//Инициализируем роуты
 	routes.InstallRouteGin(router, metricsRotes)
+
+	dbMigration := migration.NewMigration(dbConnection.DB())
+
+	//dbMigration.RunDrop(ctx)
+	dbMigration.RunCreate(ctx)
 
 	// Line 27
 	srv := &http.Server{
@@ -99,6 +123,8 @@ func Run() {
 	log.Println("Shutdown Server ...")
 
 	cancel()
+
+	dbConnection.Close()
 
 	// Line 51
 	if err := srv.Shutdown(ctx); err != nil {

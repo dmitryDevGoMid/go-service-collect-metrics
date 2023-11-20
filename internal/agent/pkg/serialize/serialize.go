@@ -60,10 +60,7 @@ func (s *Serializer) JSON() {
 
 	jsonString := string(json)
 
-	//fmt.Println(jsonString)
-
 	*s.serializeData = jsonString
-
 }
 
 func (s *Serializer) Errors() error {

@@ -10,8 +10,8 @@ import (
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/decompress"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/serialize"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/unserialize"
-
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/mrepository"
 
 	"net/http"
 
@@ -33,6 +33,7 @@ type MetricsHandlers interface {
 	GetMetricsCounter(c *gin.Context)
 	UpdateGauge(c *gin.Context)
 	UpdateCounter(c *gin.Context)
+	Updates(c *gin.Context)
 	//######### NOT JSON ###########
 
 	GetMetrics(c *gin.Context)
@@ -45,48 +46,81 @@ type MetricsHandlers interface {
 
 	UpdatePostJSON(c *gin.Context)
 	ValuePostJSON(c *gin.Context)
+
+	Ping(c *gin.Context)
 }
 
 // Структура реализующая интерфейс
 type metricsHandlers struct {
+	managerRepository mrepository.ManagerRepository
 	metricsRepository repository.MetricsRepository
 	cfg               *config.Config
 }
 
 // Конструктор
-func NewMetricsHandlers(metricsRepository repository.MetricsRepository, cfg *config.Config) MetricsHandlers {
-	return &metricsHandlers{metricsRepository: metricsRepository, cfg: cfg}
+/*func NewMetricsHandlers(
+	managerRepository mrepository.ManagerRepository,
+	metricsRepository repository.MetricsRepository,
+	cfg *config.Config) MetricsHandlers {
+	return &metricsHandlers{metricsRepository: metricsRepository, managerRepository: managerRepository, cfg: cfg}
+}*/
+
+func NewMetricsHandlers(
+	managerRepository mrepository.ManagerRepository,
+	metricsRepository repository.MetricsRepository,
+	cfg *config.Config) MetricsHandlers {
+	return &metricsHandlers{metricsRepository: metricsRepository, managerRepository: managerRepository, cfg: cfg}
+}
+
+// Change repository
+func (h *metricsHandlers) setRepository() {
+	//Если менеджер репозитария пустой, то используем репозитарий назначенный через конструктор
+	if h.managerRepository != nil {
+		h.metricsRepository = h.managerRepository.GetRepositoryActive()
+	}
 }
 
 // ####################### POST NOT JSON ######################
 // endPointsMetricsHandlers GetMetricsGauge
 func (h *metricsHandlers) GetMetricsGauge(c *gin.Context) {
+	h.setRepository()
+
 	metricName := c.Param("metric")
 
-	resp, err := h.metricsRepository.GetMetricGauge(metricName)
+	retryTest := repository.Decorator{IMetric: h.metricsRepository}
+	resp, err := retryTest.GetMetricGauge(c, metricName)
+
+	respString := fmt.Sprintf("%v", resp)
 
 	if err != nil {
-		c.JSON(http.StatusNotFound, err.Error())
+		c.Status(http.StatusNotFound)
 	} else {
-		c.JSON(http.StatusOK, resp)
+		c.Data(http.StatusOK, "text/plain", []byte(respString))
 	}
 }
 
 // endPointsMetricsHandlers GetMetricsCounter
 func (h *metricsHandlers) GetMetricsCounter(c *gin.Context) {
+	//h.setRepository()
+
 	metricName := c.Param("metric")
 
-	resp, err := h.metricsRepository.GetMetricCounter(metricName)
+	retryTest := repository.Decorator{IMetric: h.metricsRepository}
+	resp, err := retryTest.GetMetricCounter(c, metricName)
+
+	respString := fmt.Sprintf("%d", resp)
 
 	if err != nil {
-		c.JSON(http.StatusNotFound, err.Error())
+		c.Status(http.StatusNotFound)
 	} else {
-		c.JSON(http.StatusOK, resp)
+		c.Data(http.StatusOK, "text/plain", []byte(respString))
 	}
 }
 
 // End Points MetricsHandlers UpdateGauge
 func (h *metricsHandlers) UpdateGauge(c *gin.Context) {
+	h.setRepository()
+
 	metricName := c.Param("metric")
 
 	metricValue, err := strconv.ParseFloat(c.Param("value"), 64)
@@ -95,14 +129,14 @@ func (h *metricsHandlers) UpdateGauge(c *gin.Context) {
 		return
 	}
 
-	h.metricsRepository.UpdateMetricGauge(metricName, metricValue)
+	h.metricsRepository.UpdateMetricGauge(c, metricName, metricValue)
 
 	c.Status(http.StatusOK)
 }
 
 // End Points MetricsHandlers UpdateCounter
 func (h *metricsHandlers) UpdateCounter(c *gin.Context) {
-
+	h.setRepository()
 	metric := c.Param("metric")
 	value := c.Param("value")
 
@@ -116,7 +150,7 @@ func (h *metricsHandlers) UpdateCounter(c *gin.Context) {
 
 	fmt.Println("Типизация:", metricValue)
 
-	h.metricsRepository.UpdateMetricCounter(metric, metricValue)
+	h.metricsRepository.UpdateMetricCounter(c, metric, metricValue)
 
 	c.Status(http.StatusOK)
 }
@@ -149,6 +183,34 @@ func checkGzip(c *gin.Context) ([]byte, error) {
 }
 
 // Point Serialize Data by Request
+func (h *metricsHandlers) unSerializerRequestBatch(c *gin.Context) []unserialize.Metrics {
+	if c.Request.Body == nil {
+		restutils.GinWriteError(c, http.StatusBadRequest, restutils.ErrEmptyBody.Error())
+		return []unserialize.Metrics{}
+	}
+
+	body, err := checkGzip(c)
+	//body, err := io.ReadAll(c.Request.Body)
+
+	if err != nil {
+		restutils.GinWriteError(c, http.StatusBadRequest, err.Error())
+		return []unserialize.Metrics{}
+	}
+
+	var metrics []unserialize.Metrics
+
+	unserializeData := unserialize.NewUnSerializer(h.cfg)
+
+	unserializeError := unserializeData.SetData(&body).GetDataBatch(&metrics)
+
+	if unserializeError.Errors() != nil {
+		panic(unserializeError.Errors().Error())
+	}
+
+	return metrics
+}
+
+// Point Serialize Data by Request
 func (h *metricsHandlers) unSerializerRequest(c *gin.Context) unserialize.Metrics {
 	if c.Request.Body == nil {
 		restutils.GinWriteError(c, http.StatusBadRequest, restutils.ErrEmptyBody.Error())
@@ -170,7 +232,8 @@ func (h *metricsHandlers) unSerializerRequest(c *gin.Context) unserialize.Metric
 	unserializeError := unserializeData.SetData(&body).GetData(&metrics)
 
 	if unserializeError.Errors() != nil {
-		panic(unserializeError.Errors().Error())
+		//panic(unserializeError.Errors().Error())
+		fmt.Println(unserializeError.Errors().Error())
 	}
 
 	return metrics
@@ -195,12 +258,14 @@ func (h *metricsHandlers) serializerResponse(metricsSData *serialize.Metrics) st
 
 // endPointsMetricsHandlers GetMetrics
 func (h *metricsHandlers) GetMetrics(c *gin.Context) {
+	h.setRepository()
+
 	metrics := h.unSerializerRequest(c)
 
 	// В конце закрываем запрос
 	//defer c.Request.Body.Close()
 
-	fmt.Println(metrics)
+	//fmt.Println(metrics)
 
 	if metrics == (unserialize.Metrics{}) {
 		return
@@ -214,15 +279,18 @@ func (h *metricsHandlers) GetMetrics(c *gin.Context) {
 
 	switch val := typeMetric; val {
 	case "gauge":
-		respGauge, err = h.metricsRepository.GetMetricGauge(metrics.ID)
+		respGauge, err = h.metricsRepository.GetMetricGauge(c, metrics.ID)
 	case "counter":
-		respCounter, err = h.metricsRepository.GetMetricCounter(metrics.ID)
+		//respCounter, err = h.metricsRepository.GetMetricCounter(c, metrics.ID)
+		retry := repository.Decorator{IMetric: h.metricsRepository}
+		respCounter, err = retry.GetMetricCounter(c, metrics.ID)
 	default:
 		c.Status(http.StatusBadRequest)
+		return
 	}
 
 	if err != nil {
-		c.JSON(http.StatusNotFound, err.Error())
+		c.Status(http.StatusNotFound)
 		return
 	}
 
@@ -246,6 +314,8 @@ func (h *metricsHandlers) GetMetrics(c *gin.Context) {
 
 // endPointsMetricsHandlers UpdateMetrics
 func (h *metricsHandlers) UpdateMetrics(c *gin.Context) {
+	h.setRepository()
+
 	metrics := h.unSerializerRequest(c)
 
 	// В конце закрываем запрос
@@ -263,11 +333,11 @@ func (h *metricsHandlers) UpdateMetrics(c *gin.Context) {
 
 	switch val := typeMetric; val {
 	case "gauge":
-		h.metricsRepository.UpdateMetricGauge(metrics.ID, *metrics.Value)
-		respGauge, err = h.metricsRepository.GetMetricGauge(metrics.ID)
+		h.metricsRepository.UpdateMetricGauge(c, metrics.ID, *metrics.Value)
+		respGauge, err = h.metricsRepository.GetMetricGauge(c, metrics.ID)
 	case "counter":
-		h.metricsRepository.UpdateMetricCounter(metrics.ID, *metrics.Delta)
-		respCounter, err = h.metricsRepository.GetMetricCounter(metrics.ID)
+		h.metricsRepository.UpdateMetricCounter(c, metrics.ID, *metrics.Delta)
+		respCounter, err = h.metricsRepository.GetMetricCounter(c, metrics.ID)
 	default:
 		c.Status(http.StatusBadRequest)
 	}
@@ -320,7 +390,7 @@ func (h *metricsHandlers) ValuePostJSON(c *gin.Context) {
 // Point Value
 func (h *metricsHandlers) Value(c *gin.Context) {
 
-	fmt.Println("VALUE Content-Type NOT JSON")
+	//fmt.Println("VALUE Content-Type NOT JSON")
 	typeMetric := c.Param("type")
 
 	switch val := typeMetric; val {
@@ -335,8 +405,16 @@ func (h *metricsHandlers) Value(c *gin.Context) {
 
 // End Points MetricsHandlers GetAllMetricsHtml
 func (h *metricsHandlers) GetAllMetricsHTML(c *gin.Context) {
+	h.setRepository()
+
 	html := ""
-	metrics := h.metricsRepository.GetAllMetrics()
+	metrics, err := h.metricsRepository.GetAllMetrics(c)
+
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
 	for key, val := range metrics.Counter {
 		html += fmt.Sprintf("<div>%s => %d </div>", key, val)
 	}
@@ -356,7 +434,10 @@ func (h *metricsHandlers) GetAllMetricsHTML(c *gin.Context) {
 
 	if compress_ {
 		c.Writer.Header().Set("Content-Encoding", "gzip")
-		dataCompress, _ := compress.CompressGzip([]byte(html))
+		dataCompress, err := compress.CompressGzip([]byte(html))
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
 		c.Data(http.StatusOK, "", dataCompress)
 		return
 	}
@@ -377,9 +458,40 @@ func gZipAccept(data []byte, c *gin.Context) []byte {
 
 	if compress_ {
 		c.Writer.Header().Set("Content-Encoding", "gzip")
-		dataCompress, _ := compress.CompressGzip(data)
+		dataCompress, err := compress.CompressGzip(data)
+		if err != nil {
+			fmt.Println("Error:", err)
+		}
 		return dataCompress
 	}
 
 	return data
+}
+
+// Ping Data Base Postgres Server
+func (h *metricsHandlers) Ping(c *gin.Context) {
+	h.setRepository()
+
+	err := h.metricsRepository.PingDatabase(c)
+
+	if err != nil {
+		c.Data(500, "Ping failed", []byte("Failed to ping database"))
+		return
+	}
+
+	c.Data(200, "Ping successful", []byte("Success to ping database"))
+}
+
+func (h *metricsHandlers) Updates(c *gin.Context) {
+	metrics := h.unSerializerRequestBatch(c)
+
+	err := h.metricsRepository.SaveMetricsBatch(c, metrics)
+
+	if err != nil {
+		fmt.Println("Error Save Metrics: ", err)
+		restutils.GinWriteError(c, http.StatusBadRequest, restutils.ErrEmptyBody.Error())
+		return
+	}
+
+	c.Data(200, "Updates successful", []byte("Success get to Updates"))
 }

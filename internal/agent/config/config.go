@@ -20,8 +20,9 @@ type Logger struct {
 }
 
 type Metrics struct {
-	ReportInterval int `env:"REPORT_INTERVAL"`
-	PollInterval   int `env:"POLL_INTERVAL"`
+	ReportInterval  int  `env:"REPORT_INTERVAL"`
+	PollInterval    int  `env:"POLL_INTERVAL"`
+	SendMeticsBatch bool `env:"SEND_METRICS_BATCH"`
 }
 
 type Server struct {
@@ -37,19 +38,21 @@ type Config struct {
 }
 
 var (
-	address        string
-	reportInterval int
-	pollInterval   int
-	loggerEncoding string
-	loggerLevel    string
-	serializeType  string
-	enableGzip     bool
+	address         string
+	reportInterval  int
+	pollInterval    int
+	loggerEncoding  string
+	loggerLevel     string
+	serializeType   string
+	enableGzip      bool
+	sendMeticsBatch bool
 )
 
 func init() {
 	flag.StringVar(&address, "a", "localhost:8080", "location http server")
 	flag.IntVar(&reportInterval, "r", 10, "interval for run metrics")
 	flag.IntVar(&pollInterval, "p", 2, "interval for run metrics")
+	flag.BoolVar(&sendMeticsBatch, "mb", true, "set gzip for agent and server")
 
 	//	Logger
 	flag.StringVar(&loggerEncoding, "logen", "full", "set logger config encoding")
@@ -70,6 +73,7 @@ func ParseConfig() (*Config, error) {
 
 	config.Metrics.PollInterval = pollInterval
 	config.Metrics.ReportInterval = reportInterval
+	config.Metrics.SendMeticsBatch = sendMeticsBatch
 
 	config.Server.Address = address
 
