@@ -6,6 +6,10 @@ import (
 	"github.com/caarlos0/env/v6"
 )
 
+type HashSHA256 struct {
+	Key string `env:"KEY,omitempty"`
+}
+
 type DataBase struct {
 	DatabaseURL string `env:"DATABASE_DSN"`
 }
@@ -46,6 +50,7 @@ type Config struct {
 	Gzip       Gzip
 	File       File
 	DataBase   DataBase
+	HashSHA256 HashSHA256
 }
 
 var (
@@ -62,6 +67,8 @@ var (
 	fileStoragePath   string
 
 	databaseURL string
+
+	keySHA256 string
 )
 
 func init() {
@@ -92,6 +99,9 @@ func init() {
 		      - POSTGRES_DB=metrics
 	*/
 	flag.StringVar(&databaseURL, "d", "postgres://manager:M45fgMetr@localhost:5432/metrics?sslmode=disable", "database url for conection postgress")
+
+	//sha 256 key
+	flag.StringVar(&keySHA256, "k", "", "set key for calc SHA256")
 }
 
 // Разбираем конфигурацию по структурам
@@ -118,6 +128,8 @@ func ParseConfig() (*Config, error) {
 
 	config.DataBase.DatabaseURL = databaseURL
 
+	config.HashSHA256.Key = keySHA256
+
 	//Init by environment variables
 	env.Parse(&config.Metrics)
 	env.Parse(&config.Server)
@@ -126,6 +138,7 @@ func ParseConfig() (*Config, error) {
 	env.Parse(&config.Gzip)
 	env.Parse(&config.File)
 	env.Parse(&config.DataBase)
+	env.Parse(&config.HashSHA256)
 
 	return &config, nil
 }

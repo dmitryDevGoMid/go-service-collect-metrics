@@ -11,6 +11,7 @@ import (
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/config"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/middleware"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/hashSha256"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/repository"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/sandlers"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/storage"
@@ -32,7 +33,9 @@ func MonitorMetricsRun() {
 
 	client := resty.New()
 
-	clientMiddleware := middleware.NewClientMiddleware(client, cfg)
+	sha256 := hashSha256.NewSha256(cfg)
+
+	clientMiddleware := middleware.NewClientMiddleware(client, cfg, sha256)
 
 	clientMiddleware.OnBeforeRequest()
 	clientMiddleware.OnAfterResponse()

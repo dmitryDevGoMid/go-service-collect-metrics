@@ -6,6 +6,10 @@ import (
 	"github.com/caarlos0/env/v6"
 )
 
+type SHA256 struct {
+	Key string `env:"KEY,omitempty"`
+}
+
 type Gzip struct {
 	Enable bool `json:"GZIP,omitempty"`
 }
@@ -35,6 +39,7 @@ type Config struct {
 	Logger     Logger
 	Serializer Serializer
 	Gzip       Gzip
+	SHA256     SHA256
 }
 
 var (
@@ -46,11 +51,12 @@ var (
 	serializeType   string
 	enableGzip      bool
 	sendMeticsBatch bool
+	keySHA256       string
 )
 
 func init() {
 	flag.StringVar(&address, "a", "localhost:8080", "location http server")
-	flag.IntVar(&reportInterval, "r", 10, "interval for run metrics")
+	flag.IntVar(&reportInterval, "r", 4, "interval for run metrics")
 	flag.IntVar(&pollInterval, "p", 2, "interval for run metrics")
 	flag.BoolVar(&sendMeticsBatch, "mb", true, "set gzip for agent and server")
 
@@ -63,6 +69,9 @@ func init() {
 
 	//Serialize Type
 	flag.BoolVar(&enableGzip, "gzip", false, "set gzip for agent and server")
+
+	//sha 256 key
+	flag.StringVar(&keySHA256, "k", "", "set gzip for agent and server")
 }
 
 // Разбираем конфигурацию по структурам
@@ -84,12 +93,15 @@ func ParseConfig() (*Config, error) {
 
 	config.Gzip.Enable = enableGzip
 
+	config.SHA256.Key = keySHA256
+
 	//Init by environment variables
 	env.Parse(&config.Metrics)
 	env.Parse(&config.Server)
 	env.Parse(&config.Logger)
 	env.Parse(&config.Serializer)
 	env.Parse(&config.Gzip)
+	env.Parse(&config.SHA256)
 
 	return &config, nil
 }
