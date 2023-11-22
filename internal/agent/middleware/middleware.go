@@ -6,7 +6,7 @@ import (
 	"io"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/config"
-	hashsha256 "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/hashsha256"
+	hashsha256 "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/crypto_sha_256"
 	"github.com/go-resty/resty/v2"
 )
 

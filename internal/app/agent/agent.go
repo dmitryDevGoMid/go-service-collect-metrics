@@ -11,7 +11,7 @@ import (
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/config"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/middleware"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/hashsha256"
+	hashsha256 "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/crypto_sha_256"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/repository"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/sandlers"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/storage"
