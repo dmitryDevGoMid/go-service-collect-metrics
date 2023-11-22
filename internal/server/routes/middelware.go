@@ -10,7 +10,7 @@ import (
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/compress"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config"
-	hashsha256 "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/crypto_sha_256"
+	hashsha256 "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/cryptoSha256"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/decompress"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/logger"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/file"

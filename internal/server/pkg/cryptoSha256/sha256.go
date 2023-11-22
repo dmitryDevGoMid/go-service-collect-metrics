@@ -1,4 +1,4 @@
-package crypto_sha_256
+package cryptoSha256
 
 import (
 	"crypto/sha256"

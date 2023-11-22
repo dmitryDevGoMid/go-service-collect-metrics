@@ -13,7 +13,7 @@ import (
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config/db"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/handlers"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/migration"
-	hashsha256 "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/crypto_sha_256"
+	hashsha256 "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/cryptoSha256"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/logger"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/file"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/mrepository"
