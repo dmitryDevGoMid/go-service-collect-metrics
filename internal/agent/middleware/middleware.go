@@ -6,7 +6,7 @@ import (
 	"io"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/config"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/hashSha256"
+	hashsha256 "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/hashsha256"
 	"github.com/go-resty/resty/v2"
 )
 
@@ -18,10 +18,10 @@ type CleintInterface interface {
 type Client struct {
 	client     *resty.Client
 	cfg        *config.Config
-	hashSha256 hashSha256.HashSha256
+	hashSha256 hashsha256.HashSha256
 }
 
-func NewClientMiddleware(client *resty.Client, cfg *config.Config, sha256 hashSha256.HashSha256) CleintInterface {
+func NewClientMiddleware(client *resty.Client, cfg *config.Config, sha256 hashsha256.HashSha256) CleintInterface {
 	return &Client{client: client, cfg: cfg, hashSha256: sha256}
 }
 
