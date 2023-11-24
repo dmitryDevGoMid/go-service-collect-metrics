@@ -13,7 +13,7 @@ import (
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config/db"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/handlers"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/migration"
-	hashsha256 "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/cryptoSha256"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/cryptohashsha"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/logger"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/file"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/mrepository"
@@ -93,7 +93,7 @@ func Run() {
 
 	router.Use(routes.DecompressMiddleware())
 
-	hash256 := hashsha256.NewSha256(cfg)
+	hash256 := cryptohashsha.NewSha256(cfg)
 
 	router.Use(routes.CheckHashSHA256Data(cfg, hash256))
 
@@ -104,7 +104,7 @@ func Run() {
 
 	dbMigration := migration.NewMigration(dbConnection.DB())
 
-	//dbMigration.RunDrop(ctx)
+	dbMigration.RunDrop(ctx)
 	dbMigration.RunCreate(ctx)
 
 	// Line 27

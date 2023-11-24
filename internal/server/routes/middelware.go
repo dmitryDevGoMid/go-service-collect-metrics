@@ -10,7 +10,7 @@ import (
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/compress"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config"
-	hashsha256 "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/cryptoSha256"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/cryptohashsha"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/decompress"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/logger"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/file"
@@ -171,7 +171,7 @@ func LoggerMiddleware(appLogger *logger.APILogger) gin.HandlerFunc {
 }
 
 // Пишем синхронно с отправкой данные на диск в случае update данных
-func CheckHashSHA256Data(cfg *config.Config, hash hashsha256.HashSha256) gin.HandlerFunc {
+func CheckHashSHA256Data(cfg *config.Config, hash cryptohashsha.HashSha256) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//fmt.Println("===CheckHashSHA256Data===", cfg.HashSHA256.Key)
 

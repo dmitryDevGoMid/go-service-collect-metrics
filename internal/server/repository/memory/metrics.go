@@ -2,6 +2,7 @@ package memory
 
 import (
 	"context"
+	"sync"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/models"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/unserialize"
@@ -13,11 +14,13 @@ type Decoretor repository.Decorator
 
 type MetricsRepository struct {
 	metrics *models.MemStorage
+	mutex   *sync.Mutex
 }
 
 // Contruct
 func NewMetricsRepository(metrics *models.MemStorage) repository.MetricsRepository {
-	return &MetricsRepository{metrics: metrics}
+	var mutex sync.Mutex
+	return &MetricsRepository{metrics: metrics, mutex: &mutex}
 }
 
 // Get matrics Gauge
@@ -54,6 +57,9 @@ func (mr *MetricsRepository) GetMetricCounter(ctx context.Context, nameMetric st
 
 // Upodate metrics Gauge
 func (mr *MetricsRepository) UpdateMetricGauge(ctx context.Context, nameMetric string, value float64) error {
+	mr.mutex.Lock()
+
+	defer mr.mutex.Unlock()
 
 	if nameMetric == "" {
 		return validator.ErrEmptyNameMetrics
@@ -65,6 +71,9 @@ func (mr *MetricsRepository) UpdateMetricGauge(ctx context.Context, nameMetric s
 
 // Upodate metrics Counter
 func (mr *MetricsRepository) UpdateMetricCounter(ctx context.Context, nameMetric string, value int64) error {
+	mr.mutex.Lock()
+
+	defer mr.mutex.Unlock()
 
 	if nameMetric == "" {
 		return validator.ErrEmptyNameMetrics

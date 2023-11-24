@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"sync"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/models"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/unserialize"
@@ -20,13 +21,16 @@ type MetricsRepository interface {
 }
 
 type metricsRepository struct {
-	db *sql.DB
+	db    *sql.DB
+	mutex *sync.Mutex
 }
 
 // Contruct
 func NewMetricsRepository(db *sql.DB) MetricsRepository {
+	var mutex sync.Mutex
 	return &metricsRepository{
-		db: db,
+		db:    db,
+		mutex: &mutex,
 	}
 }
 
@@ -44,6 +48,11 @@ func (connect *metricsRepository) GetMetricGauge(ctx context.Context, nameMetric
 }
 
 func (connect *metricsRepository) UpdateMetricGauge(ctx context.Context, nameMetric string, value float64) error {
+
+	connect.mutex.Lock()
+
+	defer connect.mutex.Unlock()
+
 	fmt.Println("DB UpdateMetricGauge")
 
 	metricsTypeID, err := connect.GetMetricsTypeIDByName(ctx, "gauge")
@@ -88,6 +97,11 @@ func (connect *metricsRepository) GetMetricCounter(ctx context.Context, nameMetr
 }
 
 func (connect *metricsRepository) UpdateMetricCounter(ctx context.Context, nameMetric string, value int64) error {
+
+	connect.mutex.Lock()
+
+	defer connect.mutex.Unlock()
+
 	fmt.Println("DB UpdateMetricCounter")
 
 	var deltaMetricCalc int64

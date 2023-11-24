@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"sync"
 	"syscall"
 	"time"
 
@@ -17,10 +18,17 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
+type MetricsList struct {
+	MetricsList  []string
+	MetricsBatch []string
+}
+
 type SandlerMetrics interface {
+	ChangeMetrics()
 	ChangeMetricsByTime()
 	SendMetricsByTime()
-	SendMetrics([]string)
+	SendMetrics(listMetrics []string) (*resty.Response, error)
+	GetMetricsListAndBatch() MetricsList
 }
 
 type sandlerMetrics struct {
@@ -31,12 +39,14 @@ type sandlerMetrics struct {
 	listMetrics      []string
 	listMetricsBatch []string
 	urlMetrics       string
+	mutex            *sync.Mutex
 	//sendBatch        bool
 }
 
 func NewMetricsSendler(repository repository.RepositoryMetrics, client *resty.Client,
 	ctx context.Context, cfg *config.Config) SandlerMetrics {
-	return &sandlerMetrics{repository: repository, client: client, ctx: ctx, cfg: cfg}
+	var mutex sync.Mutex
+	return &sandlerMetrics{repository: repository, client: client, ctx: ctx, cfg: cfg, mutex: &mutex}
 }
 
 // Change metrics
@@ -123,6 +133,21 @@ func (rm *sandlerMetrics) GetSliceStringMetrics() []string {
 
 }*/
 
+// Возвращаем список метрик
+func (rm *sandlerMetrics) GetMetricsListAndBatch() MetricsList {
+	rm.setMetrics()
+	list := MetricsList{
+		MetricsList:  rm.listMetrics,
+		MetricsBatch: rm.listMetricsBatch,
+	}
+	return list
+}
+
+// Обновляем список метрик это тоже будет задача для воркпула
+func (rm *sandlerMetrics) ChangeMetrics() {
+	rm.repository.ChangeMetrics()
+}
+
 func (rm *sandlerMetrics) setMetrics() {
 	cfg := rm.cfg
 
@@ -143,25 +168,31 @@ func (rm *sandlerMetrics) setMetrics() {
 	//rm.listMetrics = listMetrics
 }
 
-func (rm *sandlerMetrics) SendMetrics(listMetrics []string) {
+func (rm *sandlerMetrics) SendMetrics(listMetrics []string) (*resty.Response, error) {
+	rm.mutex.Lock()
+
 	cfg := rm.cfg
 
-	fmt.Printf("Запустили отправку метрик: %s\n", rm.urlMetrics)
+	//fmt.Printf("Запустили отправку метрик: %s\n", rm.urlMetrics)
 
-	defer fmt.Printf("Завершили отправку метрик: %s\n", rm.urlMetrics)
+	defer func() {
+		//fmt.Printf("Завершили отправку метрик: %s\n", rm.urlMetrics)
+		rm.mutex.Unlock()
+	}()
 
 	client := rm.client
 
 	var err error
+	var response *resty.Response
 
 	for _, sendStringMetrics := range listMetrics {
 		if cfg.Gzip.Enable {
 			sendDataCompress, _ := compress.CompressGzip([]byte(sendStringMetrics))
-			_, err = client.R().
+			response, err = client.R().
 				SetBody(sendDataCompress).
 				Post(rm.urlMetrics)
 		} else {
-			_, err = client.R().
+			response, err = client.R().
 				SetBody(sendStringMetrics).
 				Post(rm.urlMetrics)
 		}
@@ -177,6 +208,8 @@ func (rm *sandlerMetrics) SendMetrics(listMetrics []string) {
 			}
 		}
 	}
+
+	return response, err
 
 }
 
