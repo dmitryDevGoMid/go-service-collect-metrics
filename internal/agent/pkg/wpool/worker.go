@@ -3,7 +3,6 @@ package wpool
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 )
 
@@ -31,20 +30,17 @@ func New(workCount int) WorkerStack {
 
 // Запускаем стек работников для выполнения отправки данных
 func (ws *WorkerStack) WorkerRun(ctx context.Context) {
-	var wg sync.WaitGroup
 
 	for {
 		select {
 		case _, ok := <-ws.RunJobs:
 			if ok {
-				wg.Add(1)
 				for i := 0; i < ws.workersCount; i++ {
-					go ws.workers(ctx, i, &wg, ws.jobs, ws.results)
+					go ws.workers(ctx, i, ws.jobs, ws.results)
 				}
 			}
 		case <-ctx.Done():
 			fmt.Println("===============Worker STOP All===============")
-			wg.Wait()
 			//Закрываем каналы там где отправлял
 			close(ws.Done)
 			close(ws.results)
@@ -69,7 +65,7 @@ func (ws *WorkerStack) GenerateJob(ctx context.Context) {
 				}
 			}
 		case <-ctx.Done():
-			fmt.Println("Stop GenerateJob")
+			fmt.Println("GenerateJob -> Stop")
 			//Закрываем каналы там где отправляли
 			close(ws.ListObjJobs)
 			close(ws.jobs)
@@ -86,11 +82,7 @@ func (ws *WorkerStack) ListResults() chan Result {
 }
 
 // func workersAnd(wg *sync.WaitGroup, id int, ctx context.Context, jobs chan Job, results chan Result) {
-func (ws *WorkerStack) workers(ctx context.Context, id int, wg *sync.WaitGroup, jobs chan Job, results chan Result) {
-	// Сообщаем, что завершили работу
-	/*defer func() {
-		wg.Done()
-	}()*/
+func (ws *WorkerStack) workers(ctx context.Context, id int, jobs chan Job, results chan Result) {
 	// Выполняем работу слушаем каналы и отправляем результат (ответ сервера)
 	for {
 		select {
@@ -100,11 +92,7 @@ func (ws *WorkerStack) workers(ctx context.Context, id int, wg *sync.WaitGroup, 
 			}
 		case <-ctx.Done():
 			//выводим сообщение о том что завершили работу с выходом из воркера
-			fmt.Printf("cancelled worker. Error detail: %v => №%d\n", ctx.Err(), id)
-			results <- Result{
-				Err: ctx.Err(),
-			}
-			wg.Done()
+			fmt.Println("Close Worker => ", id)
 			return
 		default:
 			time.Sleep(time.Duration(1) * time.Millisecond)

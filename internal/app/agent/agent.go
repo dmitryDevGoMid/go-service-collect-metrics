@@ -55,6 +55,7 @@ func MonitorMetricsRun() {
 
 	go runSend.ChangeMetricsByTime(ctx)
 	go runSend.SendMetricsByTime(ctx)
+	go runSend.ChangeMetricsByTimeGopsUtil(ctx)
 
 	//go sandlerMetrics.ChangeMetricsByTime()
 	//go sandlerMetrics.SendMetricsByTime()
@@ -68,7 +69,7 @@ func MonitorMetricsRun() {
 	cancel()
 
 	//Даем время для завершения всех горутин которые были запущены
-	time.Sleep(time.Second * 1)
+	time.Sleep(time.Second * 3)
 
 	log.Println("Shutdown Agent ...")
 }

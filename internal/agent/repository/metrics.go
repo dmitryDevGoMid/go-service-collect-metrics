@@ -7,6 +7,8 @@ import (
 	"sync"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/models"
+	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/mem"
 )
 
 type RepositoryMetrics interface {
@@ -15,6 +17,7 @@ type RepositoryMetrics interface {
 	GetCounterMetricsAll() (*models.AllMetrics, error)
 	SetZeroPollCount()
 	calcPollCount() int64
+	ChangeMetricsGopsUtil() error
 }
 
 type repositoryMetrics struct {
@@ -27,6 +30,36 @@ type repositoryMetrics struct {
 // Сonstructor пробрасываем две модели
 func NewRepositoryMetrics(metrics *models.MemStorage, metricsAll *models.AllMetrics, mutex *sync.Mutex) RepositoryMetrics {
 	return &repositoryMetrics{metrics: metrics, metricsAll: metricsAll, mutex: mutex}
+}
+
+func (rp *repositoryMetrics) ChangeMetricsGopsUtil() error {
+	fmt.Println("Запустили обновление метрик GopsUtil!")
+
+	defer func() {
+		rp.mutex.Unlock()
+		fmt.Println("Завершили обновление метрик GopsUtil!")
+	}()
+
+	rp.mutex.Lock()
+
+	v, _ := mem.SwapMemory()
+
+	percentage, err := cpu.Percent(0, true)
+
+	if err != nil {
+		fmt.Println("err get percentage cpu gauge", err)
+		return err
+	}
+
+	for idx, cpupercent := range percentage {
+		if idx == 1 {
+			rp.metrics.Gauge.CPUtilization1 = float64(cpupercent)
+		}
+	}
+	rp.metrics.Gauge.TotalMemory = float64(v.Total / (1024 * 1024))
+	rp.metrics.Gauge.FreeMemory = float64(v.Free / (1024 * 1024))
+
+	return nil
 }
 
 // Change all metrics
@@ -131,6 +164,9 @@ func (rp repositoryMetrics) GetGaugeMetricsAll() (*models.AllMetrics, error) {
 	rp.metricsAll.Gauge["Sys"] = rp.metrics.Gauge.Sys
 	rp.metricsAll.Gauge["TotalAlloc"] = rp.metrics.Gauge.TotalAlloc
 	rp.metricsAll.Gauge["RandomValue"] = rp.metrics.Gauge.RandomValue
+	rp.metricsAll.Gauge["TotlaMemory"] = rp.metrics.Gauge.TotalMemory
+	rp.metricsAll.Gauge["FreeMemory"] = rp.metrics.Gauge.FreeMemory
+	rp.metricsAll.Gauge["CPUtilization1"] = rp.metrics.Gauge.CPUtilization1
 
 	//fmt.Println(rp.metricsAll)
 

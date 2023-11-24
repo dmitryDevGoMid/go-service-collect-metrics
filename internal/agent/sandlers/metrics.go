@@ -25,6 +25,7 @@ type MetricsList struct {
 
 type SandlerMetrics interface {
 	ChangeMetrics()
+	ChangeMetricsGopsUtil()
 	ChangeMetricsByTime()
 	SendMetricsByTime()
 	SendMetrics(listMetrics []string) (*resty.Response, error)
@@ -90,7 +91,7 @@ func (rm *sandlerMetrics) GetBatchStringMetrics() []string {
 	}
 	jsonString := string(json)
 
-	fmt.Println(jsonString)
+	//fmt.Println(jsonString)
 
 	return []string{jsonString}
 }
@@ -108,30 +109,10 @@ func (rm *sandlerMetrics) GetSliceStringMetrics() []string {
 		listMetricsString = append(listMetricsString, sendStringMetrics)
 	}
 
-	fmt.Println("listMetrics=>>>>", listMetricsString)
+	//fmt.Println("listMetrics=>>>>", listMetricsString)
 
 	return listMetricsString
 }
-
-/*func (rm *sandlerMetrics) serverPing() {
-
-	rm.sendBatch = false
-
-	url := fmt.Sprintf("http://%s/ping", rm.cfg.Server.Address)
-	resp, err := rm.client.R().Get(url)
-	if err != nil {
-		log.Println("Ошибка не: ECONNREFUSED", err.Error())
-	}
-
-	if resp.IsError() {
-		fmt.Println("Status Error:", resp.StatusCode()) // prints 404
-	}
-
-	if resp.StatusCode() == 200 {
-		rm.sendBatch = true
-	}
-
-}*/
 
 // Возвращаем список метрик
 func (rm *sandlerMetrics) GetMetricsListAndBatch() MetricsList {
@@ -143,29 +124,32 @@ func (rm *sandlerMetrics) GetMetricsListAndBatch() MetricsList {
 	return list
 }
 
-// Обновляем список метрик это тоже будет задача для воркпула
+// Обновляем список метрик
 func (rm *sandlerMetrics) ChangeMetrics() {
-	rm.repository.ChangeMetrics()
+	err := rm.repository.ChangeMetrics()
+	if err != nil {
+		fmt.Println("error", err)
+	}
+}
+
+// Обновляем список метрик
+func (rm *sandlerMetrics) ChangeMetricsGopsUtil() {
+	err := rm.repository.ChangeMetricsGopsUtil()
+	if err != nil {
+		fmt.Println("error", err)
+	}
 }
 
 func (rm *sandlerMetrics) setMetrics() {
 	cfg := rm.cfg
 
-	//var listMetrics []string
-
-	//rm.serverPing()
-
-	//if rm.sendBatch {
 	fmt.Println("Send One Batch metrics")
 	rm.urlMetrics = fmt.Sprintf("http://%s/updates", cfg.Server.Address)
 	rm.listMetricsBatch = rm.GetBatchStringMetrics()
-	//} else {
+
 	fmt.Println("Send Single request metrics")
 	rm.urlMetrics = fmt.Sprintf("http://%s/update", cfg.Server.Address)
 	rm.listMetrics = rm.GetSliceStringMetrics()
-	//}
-
-	//rm.listMetrics = listMetrics
 }
 
 func (rm *sandlerMetrics) SendMetrics(listMetrics []string) (*resty.Response, error) {
@@ -250,7 +234,7 @@ func (rm *sandlerMetrics) getListMetrics() []serialize.Metrics {
 
 	}
 
-	fmt.Println(collectMetrics)
+	//fmt.Println(collectMetrics)
 	//var collectMetrics []serialize.Metrics
 
 	return collectMetrics

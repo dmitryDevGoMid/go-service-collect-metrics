@@ -11,6 +11,7 @@ import (
 )
 
 type Run interface {
+	ChangeMetricsByTimeGopsUtil(ctx context.Context)
 	ChangeMetricsByTime(ctx context.Context)
 	SendMetricsByTime(ctx context.Context)
 }
@@ -32,10 +33,24 @@ func (r *run) ChangeMetricsByTime(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Println("ChangeMetricsByTime stop")
+			fmt.Println("ChangeMetricsByTime -> Stop")
 			return
 		case <-ticker.C:
 			r.sandlers.ChangeMetrics()
+		}
+	}
+}
+
+// Change metrics
+func (r *run) ChangeMetricsByTimeGopsUtil(ctx context.Context) {
+	ticker := time.NewTicker(time.Duration(r.cfg.Metrics.PollInterval) * time.Second)
+	for {
+		select {
+		case <-ctx.Done():
+			fmt.Println("ChangeMetricsByTimeGopsUtil -> Stop")
+			return
+		case <-ticker.C:
+			r.sandlers.ChangeMetricsGopsUtil()
 		}
 	}
 }
@@ -48,11 +63,7 @@ func (r *run) ListingResponseServer(ctx context.Context) {
 		case response, ok := <-result:
 			_ = response
 			_ = ok
-			//if ok {
-			//fmt.Println("RESPPNSE=====>", response)
-			//}
 		case <-ctx.Done():
-			//fmt.Println("STOP RESPPNSE=====>")
 			return
 		default:
 			time.Sleep(time.Duration(1) * time.Millisecond)
@@ -78,7 +89,7 @@ func (r *run) SendMetricsByTime(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Println("SendMetricsByTime stop")
+			fmt.Println("SendMetricsByTime -> Stop")
 			return
 		case <-ticker.C:
 			r.SendRun(ctx)
