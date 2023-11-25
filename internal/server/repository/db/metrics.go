@@ -229,6 +229,8 @@ func (connect *metricsRepository) PingDatabase(ctx context.Context) error {
 
 // Можно разбить на две части этот кода для большей детализации и ясности
 func (connect *metricsRepository) SaveMetricsBatch(ctx context.Context, metrics []unserialize.Metrics) error {
+	connect.mutex.Lock()
+
 	tx, err := connect.db.Begin()
 
 	if err != nil {
@@ -237,10 +239,12 @@ func (connect *metricsRepository) SaveMetricsBatch(ctx context.Context, metrics 
 	// можно вызвать Rollback в defer,
 	// если Commit будет раньше, то откат проигнорируется
 	defer func() {
-		err := tx.Rollback()
 		if err != nil {
-			fmt.Printf("error Rollback metrics: %v", err)
+			tx.Rollback()
+		} else {
+			tx.Commit()
 		}
+		connect.mutex.Unlock()
 	}()
 
 	//var countUpdate = 0
@@ -248,19 +252,6 @@ func (connect *metricsRepository) SaveMetricsBatch(ctx context.Context, metrics 
 
 	if err != nil {
 		fmt.Printf("error Update metrics: %v", err)
-		return err
-	}
-
-	/*err = insertBatch(tx, insertMetrisAfterUpdate)
-	if err != nil {
-		fmt.Printf("error Insert metrics: %v", err)
-		return err
-	}*/
-
-	err = tx.Commit()
-
-	if err != nil {
-		fmt.Printf("error Commite metrics: %v", err)
 		return err
 	}
 
