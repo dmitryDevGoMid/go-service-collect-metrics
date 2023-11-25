@@ -155,21 +155,25 @@ func LoggerMiddleware(appLogger *logger.APILogger) gin.HandlerFunc {
 		uri := c.Request.RequestURI
 		method := c.Request.Method
 		content := c.Request.Header.Get("Content-Type")
-		body := c.Request.Body
+		//body := c.Request.Body
+		body, _ := io.ReadAll(c.Request.Body)
+		c.Request.Body = io.NopCloser(bytes.NewReader(body))
+
+		myString := string(body[:])
 
 		c.Next()
 
 		duration := time.Since(strat)
 
 		appLogger.Infof(
-			"uri %s method %s duration %s status %d size %d body %v",
+			"uri %s method %s duration %s status %d size %d body %s",
 			uri,
 			method,
 			duration,
 			c.Writer.Status(),
 			c.Writer.Size(),
 			content,
-			body,
+			myString,
 		)
 	}
 }
