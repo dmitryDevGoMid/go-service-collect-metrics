@@ -128,7 +128,7 @@ func ParseConfig() (*Config, error) {
 
 	config.DataBase.DatabaseURL = databaseURL
 
-	//config.HashSHA256.Key = keySHA256
+	config.HashSHA256.Key = keySHA256
 
 	//Init by environment variables
 	env.Parse(&config.Metrics)

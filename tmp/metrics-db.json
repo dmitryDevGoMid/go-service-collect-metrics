@@ -1,3 +1,11 @@
+{"id":"Lookups","type":"gauge","value":0}
+{"id":"HeapIdle","type":"gauge","value":6217728}
+{"id":"LastGC","type":"gauge","value":1700939589907936000}
+{"id":"RandomValue","type":"gauge","value":8.434115364335547}
+{"id":"MSpanSys","type":"gauge","value":65088}
+{"id":"FreeMemory","type":"gauge","value":0}
+{"id":"TotlaMemory","type":"gauge","value":0}
+{"id":"Alloc","type":"gauge","value":683856}
 {"id":"HeapReleased","type":"gauge","value":3342336}
 {"id":"MCacheInuse","type":"gauge","value":4800}
 {"id":"NumForcedGC","type":"gauge","value":0}
@@ -22,13 +30,5 @@
 {"id":"MCacheSys","type":"gauge","value":15600}
 {"id":"GCSys","type":"gauge","value":8682416}
 {"id":"NextGC","type":"gauge","value":4194304}
-{"id":"Lookups","type":"gauge","value":0}
-{"id":"HeapIdle","type":"gauge","value":6217728}
-{"id":"LastGC","type":"gauge","value":1700939589907936000}
-{"id":"RandomValue","type":"gauge","value":8.434115364335547}
-{"id":"MSpanSys","type":"gauge","value":65088}
-{"id":"FreeMemory","type":"gauge","value":0}
-{"id":"TotlaMemory","type":"gauge","value":0}
-{"id":"Alloc","type":"gauge","value":683856}
 {"id":"PollCount","type":"counter","delta":27}
 {"id":"testCounter","type":"counter","delta":400}
