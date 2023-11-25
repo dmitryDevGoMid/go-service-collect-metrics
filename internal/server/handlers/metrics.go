@@ -220,6 +220,8 @@ func (h *metricsHandlers) unSerializerRequest(c *gin.Context) unserialize.Metric
 	body, err := checkGzip(c)
 	//body, err := io.ReadAll(c.Request.Body)
 
+	fmt.Println(string(body))
+
 	if err != nil {
 		restutils.GinWriteError(c, http.StatusBadRequest, err.Error())
 		return unserialize.Metrics{}
@@ -235,6 +237,8 @@ func (h *metricsHandlers) unSerializerRequest(c *gin.Context) unserialize.Metric
 		//panic(unserializeError.Errors().Error())
 		fmt.Println(unserializeError.Errors().Error())
 	}
+
+	fmt.Println(metrics)
 
 	return metrics
 }
@@ -279,7 +283,9 @@ func (h *metricsHandlers) GetMetrics(c *gin.Context) {
 
 	switch val := typeMetric; val {
 	case "gauge":
-		respGauge, err = h.metricsRepository.GetMetricGauge(c, metrics.ID)
+		retry := repository.Decorator{IMetric: h.metricsRepository}
+		respGauge, err = retry.GetMetricGauge(c, metrics.ID)
+		//respGauge, err = h.metricsRepository.GetMetricGauge(c, metrics.ID)
 	case "counter":
 		//respCounter, err = h.metricsRepository.GetMetricCounter(c, metrics.ID)
 		retry := repository.Decorator{IMetric: h.metricsRepository}
@@ -371,7 +377,7 @@ func (h *metricsHandlers) UpdatePostJSON(c *gin.Context) {
 
 // Point Update
 func (h *metricsHandlers) Update(c *gin.Context) {
-	typeMetric := c.Param("type")
+	typeMetric := c.Param("mtype")
 
 	switch val := typeMetric; val {
 	case "gauge":
@@ -391,7 +397,7 @@ func (h *metricsHandlers) ValuePostJSON(c *gin.Context) {
 func (h *metricsHandlers) Value(c *gin.Context) {
 
 	//fmt.Println("VALUE Content-Type NOT JSON")
-	typeMetric := c.Param("type")
+	typeMetric := c.Param("mtype")
 
 	switch val := typeMetric; val {
 	case "gauge":
