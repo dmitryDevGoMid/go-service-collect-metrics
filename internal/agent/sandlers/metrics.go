@@ -75,7 +75,10 @@ func (rm *sandlerMetrics) SendMetricsByTime() {
 		case <-ticker.C:
 			rm.setMetrics()
 			rm.SendMetrics(rm.listMetrics)
+
+			rm.setMetricsBatch()
 			rm.SendMetrics(rm.listMetricsBatch)
+
 			rm.repository.SetZeroPollCount()
 		}
 	}
@@ -140,12 +143,16 @@ func (rm *sandlerMetrics) ChangeMetricsGopsUtil() {
 	}
 }
 
-func (rm *sandlerMetrics) setMetrics() {
+func (rm *sandlerMetrics) setMetricsBatch() {
 	cfg := rm.cfg
 
 	fmt.Println("Send One Batch metrics")
 	rm.urlMetrics = fmt.Sprintf("http://%s/updates", cfg.Server.Address)
 	rm.listMetricsBatch = rm.GetBatchStringMetrics()
+}
+
+func (rm *sandlerMetrics) setMetrics() {
+	cfg := rm.cfg
 
 	fmt.Println("Send Single request metrics")
 	rm.urlMetrics = fmt.Sprintf("http://%s/update", cfg.Server.Address)
