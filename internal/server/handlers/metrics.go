@@ -377,7 +377,7 @@ func (h *metricsHandlers) UpdatePostJSON(c *gin.Context) {
 
 // Point Update
 func (h *metricsHandlers) Update(c *gin.Context) {
-	typeMetric := c.Param("mtype")
+	typeMetric := c.Param("type")
 
 	switch val := typeMetric; val {
 	case "gauge":
@@ -397,7 +397,7 @@ func (h *metricsHandlers) ValuePostJSON(c *gin.Context) {
 func (h *metricsHandlers) Value(c *gin.Context) {
 
 	//fmt.Println("VALUE Content-Type NOT JSON")
-	typeMetric := c.Param("mtype")
+	typeMetric := c.Param("type")
 
 	switch val := typeMetric; val {
 	case "gauge":

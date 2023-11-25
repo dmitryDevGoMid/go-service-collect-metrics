@@ -309,9 +309,9 @@ func TestRequestGetMetricsCounter(t *testing.T) {
 
 			//Init Point Handlers
 			r := gin.Default()
-			r.GET("/value/:mtype/:metric", func(context *gin.Context) {
+			r.GET("/value/:type/:metric", func(context *gin.Context) {
 				tt.mockBehavior(context, s, tt.nameMetric)
-				context.Set("mtype", tt.mType)
+				context.Set("type", tt.mType)
 				context.Set("metric", tt.nameMetric)
 			}, handler.Value)
 
@@ -384,9 +384,9 @@ func TestRequestGetMetricsGauge(t *testing.T) {
 
 			//Init Point Handlers
 			r := gin.Default()
-			r.GET("/value/:mtype/:metric", func(context *gin.Context) {
+			r.GET("/value/:type/:metric", func(context *gin.Context) {
 				tt.mockBehavior(context, s, tt.nameMetric)
-				context.Set("mtype", tt.mType)
+				context.Set("type", tt.mType)
 				context.Set("metric", tt.nameMetric)
 			}, handler.Value)
 
@@ -459,9 +459,9 @@ func TestRequestPostMetricsGauge(t *testing.T) {
 
 			//Init Point Handlers
 			r := gin.Default()
-			r.POST("/value/:mtype/:metric", func(context *gin.Context) {
+			r.POST("/value/:type/:metric", func(context *gin.Context) {
 				tt.mockBehavior(context, s, tt.nameMetric)
-				context.Set("mtype", tt.mType)
+				context.Set("type", tt.mType)
 				context.Set("metric", tt.nameMetric)
 			}, handler.Value)
 
@@ -534,9 +534,9 @@ func TestRequestPostMetricsCounter(t *testing.T) {
 
 			//Init Point Handlers
 			r := gin.Default()
-			r.POST("/value/:mtype/:metric", func(context *gin.Context) {
+			r.POST("/value/:type/:metric", func(context *gin.Context) {
 				tt.mockBehavior(context, s, tt.nameMetric)
-				context.Set("mtype", tt.mType)
+				context.Set("type", tt.mType)
 				context.Set("metric", tt.nameMetric)
 			}, handler.Value)
 
@@ -566,18 +566,18 @@ func TestGetMetricsCounter(t *testing.T) {
 	}{
 		{
 			name: "get Metrics by name",
-			body: fmt.Sprintf(`{"id":"%s","mtype":"%s"}`, "TestCounter", "counter"),
+			body: fmt.Sprintf(`{"id":"%s","type":"%s"}`, "TestCounter", "counter"),
 			mockBehavior: func(ctx context.Context, mocks *mocks.MockMetricsRepository, nameMetrics string) {
 				expectedReturn := int64(700)
 
 				mocks.EXPECT().GetMetricCounter(ctx, nameMetrics).Return(expectedReturn, nil).AnyTimes()
 			},
 			statusCode:   200,
-			responseBody: fmt.Sprintf(`{"id":"%s","mtype":"%s","delta":700}`, "TestCounter", "counter"),
+			responseBody: fmt.Sprintf(`{"id":"%s","type":"%s","delta":700}`, "TestCounter", "counter"),
 		},
 		{
 			name: "get Metrics by name",
-			body: fmt.Sprintf(`{"id":"%s","mtype":"%s"}`, "TestCounter", "counter"),
+			body: fmt.Sprintf(`{"id":"%s","type":"%s"}`, "TestCounter", "counter"),
 			mockBehavior: func(ctx context.Context, mocks *mocks.MockMetricsRepository, nameMetrics string) {
 				expectedReturn := int64(0)
 				mocks.EXPECT().GetMetricCounter(ctx, nameMetrics).Return(expectedReturn, validator.ErrMetricsKeyNotFound).AnyTimes()
@@ -587,7 +587,7 @@ func TestGetMetricsCounter(t *testing.T) {
 		},
 		{
 			name: "get Metrics by name",
-			body: fmt.Sprintf(`{"id":"%s","mtype":"%s"}`, "TestCounter", "unter"),
+			body: fmt.Sprintf(`{"id":"%s","type":"%s"}`, "TestCounter", "unter"),
 			mockBehavior: func(ctx context.Context, mocks *mocks.MockMetricsRepository, nameMetrics string) {
 				expectedReturn := int64(0)
 				mocks.EXPECT().GetMetricCounter(ctx, nameMetrics).Return(expectedReturn, validator.ErrMetricsKeyNotFound).AnyTimes()
@@ -652,18 +652,18 @@ func TestGetMetricsGauge(t *testing.T) {
 	}{
 		{
 			name: "get Metrics by name",
-			body: fmt.Sprintf(`{"id":"%s","mtype":"%s"}`, "TestCounter", "gauge"),
+			body: fmt.Sprintf(`{"id":"%s","type":"%s"}`, "TestCounter", "gauge"),
 			mockBehavior: func(ctx context.Context, mocks *mocks.MockMetricsRepository, nameMetrics string) {
 				expectedReturn := float64(700.123)
 
 				mocks.EXPECT().GetMetricGauge(ctx, nameMetrics).Return(expectedReturn, nil).AnyTimes()
 			},
 			statusCode:   200,
-			responseBody: fmt.Sprintf(`{"id":"%s","mtype":"%s","value":700.123}`, "TestCounter", "gauge"),
+			responseBody: fmt.Sprintf(`{"id":"%s","type":"%s","value":700.123}`, "TestCounter", "gauge"),
 		},
 		{
 			name: "get Metrics by name",
-			body: fmt.Sprintf(`{"id":"%s","mtype":"%s"}`, "TestCounter", "gauge"),
+			body: fmt.Sprintf(`{"id":"%s","type":"%s"}`, "TestCounter", "gauge"),
 			mockBehavior: func(ctx context.Context, mocks *mocks.MockMetricsRepository, nameMetrics string) {
 				expectedReturn := float64(0)
 				mocks.EXPECT().GetMetricGauge(ctx, nameMetrics).Return(expectedReturn, validator.ErrMetricsKeyNotFound).AnyTimes()
@@ -673,7 +673,7 @@ func TestGetMetricsGauge(t *testing.T) {
 		},
 		{
 			name: "get Metrics by name",
-			body: fmt.Sprintf(`{"id":"%s","mtype":"%s"}`, "TestCounter", "gaug"),
+			body: fmt.Sprintf(`{"id":"%s","type":"%s"}`, "TestCounter", "gaug"),
 			mockBehavior: func(ctx context.Context, mocks *mocks.MockMetricsRepository, nameMetrics string) {
 				expectedReturn := float64(0)
 				mocks.EXPECT().GetMetricGauge(ctx, nameMetrics).Return(expectedReturn, validator.ErrMetricsKeyNotFound).AnyTimes()
@@ -738,7 +738,7 @@ func TestUpdateJsonPostCounter(t *testing.T) {
 	}{
 		{
 			name: "Update metrics counter 200",
-			body: fmt.Sprintf(`{"id":"%s","mtype":"%s","delta": "%v"}`, "TestCounter", "counter", "500"),
+			body: fmt.Sprintf(`{"id":"%s","type":"%s","delta": "%v"}`, "TestCounter", "counter", "500"),
 			mockBehavior: func(ctx context.Context, mocks *mocks.MockMetricsRepository, nameMetrics string, value int64) {
 				expectedReturn := int64(500)
 
@@ -747,11 +747,11 @@ func TestUpdateJsonPostCounter(t *testing.T) {
 			},
 
 			statusCode:   200,
-			responseBody: fmt.Sprintf(`{"id":"%s","mtype":"%s","delta":500}`, "TestCounter", "counter"),
+			responseBody: fmt.Sprintf(`{"id":"%s","type":"%s","delta":500}`, "TestCounter", "counter"),
 		},
 		{
 			name: "get Metrics by name",
-			body: fmt.Sprintf(`{"id":"%s","mtype":"%s","delta": "%v"}`, "TestCounter", "count", "500"),
+			body: fmt.Sprintf(`{"id":"%s","type":"%s","delta": "%v"}`, "TestCounter", "count", "500"),
 			mockBehavior: func(ctx context.Context, mocks *mocks.MockMetricsRepository, nameMetrics string, value int64) {
 
 				mocks.EXPECT().UpdateMetricCounter(ctx, nameMetrics, value).Return(validator.ErrNotFoundType).AnyTimes()
@@ -816,7 +816,7 @@ func TestUpdateJsonPostGauge(t *testing.T) {
 	}{
 		{
 			name: "Update metrics gauge 200",
-			body: fmt.Sprintf(`{"id":"%s","mtype":"%s","value": "%v"}`, "TestCounter", "gauge", "500.123"),
+			body: fmt.Sprintf(`{"id":"%s","type":"%s","value": "%v"}`, "TestCounter", "gauge", "500.123"),
 			mockBehavior: func(ctx context.Context, mocks *mocks.MockMetricsRepository, nameMetrics string, value float64) {
 				expectedReturn := float64(500.123)
 
@@ -825,11 +825,11 @@ func TestUpdateJsonPostGauge(t *testing.T) {
 			},
 
 			statusCode:   200,
-			responseBody: fmt.Sprintf(`{"id":"%s","mtype":"%s","value":500.123}`, "TestCounter", "gauge"),
+			responseBody: fmt.Sprintf(`{"id":"%s","type":"%s","value":500.123}`, "TestCounter", "gauge"),
 		},
 		{
 			name: "get Metrics by name",
-			body: fmt.Sprintf(`{"id":"%s","mtype":"%s","value": "%v"}`, "TestCounter", "ga", "500.123"),
+			body: fmt.Sprintf(`{"id":"%s","type":"%s","value": "%v"}`, "TestCounter", "ga", "500.123"),
 			mockBehavior: func(ctx context.Context, mocks *mocks.MockMetricsRepository, nameMetrics string, value float64) {
 
 				mocks.EXPECT().UpdateMetricGauge(ctx, nameMetrics, value).Return(validator.ErrNotFoundType).AnyTimes()
