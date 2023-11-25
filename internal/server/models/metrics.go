@@ -9,7 +9,7 @@ type MemStorage struct {
 // Удобная структура данных по метрикам для передачи и для gRPC
 type Metrics struct {
 	ID    string   `json:"id"`
-	MType string   `json:"mtype"`
+	MType string   `json:"type"`
 	Delta *int64   `json:"delta,omitempty"`
 	Value *float64 `json:"value,omitempty"`
 }

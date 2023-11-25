@@ -65,8 +65,8 @@ func (cl *Client) OnAfterResponse() {
 	cl.client.OnAfterResponse(func(c *resty.Client, resp *resty.Response) error {
 		// Now you have access to Client and current Response object
 		// manipulate it as per your need
-		//fmt.Println("RESPONSE:", resp.Header().Get("Content-Type"))
-		//fmt.Println(string(resp.Body()))
+		fmt.Println("RESPONSE:", resp.Header().Get("Content-Type"))
+		fmt.Println(string(resp.Body()))
 
 		return nil // if its success otherwise return error
 	})

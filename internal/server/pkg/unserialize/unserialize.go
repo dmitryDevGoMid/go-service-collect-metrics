@@ -9,8 +9,8 @@ import (
 
 // Тип общия как для получателя Server так и для отправля Agent
 type Metrics struct {
-	ID    string   `json:"id,omitempty"`
-	MType string   `json:"mtype,omitempty"`
+	ID    string   `json:"id"`
+	MType string   `json:"type"`
 	Delta *int64   `json:"delta,omitempty"`
 	Value *float64 `json:"value,omitempty"`
 }
