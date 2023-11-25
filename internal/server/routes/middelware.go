@@ -21,7 +21,7 @@ import (
 func WriteContentType() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		if c.FullPath() == "/update" {
+		/*if c.FullPath() == "/update" {
 			body, _ := io.ReadAll(c.Request.Body)
 			c.Request.Body = io.NopCloser(bytes.NewReader(body))
 
@@ -37,7 +37,7 @@ func WriteContentType() gin.HandlerFunc {
 					"message": "body not object json",
 				})
 			}
-		}
+		}*/
 
 		if c.FullPath() != "/" {
 			if c.Request.Header.Get("Accept") != "application/json" {
