@@ -93,7 +93,7 @@ func ParseConfig() (*Config, error) {
 
 	config.Gzip.Enable = enableGzip
 
-	config.SHA256.Key = keySHA256
+	//config.SHA256.Key = keySHA256
 
 	//Init by environment variables
 	env.Parse(&config.Metrics)
