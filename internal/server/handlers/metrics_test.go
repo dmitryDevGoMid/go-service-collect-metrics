@@ -134,14 +134,6 @@ func TestRequestUpdatesBatch(t *testing.T) {
 			statusCode:   200,
 			counterValue: "Success get to Updates",
 		},
-		/*{
-			name: "get all metrics bad request 400",
-			mockBehavior: func(ctx context.Context, mocks *mocks.MockMetricsRepository, metrics string) {
-				mocks.EXPECT().GetAllMetrics(ctx).Return(nil, validator.ErrBadRequest).AnyTimes()
-			},
-			statusCode:   400,
-			counterValue: "",
-		},*/
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
