@@ -1,6 +1,7 @@
 package cryptohashsha
 
 import (
+	"crypto/hmac"
 	"crypto/sha256"
 	"errors"
 	"fmt"
@@ -26,12 +27,16 @@ func (s *hashSha) GetSha256ByData(data []byte) ([]byte, error) {
 	err := errors.New("empty cofig key for create sha256")
 
 	if s.cfg.HashSHA256.Key != "" {
-		dataString := string(data) + s.cfg.HashSHA256.Key
+		//dataString := string(data) + s.cfg.HashSHA256.Key
 
-		h := sha256.New()
+		h := hmac.New(sha256.New, []byte(s.cfg.HashSHA256.Key))
+		h.Write([]byte(data))
+		bs := h.Sum(nil)
+
+		/*h := sha256.New()
 		h.Write([]byte(dataString))
 
-		bs := h.Sum(nil)
+		bs := h.Sum(nil)*/
 
 		return bs, nil
 	}
