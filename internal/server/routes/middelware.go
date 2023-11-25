@@ -20,10 +20,25 @@ import (
 // Миделвари для заголовков
 func WriteContentType() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		/*fmt.Println("Header=>:", c.Request.Header)
-		body, _ := io.ReadAll(c.Request.Body)
-		fmt.Println("Body=>", string(body))
-		c.Request.Body = io.NopCloser(bytes.NewReader(body))*/
+
+		if c.FullPath() == "/update" {
+			body, _ := io.ReadAll(c.Request.Body)
+			c.Request.Body = io.NopCloser(bytes.NewReader(body))
+
+			x := bytes.TrimLeft(body, " \t\r\n")
+			//fmt.Println(body)
+
+			isArray := len(x) > 0 && x[0] == '['
+			fmt.Println("isArray=>", isArray)
+			//isObject := len(x) > 0 && x[0] == '{'
+			if isArray {
+				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+					"status":  http.StatusBadRequest,
+					"message": "body not object json",
+				})
+			}
+		}
+
 		if c.FullPath() != "/" {
 			if c.Request.Header.Get("Accept") != "application/json" {
 				c.Writer.Header().Set("Content-Type", "text/plain")
