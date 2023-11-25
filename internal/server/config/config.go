@@ -138,7 +138,7 @@ func ParseConfig() (*Config, error) {
 	env.Parse(&config.Gzip)
 	env.Parse(&config.File)
 	env.Parse(&config.DataBase)
-	env.Parse(&config.HashSHA256)
+	//env.Parse(&config.HashSHA256)
 
 	return &config, nil
 }

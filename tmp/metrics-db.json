@@ -1,3 +1,11 @@
+{"id":"HeapReleased","type":"gauge","value":3342336}
+{"id":"MCacheInuse","type":"gauge","value":4800}
+{"id":"NumForcedGC","type":"gauge","value":0}
+{"id":"CPUtilization1","type":"gauge","value":0}
+{"id":"HeapInuse","type":"gauge","value":1679360}
+{"id":"OtherSys","type":"gauge","value":849326}
+{"id":"MSpanInuse","type":"gauge","value":50400}
+{"id":"GCCPUFraction","type":"gauge","value":0.000019784136659768035}
 {"id":"BuckHashSys","type":"gauge","value":3970}
 {"id":"Frees","type":"gauge","value":7601}
 {"id":"NumGC","type":"gauge","value":1}
@@ -22,13 +30,5 @@
 {"id":"FreeMemory","type":"gauge","value":0}
 {"id":"TotlaMemory","type":"gauge","value":0}
 {"id":"Alloc","type":"gauge","value":683856}
-{"id":"HeapReleased","type":"gauge","value":3342336}
-{"id":"MCacheInuse","type":"gauge","value":4800}
-{"id":"NumForcedGC","type":"gauge","value":0}
-{"id":"CPUtilization1","type":"gauge","value":0}
-{"id":"HeapInuse","type":"gauge","value":1679360}
-{"id":"OtherSys","type":"gauge","value":849326}
-{"id":"MSpanInuse","type":"gauge","value":50400}
-{"id":"GCCPUFraction","type":"gauge","value":0.000019784136659768035}
 {"id":"PollCount","type":"counter","delta":27}
 {"id":"testCounter","type":"counter","delta":400}

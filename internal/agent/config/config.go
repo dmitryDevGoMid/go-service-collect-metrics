@@ -101,7 +101,7 @@ func ParseConfig() (*Config, error) {
 	env.Parse(&config.Logger)
 	env.Parse(&config.Serializer)
 	env.Parse(&config.Gzip)
-	env.Parse(&config.SHA256)
+	//env.Parse(&config.SHA256)
 
 	return &config, nil
 }
