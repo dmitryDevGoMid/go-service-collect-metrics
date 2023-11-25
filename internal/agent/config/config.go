@@ -11,11 +11,11 @@ type SHA256 struct {
 }
 
 type Gzip struct {
-	Enable bool `json:"GZIP,omitempty"`
+	Enable bool `env:"GZIP,omitempty"`
 }
 
 type Serializer struct {
-	SerType string `json:"SER_TYPE,omitempty"`
+	SerType string `env:"SER_TYPE,omitempty"`
 }
 
 type Logger struct {
