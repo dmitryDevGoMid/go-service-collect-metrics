@@ -101,7 +101,7 @@ func init() {
 	flag.StringVar(&databaseURL, "d", "postgres://manager:M45fgMetr@localhost:5432/metrics?sslmode=disable", "database url for conection postgress")
 
 	//sha 256 key
-	flag.StringVar(&keySHA256, "k", "", "set key for calc SHA256")
+	flag.StringVar(&keySHA256, "k", "invalidkey", "set key for calc SHA256")
 }
 
 // Разбираем конфигурацию по структурам
@@ -128,7 +128,7 @@ func ParseConfig() (*Config, error) {
 
 	config.DataBase.DatabaseURL = databaseURL
 
-	config.HashSHA256.Key = keySHA256
+	//config.HashSHA256.Key = keySHA256
 
 	//Init by environment variables
 	env.Parse(&config.Metrics)
