@@ -48,6 +48,7 @@ func TestUpdateGzipHandlers(t *testing.T) {
 		if err != nil {
 			fmt.Println(err)
 		}
+		assert.Equal(t, resp.StatusCode(), 200)
 
 		var result Metrics
 		resp, err = req.
