@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/config"
 	"github.com/go-resty/resty/v2"
 	"github.com/stretchr/testify/assert"
 )
@@ -21,12 +22,22 @@ type Metrics struct {
 }
 
 func TestUpdateGzipHandlers(t *testing.T) {
+
+	cfg, err := config.ParseConfig()
+
+	if err != nil {
+		fmt.Println("Config", err)
+	}
+
 	errRedirectBlocked := errors.New("HTTP redirect blocked")
 	redirPolicy := resty.RedirectPolicyFunc(func(_ *http.Request, _ []*http.Request) error {
 		return errRedirectBlocked
 	})
+
+	baseUrl := fmt.Sprintf("http://%s", cfg.Server.Address)
+
 	httpc := resty.New().
-		SetBaseURL("http://localhost:8080").
+		SetBaseURL(baseUrl).
 		SetRedirectPolicy(redirPolicy)
 
 	id := "GetGoodSetZipus" + strconv.Itoa(rand.Intn(256))
