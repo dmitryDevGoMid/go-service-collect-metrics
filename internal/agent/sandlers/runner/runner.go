@@ -23,7 +23,7 @@ type run struct {
 }
 
 func NewRunner(sandlers sandlers.SandlerMetrics, cfg *config.Config) Run {
-	wpool := wpool.New(1)
+	wpool := wpool.New(cfg.Workers.LimitWorkers)
 	return &run{sandlers: sandlers, cfg: cfg, wpool: wpool}
 }
 

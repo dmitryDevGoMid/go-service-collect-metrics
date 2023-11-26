@@ -80,7 +80,7 @@ func init() {
 	flag.StringVar(&keySHA256, "k", "invalidkey", "set gzip for agent and server")
 
 	//Works
-	flag.IntVar(&limitWorkersPool, "-l", 1, "limit workers send to server metrics")
+	flag.IntVar(&limitWorkersPool, "l", 5, "limit workers send to server metrics")
 }
 
 // Разбираем конфигурацию по структурам
