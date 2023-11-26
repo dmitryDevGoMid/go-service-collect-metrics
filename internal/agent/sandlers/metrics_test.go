@@ -34,10 +34,10 @@ func TestUpdateGzipHandlers(t *testing.T) {
 		return errRedirectBlocked
 	})
 
-	baseUrl := fmt.Sprintf("http://%s", cfg.Server.Address)
+	baseURL := fmt.Sprintf("http://%s", cfg.Server.Address)
 
 	httpc := resty.New().
-		SetBaseURL(baseUrl).
+		SetBaseURL(baseURL).
 		SetRedirectPolicy(redirPolicy)
 
 	id := "GetGoodSetZipus" + strconv.Itoa(rand.Intn(256))
