@@ -15,6 +15,7 @@ import (
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/cryptohashsha"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/repository"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/sandlers"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/sandlers/runner"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/storage"
 	"github.com/go-resty/resty/v2"
 )
@@ -50,14 +51,14 @@ func MonitorMetricsRun() {
 	sandlerMetrics := sandlers.NewMetricsSendler(repositoryMetrics, client, ctx, cfg)
 
 	//runSend := runner.NewRunner(sandlerMetrics, wpool, cfg)
-	/*runSend := runner.NewRunner(sandlerMetrics, cfg)
+	runSend := runner.NewRunner(sandlerMetrics, cfg)
 
 	go runSend.ChangeMetricsByTime(ctx)
 	go runSend.SendMetricsByTime(ctx)
-	go runSend.ChangeMetricsByTimeGopsUtil(ctx)*/
+	go runSend.ChangeMetricsByTimeGopsUtil(ctx)
 
-	go sandlerMetrics.ChangeMetricsByTime()
-	go sandlerMetrics.SendMetricsByTime()
+	//go sandlerMetrics.ChangeMetricsByTime()
+	//go sandlerMetrics.SendMetricsByTime()
 
 	signalChannel := make(chan os.Signal, 1)
 
@@ -68,7 +69,7 @@ func MonitorMetricsRun() {
 	cancel()
 
 	//Даем время для завершения всех горутин которые были запущены
-	time.Sleep(time.Second * 3)
+	time.Sleep(time.Second * 1)
 
 	log.Println("Shutdown Agent ...")
 }
