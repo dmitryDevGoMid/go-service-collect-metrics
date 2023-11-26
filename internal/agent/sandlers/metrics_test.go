@@ -1,0 +1,63 @@
+package sandlers
+
+import (
+	"errors"
+	"math/rand"
+	"net/http"
+	"strconv"
+	"testing"
+
+	"github.com/go-resty/resty/v2"
+	"github.com/stretchr/testify/assert"
+)
+
+type Metrics struct {
+	ID    string   `json:"id"`
+	MType string   `json:"type"`            // Параметр кодирую строкой, принося производительность в угоду наглядности.
+	Delta *int64   `json:"delta,omitempty"` //counter
+	Value *float64 `json:"value,omitempty"` //gauge
+	Hash  string   `json:"hash,omitempty"`  //counter
+}
+
+func TestUpdateGzipHandlers(t *testing.T) {
+	errRedirectBlocked := errors.New("HTTP redirect blocked")
+	redirPolicy := resty.RedirectPolicyFunc(func(_ *http.Request, _ []*http.Request) error {
+		return errRedirectBlocked
+	})
+	httpc := resty.New().
+		SetHostURL("http://localhost:8080").
+		SetRedirectPolicy(redirPolicy)
+
+	id := "GetGoodSetZipus" + strconv.Itoa(rand.Intn(256))
+
+	t.Run("update", func(t *testing.T) {
+		value := rand.Float64() * 1e6
+		req := httpc.R().
+			SetHeader("Hash", "none").
+			SetHeader("Accept-Encoding", "gzip").
+			SetHeader("Content-Type", "application/json")
+
+		resp, err := httpc.R().SetBody(
+			&Metrics{
+				ID:    id,
+				MType: "gauge",
+				Value: &value,
+			}).Post("update/")
+
+		dumpErr := assert.NoError(t, err, "Ошибка при попытке сделать запрос с обновлением gauge")
+		dumpErr = dumpErr && assert.Equalf(t, http.StatusOK, resp.StatusCode(),
+			"Несоответствие статус кода ответа ожидаемому в хендлере %q: %q ", req.Method, req.URL)
+
+		var result Metrics
+		resp, err = req.
+			SetBody(&Metrics{
+				ID:    id,
+				MType: "gauge",
+			}).
+			SetResult(&result).
+			Post("value/")
+
+		assert.Equal(t, resp.StatusCode(), 200)
+		assert.Equal(t, *result.Value, value)
+	})
+}

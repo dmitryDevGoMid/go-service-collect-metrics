@@ -14,37 +14,38 @@ func NewGinMetricsRoutesChange(metricsHandlers handlers.MetricsHandlers) []*GinR
 			Handler: metricsHandlers.GetAllMetricsHTML,
 		},
 		{
-			Path:    "/update/:type/:metric/:value", // Регистр нового
+			Path:    "/update/:type/:metric/:value/", // Регистр нового
 			Method:  "post",
 			Handler: metricsHandlers.Update,
 		},
 		{
-			Path:    "/value/:type/:metric", // Логин
+			Path:    "/value/:type/:metric/", // Логин
 			Method:  "post",
 			Handler: metricsHandlers.Value,
 		},
 		{
-			Path:    "/value/:type/:metric", // Логин
+			Path:    "/value/:type/:metric/", // Логин
 			Method:  "get",
 			Handler: metricsHandlers.Value,
 		},
 		{
-			Path:    "/update", // Регистр нового
-			Method:  "post",
-			Handler: metricsHandlers.UpdatePostJSON,
+			Path:   "/update/", // Регистр нового
+			Method: "post",
+			//Handler: metricsHandlers.UpdatePostJSON,
+			Handler: metricsHandlers.UpdateMetrics,
 		},
 		{
-			Path:    "/value", // Логин
+			Path:    "/value/", // Логин
 			Method:  "post",
 			Handler: metricsHandlers.ValuePostJSON,
 		},
 		{
-			Path:    "/ping", // Логин
+			Path:    "/ping/", // Логин
 			Method:  "get",
 			Handler: metricsHandlers.Ping,
 		},
 		{
-			Path:    "/updates", // Логин
+			Path:    "/updates/", // Логин
 			Method:  "post",
 			Handler: metricsHandlers.Updates,
 		},
