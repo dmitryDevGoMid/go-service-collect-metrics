@@ -3,7 +3,6 @@ package wpool
 import (
 	"context"
 	"fmt"
-	"time"
 )
 
 type WorkerStack struct {
@@ -70,8 +69,8 @@ func (ws *WorkerStack) GenerateJob(ctx context.Context) {
 			close(ws.ListObjJobs)
 			close(ws.jobs)
 			return
-		default:
-			time.Sleep(time.Duration(1) * time.Millisecond)
+			//default:
+			//time.Sleep(time.Duration(1) * time.Millisecond)
 		}
 	}
 }
@@ -94,8 +93,8 @@ func (ws *WorkerStack) workers(ctx context.Context, id int, jobs chan Job, resul
 			//выводим сообщение о том что завершили работу с выходом из воркера
 			fmt.Println("Close Worker => ", id)
 			return
-		default:
-			time.Sleep(time.Duration(1) * time.Millisecond)
+			//default:
+			//time.Sleep(time.Duration(1) * time.Millisecond)
 		}
 	}
 }

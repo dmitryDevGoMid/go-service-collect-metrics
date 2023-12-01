@@ -15,7 +15,7 @@ import (
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/cryptohashsha"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/repository"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/sandlers"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/sandlers/runner"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/sandlers/easyrunner"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/storage"
 	"github.com/go-resty/resty/v2"
 )
@@ -50,13 +50,14 @@ func MonitorMetricsRun() {
 
 	sandlerMetrics := sandlers.NewMetricsSendler(repositoryMetrics, client, ctx, cfg)
 
-	//runSend := runner.NewRunner(sandlerMetrics, wpool, cfg)
-	runSend := runner.NewRunner(sandlerMetrics, cfg)
+	runSend := easyrunner.NewRunner(sandlerMetrics, cfg)
 
+	//Решение: запускаем две горутины по сборке и одну с Poll Workers для отправки
 	go runSend.ChangeMetricsByTime(ctx)
 	go runSend.SendMetricsByTime(ctx)
 	go runSend.ChangeMetricsByTimeGopsUtil(ctx)
 
+	//Решение: запускаем две горутины по сборке и по отправке
 	//go sandlerMetrics.ChangeMetricsByTime()
 	//go sandlerMetrics.SendMetricsByTime()
 

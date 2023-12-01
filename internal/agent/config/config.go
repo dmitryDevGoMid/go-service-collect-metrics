@@ -62,7 +62,7 @@ var (
 
 func init() {
 	flag.StringVar(&address, "a", "localhost:8080", "location http server")
-	flag.IntVar(&reportInterval, "r", 4, "interval for run metrics")
+	flag.IntVar(&reportInterval, "r", 10, "interval for run metrics")
 	flag.IntVar(&pollInterval, "p", 2, "interval for run metrics")
 	flag.BoolVar(&sendMeticsBatch, "mb", true, "set gzip for agent and server")
 

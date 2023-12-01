@@ -1,4 +1,4 @@
-package runner
+package easyrunner
 
 import (
 	"context"
@@ -8,7 +8,6 @@ import (
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/config"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/wpool"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/sandlers"
-	"github.com/go-resty/resty/v2"
 )
 
 type Run interface {
@@ -19,30 +18,14 @@ type Run interface {
 
 type run struct {
 	sandlers          sandlers.SandlerMetrics
-	wpool             wpool.WorkerStack
 	workerPoolByDenis *wpool.WorkerPool
 	cfg               *config.Config
 }
 
 func NewRunner(sandlers sandlers.SandlerMetrics, cfg *config.Config) Run {
-	workerPool := wpool.New(cfg.Workers.LimitWorkers)
-	workerPoolByDenis := wpool.NewWorkerPool(1)
+	workerPoolByDenis := wpool.NewWorkerPool(cfg.Workers.LimitWorkers)
 
-	return &run{sandlers: sandlers, cfg: cfg, wpool: workerPool, workerPoolByDenis: workerPoolByDenis}
-}
-
-type Sendler func(metrics []string) (*resty.Response, error)
-
-func (r *run) send() func(metrics []string) (*resty.Response, error) {
-	return func(metrics []string) (*resty.Response, error) {
-		return r.sandlers.SendMetrics(metrics)
-	}
-}
-
-func (r *run) Task(metrics []string) Sendler {
-	return func(m []string) (*resty.Response, error) {
-		return r.sandlers.SendMetrics(metrics)
-	}
+	return &run{sandlers: sandlers, cfg: cfg, workerPoolByDenis: workerPoolByDenis}
 }
 
 // Change metrics
@@ -73,34 +56,8 @@ func (r *run) ChangeMetricsByTimeGopsUtil(ctx context.Context) {
 	}
 }
 
-// Читаем канал ответов от сервера
-func (r *run) ListingResponseServer(ctx context.Context) {
-	result := r.wpool.ListResults()
-	for {
-		select {
-		case response, ok := <-result:
-			_ = response
-			_ = ok
-		case <-ctx.Done():
-			return
-			//default:
-			//time.Sleep(time.Duration(1) * time.Millisecond)
-		}
-	}
-}
-
 // Send metrics
 func (r *run) SendMetricsByTime(ctx context.Context) {
-	//Запускаем воркеры
-	go r.wpool.WorkerRun(ctx)
-
-	r.wpool.RunJobs <- true
-
-	//Генерируем задачи для воркеров
-	go r.wpool.GenerateJob(ctx)
-
-	//Слушаем результаты выполнения
-	go r.ListingResponseServer(ctx)
 
 	ticker := time.NewTicker(time.Duration(r.cfg.Metrics.ReportInterval) * time.Second)
 
@@ -116,10 +73,10 @@ func (r *run) SendMetricsByTime(ctx context.Context) {
 	}
 }
 
+// Запускаем Poll Workers
 func (r *run) SendRun(ctx context.Context) {
+	//Дергаем метрики из репозитария
 	metrics := r.sandlers.GetMetricsListAndBatch()
-
-	var listJobs []wpool.Job
 
 	for k, v := range metrics.MetricsList {
 
@@ -131,12 +88,6 @@ func (r *run) SendRun(ctx context.Context) {
 			r.sandlers.SendMetrics(sendData)
 		}
 
-		fmt.Println(sendData)
-
 		r.workerPoolByDenis.AddTask(send, k)
-
-		listJobs = append(listJobs, wpool.Job{ExceFn: r.sandlers, Args: []string{dataForSend}})
 	}
-
-	r.wpool.ListObjJobs <- listJobs
 }
