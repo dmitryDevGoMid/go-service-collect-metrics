@@ -6,12 +6,20 @@ import (
 	"github.com/caarlos0/env/v6"
 )
 
+type Workers struct {
+	LimitWorkers int `env:"RATE_LIMIT"`
+}
+
+type SHA256 struct {
+	Key string `env:"KEY"`
+}
+
 type Gzip struct {
-	Enable bool `json:"GZIP,omitempty"`
+	Enable bool `env:"GZIP,omitempty"`
 }
 
 type Serializer struct {
-	SerType string `json:"SER_TYPE,omitempty"`
+	SerType string `env:"SER_TYPE,omitempty"`
 }
 
 type Logger struct {
@@ -35,17 +43,21 @@ type Config struct {
 	Logger     Logger
 	Serializer Serializer
 	Gzip       Gzip
+	SHA256     SHA256
+	Workers    Workers
 }
 
 var (
-	address         string
-	reportInterval  int
-	pollInterval    int
-	loggerEncoding  string
-	loggerLevel     string
-	serializeType   string
-	enableGzip      bool
-	sendMeticsBatch bool
+	address          string
+	reportInterval   int
+	pollInterval     int
+	loggerEncoding   string
+	loggerLevel      string
+	serializeType    string
+	enableGzip       bool
+	sendMeticsBatch  bool
+	keySHA256        string
+	limitWorkersPool int
 )
 
 func init() {
@@ -63,6 +75,12 @@ func init() {
 
 	//Serialize Type
 	flag.BoolVar(&enableGzip, "gzip", false, "set gzip for agent and server")
+
+	//sha 256 key
+	flag.StringVar(&keySHA256, "k", "invalidkey", "set gzip for agent and server")
+
+	//Works
+	flag.IntVar(&limitWorkersPool, "l", 5, "limit workers send to server metrics")
 }
 
 // Разбираем конфигурацию по структурам
@@ -84,12 +102,18 @@ func ParseConfig() (*Config, error) {
 
 	config.Gzip.Enable = enableGzip
 
+	config.SHA256.Key = keySHA256
+
+	config.Workers.LimitWorkers = limitWorkersPool
+
 	//Init by environment variables
 	env.Parse(&config.Metrics)
 	env.Parse(&config.Server)
 	env.Parse(&config.Logger)
 	env.Parse(&config.Serializer)
 	env.Parse(&config.Gzip)
+	env.Parse(&config.SHA256)
+	env.Parse(&config.Workers)
 
 	return &config, nil
 }

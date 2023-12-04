@@ -8,11 +8,14 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/config"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/middleware"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/cryptohashsha"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/repository"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/sandlers"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/sandlers/easyrunner"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/storage"
 	"github.com/go-resty/resty/v2"
 )
@@ -32,7 +35,9 @@ func MonitorMetricsRun() {
 
 	client := resty.New()
 
-	clientMiddleware := middleware.NewClientMiddleware(client, cfg)
+	sha256 := cryptohashsha.NewSha256(cfg)
+
+	clientMiddleware := middleware.NewClientMiddleware(client, cfg, sha256)
 
 	clientMiddleware.OnBeforeRequest()
 	clientMiddleware.OnAfterResponse()
@@ -45,8 +50,16 @@ func MonitorMetricsRun() {
 
 	sandlerMetrics := sandlers.NewMetricsSendler(repositoryMetrics, client, ctx, cfg)
 
-	go sandlerMetrics.ChangeMetricsByTime()
-	go sandlerMetrics.SendMetricsByTime()
+	runSend := easyrunner.NewRunner(sandlerMetrics, cfg)
+
+	//Решение: запускаем две горутины по сборке и одну с Poll Workers для отправки
+	go runSend.ChangeMetricsByTime(ctx)
+	go runSend.SendMetricsByTime(ctx)
+	go runSend.ChangeMetricsByTimeGopsUtil(ctx)
+
+	//Решение: запускаем две горутины по сборке и по отправке
+	//go sandlerMetrics.ChangeMetricsByTime()
+	//go sandlerMetrics.SendMetricsByTime()
 
 	signalChannel := make(chan os.Signal, 1)
 
@@ -57,7 +70,7 @@ func MonitorMetricsRun() {
 	cancel()
 
 	//Даем время для завершения всех горутин которые были запущены
-	//time.Sleep(time.Second * 10)
+	time.Sleep(time.Second * 1)
 
 	log.Println("Shutdown Agent ...")
 }

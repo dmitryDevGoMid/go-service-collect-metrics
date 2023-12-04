@@ -43,6 +43,11 @@ type MemStorage struct {
 }
 
 type Gauge struct {
+	//gopsutil
+	TotalMemory    float64
+	FreeMemory     float64
+	CPUtilization1 float64
+
 	Alloc         float64
 	BuckHashSys   float64
 	Frees         float64

@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"net/http"
 	"strings"
 	"time"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/compress"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/cryptohashsha"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/decompress"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/logger"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/file"
@@ -18,6 +20,7 @@ import (
 // Миделвари для заголовков
 func WriteContentType() gin.HandlerFunc {
 	return func(c *gin.Context) {
+
 		if c.FullPath() != "/" {
 			if c.Request.Header.Get("Accept") != "application/json" {
 				c.Writer.Header().Set("Content-Type", "text/plain")
@@ -149,25 +152,55 @@ func LoggerMiddleware(appLogger *logger.APILogger) gin.HandlerFunc {
 		uri := c.Request.RequestURI
 		method := c.Request.Method
 		content := c.Request.Header.Get("Content-Type")
-		body := c.Request.Body
+		//body := c.Request.Body
+		body, _ := io.ReadAll(c.Request.Body)
+		c.Request.Body = io.NopCloser(bytes.NewReader(body))
+
+		myString := string(body[:])
 
 		c.Next()
 
 		duration := time.Since(strat)
 
 		appLogger.Infof(
-			"uri %s method %s duration %s status %d size %d body %v",
+			"uri %s method %s duration %s status %d size %d body %s",
 			uri,
 			method,
 			duration,
 			c.Writer.Status(),
 			c.Writer.Size(),
 			content,
-			body,
+			myString,
 		)
 	}
 }
 
+// Пишем синхронно с отправкой данные на диск в случае update данных
+func CheckHashSHA256Data(cfg *config.Config, hash cryptohashsha.HashSha256) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		//fmt.Println("===CheckHashSHA256Data===", cfg.HashSHA256.Key)
+
+		hashData := c.Request.Header.Get("HashSHA256")
+
+		if hashData != "" && hash.CheckHashSHA256Key() {
+			body, _ := io.ReadAll(c.Request.Body)
+
+			c.Request.Body = io.NopCloser(bytes.NewReader(body))
+
+			if !hash.CheckHashSHA256Data(body, hashData) {
+				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+					"status":  http.StatusBadRequest,
+					"message": "hash does not match",
+				})
+			}
+		}
+
+		c.Next()
+
+	}
+}
+
+// Пишем синхронно с отправкой данные на диск в случае update данных
 func SaveFileToDisk(config *config.Config, file file.WorkerFile) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
@@ -179,7 +212,6 @@ func SaveFileToDisk(config *config.Config, file file.WorkerFile) gin.HandlerFunc
 		if afterPath[0] == "/" {
 			if c.Writer.Status() == 200 && config.File.StoreInterval == 0 {
 				file.SaveAllMetrics(c)
-				//fmt.Println("SaveFileToDisk: Записали данные на диск")
 			}
 		}
 	}

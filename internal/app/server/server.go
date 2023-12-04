@@ -13,6 +13,7 @@ import (
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config/db"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/handlers"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/migration"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/cryptohashsha"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/logger"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/file"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/mrepository"
@@ -70,8 +71,8 @@ func Run() {
 	//Роутинг
 	metricsRotes := routes.NewGinMetricsRoutesChange(metricsHandlers)
 
-	router := gin.Default()
-	//router := gin.New()
+	//router := gin.Default()
+	router := gin.New()
 
 	// Работаем с временным файлом для сохранения данных из сервера
 	workFile := file.NewWorkFile(metricsRepositoryLocal, cfg, ctx)
@@ -91,6 +92,10 @@ func Run() {
 	router.Use(routes.CORSMiddleware())
 
 	router.Use(routes.DecompressMiddleware())
+
+	hash256 := cryptohashsha.NewSha256(cfg)
+
+	router.Use(routes.CheckHashSHA256Data(cfg, hash256))
 
 	//router.Use(routes.ToolsGroupPermission())
 

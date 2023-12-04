@@ -2,9 +2,11 @@ package middleware
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/config"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/cryptohashsha"
 	"github.com/go-resty/resty/v2"
 )
 
@@ -14,12 +16,13 @@ type CleintInterface interface {
 }
 
 type Client struct {
-	client *resty.Client
-	cfg    *config.Config
+	client     *resty.Client
+	cfg        *config.Config
+	hashSha256 cryptohashsha.HashSha256
 }
 
-func NewClientMiddleware(client *resty.Client, cfg *config.Config) CleintInterface {
-	return &Client{client: client, cfg: cfg}
+func NewClientMiddleware(client *resty.Client, cfg *config.Config, sha256 cryptohashsha.HashSha256) CleintInterface {
+	return &Client{client: client, cfg: cfg, hashSha256: sha256}
 }
 
 func StreamToByte(stream io.Reader) []byte {
@@ -28,9 +31,20 @@ func StreamToByte(stream io.Reader) []byte {
 	return buf.Bytes()
 }
 
-func (config *Client) OnBeforeRequest() {
+func (cl *Client) OnBeforeRequest() {
 	// Registering Request Middleware
-	config.client.OnBeforeRequest(func(c *resty.Client, req *resty.Request) error {
+	cl.client.OnBeforeRequest(func(c *resty.Client, req *resty.Request) error {
+		body := fmt.Sprintf("%s", req.Body)
+		//fmt.Println(body)
+
+		hashString, err := cl.hashSha256.GetSha256ByData([]byte(body))
+
+		if err == nil {
+			c.SetHeader("HashSHA256", fmt.Sprintf("%x", hashString))
+		}
+
+		//c.R().SetBody(body)
+
 		c.SetHeader("Content-Type", "application/json").
 			SetHeader("Accept", "application/json").
 			SetHeader("Accept-Encoding", "gzip")
@@ -46,13 +60,13 @@ func (config *Client) OnBeforeRequest() {
 	})
 }
 
-func (config *Client) OnAfterResponse() {
+func (cl *Client) OnAfterResponse() {
 	// Registering Response Middleware
-	config.client.OnAfterResponse(func(c *resty.Client, resp *resty.Response) error {
+	cl.client.OnAfterResponse(func(c *resty.Client, resp *resty.Response) error {
 		// Now you have access to Client and current Response object
 		// manipulate it as per your need
-		//fmt.Println("RESPONSE:", resp.Header().Get("Content-Type"))
-		//fmt.Println(string(resp.Body()))
+		fmt.Println("RESPONSE:", resp.Header().Get("Content-Type"))
+		fmt.Println(string(resp.Body()))
 
 		return nil // if its success otherwise return error
 	})

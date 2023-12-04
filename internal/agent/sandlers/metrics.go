@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"sync"
 	"syscall"
 	"time"
 
@@ -17,10 +18,18 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
+type MetricsList struct {
+	MetricsList  []string
+	MetricsBatch []string
+}
+
 type SandlerMetrics interface {
+	ChangeMetrics()
+	ChangeMetricsGopsUtil()
 	ChangeMetricsByTime()
 	SendMetricsByTime()
-	SendMetrics([]string)
+	SendMetrics(listMetrics []string) (*resty.Response, error)
+	GetMetricsListAndBatch() MetricsList
 }
 
 type sandlerMetrics struct {
@@ -31,12 +40,14 @@ type sandlerMetrics struct {
 	listMetrics      []string
 	listMetricsBatch []string
 	urlMetrics       string
+	mutex            *sync.Mutex
 	//sendBatch        bool
 }
 
 func NewMetricsSendler(repository repository.RepositoryMetrics, client *resty.Client,
 	ctx context.Context, cfg *config.Config) SandlerMetrics {
-	return &sandlerMetrics{repository: repository, client: client, ctx: ctx, cfg: cfg}
+	var mutex sync.Mutex
+	return &sandlerMetrics{repository: repository, client: client, ctx: ctx, cfg: cfg, mutex: &mutex}
 }
 
 // Change metrics
@@ -64,7 +75,10 @@ func (rm *sandlerMetrics) SendMetricsByTime() {
 		case <-ticker.C:
 			rm.setMetrics()
 			rm.SendMetrics(rm.listMetrics)
+
+			rm.setMetricsBatch()
 			rm.SendMetrics(rm.listMetricsBatch)
+
 			rm.repository.SetZeroPollCount()
 		}
 	}
@@ -80,7 +94,7 @@ func (rm *sandlerMetrics) GetBatchStringMetrics() []string {
 	}
 	jsonString := string(json)
 
-	fmt.Println(jsonString)
+	//fmt.Println(jsonString)
 
 	return []string{jsonString}
 }
@@ -98,70 +112,78 @@ func (rm *sandlerMetrics) GetSliceStringMetrics() []string {
 		listMetricsString = append(listMetricsString, sendStringMetrics)
 	}
 
-	fmt.Println("listMetrics=>>>>", listMetricsString)
+	//fmt.Println("listMetrics=>>>>", listMetricsString)
 
 	return listMetricsString
 }
 
-/*func (rm *sandlerMetrics) serverPing() {
+// Возвращаем список метрик
+func (rm *sandlerMetrics) GetMetricsListAndBatch() MetricsList {
+	rm.setMetrics()
+	list := MetricsList{
+		MetricsList:  rm.listMetrics,
+		MetricsBatch: rm.listMetricsBatch,
+	}
+	return list
+}
 
-	rm.sendBatch = false
-
-	url := fmt.Sprintf("http://%s/ping", rm.cfg.Server.Address)
-	resp, err := rm.client.R().Get(url)
+// Обновляем список метрик
+func (rm *sandlerMetrics) ChangeMetrics() {
+	err := rm.repository.ChangeMetrics()
 	if err != nil {
-		log.Println("Ошибка не: ECONNREFUSED", err.Error())
+		fmt.Println("error", err)
 	}
+}
 
-	if resp.IsError() {
-		fmt.Println("Status Error:", resp.StatusCode()) // prints 404
+// Обновляем список метрик
+func (rm *sandlerMetrics) ChangeMetricsGopsUtil() {
+	err := rm.repository.ChangeMetricsGopsUtil()
+	if err != nil {
+		fmt.Println("error", err)
 	}
+}
 
-	if resp.StatusCode() == 200 {
-		rm.sendBatch = true
-	}
+func (rm *sandlerMetrics) setMetricsBatch() {
+	cfg := rm.cfg
 
-}*/
+	fmt.Println("Send One Batch metrics")
+	rm.urlMetrics = fmt.Sprintf("http://%s/updates", cfg.Server.Address)
+	rm.listMetricsBatch = rm.GetBatchStringMetrics()
+}
 
 func (rm *sandlerMetrics) setMetrics() {
 	cfg := rm.cfg
 
-	//var listMetrics []string
-
-	//rm.serverPing()
-
-	//if rm.sendBatch {
-	fmt.Println("Send One Batch metrics")
-	rm.urlMetrics = fmt.Sprintf("http://%s/updates", cfg.Server.Address)
-	rm.listMetricsBatch = rm.GetBatchStringMetrics()
-	//} else {
 	fmt.Println("Send Single request metrics")
 	rm.urlMetrics = fmt.Sprintf("http://%s/update", cfg.Server.Address)
 	rm.listMetrics = rm.GetSliceStringMetrics()
-	//}
-
-	//rm.listMetrics = listMetrics
 }
 
-func (rm *sandlerMetrics) SendMetrics(listMetrics []string) {
+func (rm *sandlerMetrics) SendMetrics(listMetrics []string) (*resty.Response, error) {
+	rm.mutex.Lock()
+
 	cfg := rm.cfg
 
-	fmt.Printf("Запустили отправку метрик: %s\n", rm.urlMetrics)
+	//fmt.Printf("Запустили отправку метрик: %s\n", rm.urlMetrics)
 
-	defer fmt.Printf("Завершили отправку метрик: %s\n", rm.urlMetrics)
+	defer func() {
+		//fmt.Printf("Завершили отправку метрик: %s\n", rm.urlMetrics)
+		rm.mutex.Unlock()
+	}()
 
 	client := rm.client
 
 	var err error
+	var response *resty.Response
 
 	for _, sendStringMetrics := range listMetrics {
 		if cfg.Gzip.Enable {
 			sendDataCompress, _ := compress.CompressGzip([]byte(sendStringMetrics))
-			_, err = client.R().
+			response, err = client.R().
 				SetBody(sendDataCompress).
 				Post(rm.urlMetrics)
 		} else {
-			_, err = client.R().
+			response, err = client.R().
 				SetBody(sendStringMetrics).
 				Post(rm.urlMetrics)
 		}
@@ -177,6 +199,8 @@ func (rm *sandlerMetrics) SendMetrics(listMetrics []string) {
 			}
 		}
 	}
+
+	return response, err
 
 }
 
@@ -217,7 +241,7 @@ func (rm *sandlerMetrics) getListMetrics() []serialize.Metrics {
 
 	}
 
-	fmt.Println(collectMetrics)
+	//fmt.Println(collectMetrics)
 	//var collectMetrics []serialize.Metrics
 
 	return collectMetrics

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"sync"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/models"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/unserialize"
@@ -20,13 +21,16 @@ type MetricsRepository interface {
 }
 
 type metricsRepository struct {
-	db *sql.DB
+	db    *sql.DB
+	mutex *sync.Mutex
 }
 
 // Contruct
 func NewMetricsRepository(db *sql.DB) MetricsRepository {
+	var mutex sync.Mutex
 	return &metricsRepository{
-		db: db,
+		db:    db,
+		mutex: &mutex,
 	}
 }
 
@@ -44,6 +48,11 @@ func (connect *metricsRepository) GetMetricGauge(ctx context.Context, nameMetric
 }
 
 func (connect *metricsRepository) UpdateMetricGauge(ctx context.Context, nameMetric string, value float64) error {
+
+	connect.mutex.Lock()
+
+	defer connect.mutex.Unlock()
+
 	fmt.Println("DB UpdateMetricGauge")
 
 	metricsTypeID, err := connect.GetMetricsTypeIDByName(ctx, "gauge")
@@ -88,6 +97,11 @@ func (connect *metricsRepository) GetMetricCounter(ctx context.Context, nameMetr
 }
 
 func (connect *metricsRepository) UpdateMetricCounter(ctx context.Context, nameMetric string, value int64) error {
+
+	connect.mutex.Lock()
+
+	defer connect.mutex.Unlock()
+
 	fmt.Println("DB UpdateMetricCounter")
 
 	var deltaMetricCalc int64
@@ -215,6 +229,8 @@ func (connect *metricsRepository) PingDatabase(ctx context.Context) error {
 
 // Можно разбить на две части этот кода для большей детализации и ясности
 func (connect *metricsRepository) SaveMetricsBatch(ctx context.Context, metrics []unserialize.Metrics) error {
+	connect.mutex.Lock()
+
 	tx, err := connect.db.Begin()
 
 	if err != nil {
@@ -223,10 +239,12 @@ func (connect *metricsRepository) SaveMetricsBatch(ctx context.Context, metrics 
 	// можно вызвать Rollback в defer,
 	// если Commit будет раньше, то откат проигнорируется
 	defer func() {
-		err := tx.Rollback()
 		if err != nil {
-			fmt.Printf("error Rollback metrics: %v", err)
+			tx.Rollback()
+		} else {
+			tx.Commit()
 		}
+		connect.mutex.Unlock()
 	}()
 
 	//var countUpdate = 0
@@ -234,19 +252,6 @@ func (connect *metricsRepository) SaveMetricsBatch(ctx context.Context, metrics 
 
 	if err != nil {
 		fmt.Printf("error Update metrics: %v", err)
-		return err
-	}
-
-	/*err = insertBatch(tx, insertMetrisAfterUpdate)
-	if err != nil {
-		fmt.Printf("error Insert metrics: %v", err)
-		return err
-	}*/
-
-	err = tx.Commit()
-
-	if err != nil {
-		fmt.Printf("error Commite metrics: %v", err)
 		return err
 	}
 
