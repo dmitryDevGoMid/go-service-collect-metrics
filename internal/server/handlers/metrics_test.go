@@ -940,7 +940,7 @@ func ExampleMetricsHandlersType_GetMetricsCounter() {
 }
 
 // ExampleMetricsHandlersType_GetMetricsGauge демонстрирует использование функции GetMetricsGauge с ответов 404.
-func ExampleMetricsHandlersType_GetMetricsGauge_404() {
+func ExampleMetricsHandlersType_GetMetricsGauge_NotFound() {
 
 	type mockBehavior func(ctx context.Context, mocks *mocks.MockMetricsRepository, nameMetrics string)
 
@@ -1006,7 +1006,7 @@ func ExampleMetricsHandlersType_GetMetricsGauge_404() {
 }
 
 // ExampleMetricsHandlersType_GetMetricsGauge демонстрирует использование функции GetMetricsGauge с ответов 200.
-func ExampleMetricsHandlersType_GetMetricsGauge_200() {
+func ExampleMetricsHandlersType_GetMetricsGauge_Ok() {
 
 	type mockBehavior func(ctx context.Context, mocks *mocks.MockMetricsRepository, nameMetrics string)
 
@@ -1107,7 +1107,7 @@ func ExampleMetricsHandlersType_GetMetricsGauge_200() {
 */
 
 // ExampleMetricsHandlersType_ValuePostJSON_Gauge_400 демонстрирует использование функции ValuePostJSON с ответов 400.
-func ExampleMetricsHandlersType_ValuePostJSON_Gauge_400() {
+func ExampleMetricsHandlersType_ValuePostJSON_Gauge_Bad() {
 
 	type mockBehavior func(ctx context.Context, mocks *mocks.MockMetricsRepository, nameMetrics string)
 
@@ -1176,7 +1176,7 @@ func ExampleMetricsHandlersType_ValuePostJSON_Gauge_400() {
 }
 
 // ExampleMetricsHandlersType_ValuePostJSON_Gauge_404 демонстрирует использование функции ValuePostJSON с ответов 404.
-func ExampleMetricsHandlersType_ValuePostJSON_Gauge_404() {
+func ExampleMetricsHandlersType_ValuePostJSON_Gauge_NotFound() {
 
 	type mockBehavior func(ctx context.Context, mocks *mocks.MockMetricsRepository, nameMetrics string)
 
@@ -1245,7 +1245,7 @@ func ExampleMetricsHandlersType_ValuePostJSON_Gauge_404() {
 }
 
 // ExampleMetricsHandlersType_ValuePostJSON_Gauge_200 демонстрирует использование функции ValuePostJSON с ответов 200.
-func ExampleMetricsHandlersType_ValuePostJSON_Gauge_200() {
+func ExampleMetricsHandlersType_ValuePostJSON_Gauge_Ok() {
 
 	type mockBehavior func(ctx context.Context, mocks *mocks.MockMetricsRepository, nameMetrics string)
 
@@ -1316,7 +1316,7 @@ func ExampleMetricsHandlersType_ValuePostJSON_Gauge_200() {
 }
 
 // ExampleMetricsHandlersType_ValuePostJSON_Counter_400 демонстрирует использование функции ValuePostJSON с ответов 400.
-func ExampleMetricsHandlersType_ValuePostJSON_Counter_400() {
+func ExampleMetricsHandlersType_ValuePostJSON_Counter_Bad() {
 
 	type mockBehavior func(ctx context.Context, mocks *mocks.MockMetricsRepository, nameMetrics string)
 
@@ -1385,7 +1385,7 @@ func ExampleMetricsHandlersType_ValuePostJSON_Counter_400() {
 }
 
 // ExampleMetricsHandlersType_ValuePostJSON_Counter_200 демонстрирует использование функции ValuePostJSON с ответов 200.
-func ExampleMetricsHandlersType_ValuePostJSON_Counter_200() {
+func ExampleMetricsHandlersType_ValuePostJSON_Counter_Ok() {
 
 	type mockBehavior func(ctx context.Context, mocks *mocks.MockMetricsRepository, nameMetrics string)
 
@@ -1456,7 +1456,7 @@ func ExampleMetricsHandlersType_ValuePostJSON_Counter_200() {
 }
 
 // ExampleMetricsHandlersType_ValuePostJSON_Counter_404 демонстрирует использование функции ValuePostJSON с ответом 404.
-func ExampleMetricsHandlersType_ValuePostJSON_Counter_404() {
+func ExampleMetricsHandlersType_ValuePostJSON_Counter_NotFound() {
 
 	type mockBehavior func(ctx context.Context, mocks *mocks.MockMetricsRepository, nameMetrics string)
 
