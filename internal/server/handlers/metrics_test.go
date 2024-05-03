@@ -1625,8 +1625,8 @@ func ExampleMetricsHandlersTypeGetAllMetricsHTML() {
 	// Body: <div>metrics1 => 543.4657 </div>
 }
 
-// ExampleMetricsHandlersTypePing демонстрирует использование функции Ping с ответом 200.
-func ExampleMetricsHandlersTypePing_Success() {
+// ExampleMetricsHandlersType_Ping демонстрирует использование функции Ping с ответом 200.
+func ExampleMetricsHandlersType_Ping_success() {
 
 	type mockBehavior func(ctx context.Context, mocks *mocks.MockMetricsRepository)
 
@@ -1684,8 +1684,8 @@ func ExampleMetricsHandlersTypePing_Success() {
 	// Body: Success to ping database
 }
 
-// ExampleMetricsHandlersTypePing демонстрирует использование функции Ping с ответом 500.
-func ExampleMetricsHandlersTypePing_Failed() {
+// ExampleMetricsHandlersType_Ping демонстрирует использование функции Ping с ответом 500.
+func ExampleMetricsHandlersType_Ping_failed() {
 
 	type mockBehavior func(ctx context.Context, mocks *mocks.MockMetricsRepository)
 
