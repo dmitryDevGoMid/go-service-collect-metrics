@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config"
-	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/models"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/models/example"
 )
 
@@ -115,12 +114,10 @@ func (s *UnSerializer) JSONExample() {
 
 }
 
-// Преобразуем используем easyjson от mail.ru
+// Преобразуем
 func (s *UnSerializer) JSON() {
 
-	metrics := &models.Metrics{}
-
-	err := metrics.UnmarshalJSON(*s.sourceData)
+	err := json.Unmarshal(*s.sourceData, &s.unserializeData)
 
 	if err != nil {
 		//panic(err.Error())

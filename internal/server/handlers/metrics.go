@@ -1,3 +1,7 @@
+// Package handlers provides handlers for handling metrics.
+//
+// Metrics are stored in a repository and can be retrieved and updated using the handlers.
+// The handlers support both JSON and non-JSON formats.
 package handlers
 
 import (
@@ -25,33 +29,54 @@ import (
 	Marshal - структруа в строку
 */
 
-// Интерфейс для обработчиков запросов
+// MetricsHandlers is an interface for metrics handlers.
 type MetricsHandlers interface {
-
-	//######### NOT JSON ###########
+	// GetMetricsGauge retrieves the gauge metric value for the given metric name.
+	// It returns the value as a string in plain text format.
 	GetMetricsGauge(c *gin.Context)
-	GetMetricsCounter(c *gin.Context)
-	UpdateGauge(c *gin.Context)
-	UpdateCounter(c *gin.Context)
-	Updates(c *gin.Context)
-	//######### NOT JSON ###########
 
+	// GetMetricsCounter retrieves the counter metric value for the given metric name.
+	// It returns the value as a string in plain text format.
+	GetMetricsCounter(c *gin.Context)
+
+	// UpdateGauge updates the gauge metric value for the given metric name.
+	// It accepts the value as a float64 parameter in the URL.
+	UpdateGauge(c *gin.Context)
+
+	// UpdateCounter updates the counter metric value for the given metric name.
+	// It accepts the value as an int64 parameter in the URL.
+	UpdateCounter(c *gin.Context)
+
+	// Updates updates multiple metrics at once using a POST request with JSON data.
+	Updates(c *gin.Context)
+
+	// GetMetrics retrieves all metrics in JSON format.
 	GetMetrics(c *gin.Context)
+
+	// UpdateMetrics updates multiple metrics at once using a PUT request with JSON data.
 	UpdateMetrics(c *gin.Context)
 
+	// GetAllMetricsHTML retrieves all metrics in HTML format.
 	GetAllMetricsHTML(c *gin.Context)
 
+	// Update updates a single metric using a POST request with form data.
 	Update(c *gin.Context)
+
+	// Value retrieves the value of a single metric using a GET request with form data.
 	Value(c *gin.Context)
 
+	// UpdatePostJSON updates a single metric using a POST request with JSON data.
 	UpdatePostJSON(c *gin.Context)
+
+	// ValuePostJSON retrieves the value of a single metric using a GET request with JSON data.
 	ValuePostJSON(c *gin.Context)
 
+	// Ping checks the availability of the service.
 	Ping(c *gin.Context)
 }
 
-// Структура реализующая интерфейс
-type metricsHandlers struct {
+// metricsHandlers is a struct that implements the MetricsHandlers interface.
+type MetricsHandlersType struct {
 	managerRepository mrepository.ManagerRepository
 	metricsRepository repository.MetricsRepository
 	cfg               *config.Config
@@ -65,15 +90,16 @@ type metricsHandlers struct {
 	return &metricsHandlers{metricsRepository: metricsRepository, managerRepository: managerRepository, cfg: cfg}
 }*/
 
+// NewMetricsHandlers creates a new instance of metricsHandlers.
 func NewMetricsHandlers(
 	managerRepository mrepository.ManagerRepository,
 	metricsRepository repository.MetricsRepository,
 	cfg *config.Config) MetricsHandlers {
-	return &metricsHandlers{metricsRepository: metricsRepository, managerRepository: managerRepository, cfg: cfg}
+	return &MetricsHandlersType{metricsRepository: metricsRepository, managerRepository: managerRepository, cfg: cfg}
 }
 
 // Change repository
-func (h *metricsHandlers) setRepository() {
+func (h *MetricsHandlersType) setRepository() {
 	//Если менеджер репозитария пустой, то используем репозитарий назначенный через конструктор
 	if h.managerRepository != nil {
 		h.metricsRepository = h.managerRepository.GetRepositoryActive()
@@ -81,8 +107,14 @@ func (h *metricsHandlers) setRepository() {
 }
 
 // ####################### POST NOT JSON ######################
-// endPointsMetricsHandlers GetMetricsGauge
-func (h *metricsHandlers) GetMetricsGauge(c *gin.Context) {
+// End Points MetricsHandlers GetMetricsGauge
+// Returns the current value of a gauge metric by its name.
+// Parameters:
+// - metric: the name of the metric
+// Returns:
+// - HTTP status code 200 OK and the metric value as a string in the response body if the metric is found
+// - HTTP status code 404 Not Found if the metric is not found
+func (h *MetricsHandlersType) GetMetricsGauge(c *gin.Context) {
 	h.setRepository()
 
 	metricName := c.Param("metric")
@@ -99,9 +131,15 @@ func (h *metricsHandlers) GetMetricsGauge(c *gin.Context) {
 	}
 }
 
-// endPointsMetricsHandlers GetMetricsCounter
-func (h *metricsHandlers) GetMetricsCounter(c *gin.Context) {
-	//h.setRepository()
+// End Points MetricsHandlers GetMetricsCounter
+// Returns the value of a counter metric by its name.
+// Parameters:
+// - metric: the name of the metric
+// Returns:
+// - HTTP status code 200 OK and the metric value as a string in the response body if the metric is found
+// - HTTP status code 404 Not Found if the metric is not found
+func (h *MetricsHandlersType) GetMetricsCounter(c *gin.Context) {
+	h.setRepository()
 
 	metricName := c.Param("metric")
 
@@ -118,7 +156,14 @@ func (h *metricsHandlers) GetMetricsCounter(c *gin.Context) {
 }
 
 // End Points MetricsHandlers UpdateGauge
-func (h *metricsHandlers) UpdateGauge(c *gin.Context) {
+// Updates the value of a gauge metric by its name.
+// Parameters:
+// - metric: the name of the metric
+// - value: the new value of the metric as a floating-point number
+// Returns:
+// - HTTP status code 200 OK on successful execution
+// - HTTP status code 400 Bad Request if the metric value is invalid
+func (h *MetricsHandlersType) UpdateGauge(c *gin.Context) {
 	h.setRepository()
 
 	metricName := c.Param("metric")
@@ -135,7 +180,14 @@ func (h *metricsHandlers) UpdateGauge(c *gin.Context) {
 }
 
 // End Points MetricsHandlers UpdateCounter
-func (h *metricsHandlers) UpdateCounter(c *gin.Context) {
+// Updates the value of a counter metric by its name.
+// Parameters:
+// - metric: the name of the metric
+// - value: the new value of the metric as an integer
+// Returns:
+// - HTTP status code 200 OK on successful execution
+// - HTTP status code 400 Bad Request if the metric value is invalid
+func (h *MetricsHandlersType) UpdateCounter(c *gin.Context) {
 	h.setRepository()
 	metric := c.Param("metric")
 	value := c.Param("value")
@@ -183,7 +235,7 @@ func checkGzip(c *gin.Context) ([]byte, error) {
 }
 
 // Point Serialize Data by Request
-func (h *metricsHandlers) unSerializerRequestBatch(c *gin.Context) []unserialize.Metrics {
+func (h *MetricsHandlersType) unSerializerRequestBatch(c *gin.Context) []unserialize.Metrics {
 	if c.Request.Body == nil {
 		restutils.GinWriteError(c, http.StatusBadRequest, restutils.ErrEmptyBody.Error())
 		return []unserialize.Metrics{}
@@ -211,7 +263,7 @@ func (h *metricsHandlers) unSerializerRequestBatch(c *gin.Context) []unserialize
 }
 
 // Point Serialize Data by Request
-func (h *metricsHandlers) unSerializerRequest(c *gin.Context) unserialize.Metrics {
+func (h *MetricsHandlersType) unSerializerRequest(c *gin.Context) unserialize.Metrics {
 	if c.Request.Body == nil {
 		restutils.GinWriteError(c, http.StatusBadRequest, restutils.ErrEmptyBody.Error())
 		return unserialize.Metrics{}
@@ -220,7 +272,7 @@ func (h *metricsHandlers) unSerializerRequest(c *gin.Context) unserialize.Metric
 	body, err := checkGzip(c)
 	//body, err := io.ReadAll(c.Request.Body)
 
-	fmt.Println(string(body))
+	//fmt.Println(string(body))
 
 	if err != nil {
 		restutils.GinWriteError(c, http.StatusBadRequest, err.Error())
@@ -235,16 +287,16 @@ func (h *metricsHandlers) unSerializerRequest(c *gin.Context) unserialize.Metric
 
 	if unserializeError.Errors() != nil {
 		//panic(unserializeError.Errors().Error())
-		fmt.Println(unserializeError.Errors().Error())
+		fmt.Println("UnserializeError=>", unserializeError.Errors().Error())
 	}
 
-	fmt.Println(metrics)
+	//fmt.Println(metrics)
 
 	return metrics
 }
 
 // Point Serialize Data for Send
-func (h *metricsHandlers) serializerResponse(metricsSData *serialize.Metrics) string {
+func (h *MetricsHandlersType) serializerResponse(metricsSData *serialize.Metrics) string {
 
 	serializer := serialize.NewSerializer(h.cfg)
 
@@ -260,8 +312,12 @@ func (h *metricsHandlers) serializerResponse(metricsSData *serialize.Metrics) st
 
 }
 
-// endPointsMetricsHandlers GetMetrics
-func (h *metricsHandlers) GetMetrics(c *gin.Context) {
+// GetMetrics retrieves the value of a metric by its ID and type.
+// It accepts a request body containing the metric ID and type, and returns the metric value in the response body.
+// The type can be either "gauge" or "counter". If the type is not valid, it returns a 400 Bad Request status code.
+// If the metric is not found, it returns a 404 Not Found status code.
+// The response body is compressed using gzip if the client accepts it.
+func (h *MetricsHandlersType) GetMetrics(c *gin.Context) {
 	h.setRepository()
 
 	metrics := h.unSerializerRequest(c)
@@ -287,9 +343,9 @@ func (h *metricsHandlers) GetMetrics(c *gin.Context) {
 		respGauge, err = retry.GetMetricGauge(c, metrics.ID)
 		//respGauge, err = h.metricsRepository.GetMetricGauge(c, metrics.ID)
 	case "counter":
-		//respCounter, err = h.metricsRepository.GetMetricCounter(c, metrics.ID)
-		retry := repository.Decorator{IMetric: h.metricsRepository}
-		respCounter, err = retry.GetMetricCounter(c, metrics.ID)
+		respCounter, err = h.metricsRepository.GetMetricCounter(c, metrics.ID)
+		//retry := repository.Decorator{IMetric: h.metricsRepository}
+		//respCounter, err = retry.GetMetricCounter(c, metrics.ID)
 	default:
 		c.Status(http.StatusBadRequest)
 		return
@@ -316,10 +372,16 @@ func (h *metricsHandlers) GetMetrics(c *gin.Context) {
 	//c.Data(http.StatusOK, "application/json", []byte(sendData))
 	data := gZipAccept([]byte(sendData), c)
 	c.Data(http.StatusOK, "application/json", []byte(data))
+	return
 }
 
-// endPointsMetricsHandlers UpdateMetrics
-func (h *metricsHandlers) UpdateMetrics(c *gin.Context) {
+// UpdateMetrics updates the value of a metric by its ID and type.
+// It accepts a request body containing the metric ID, type, and new value or delta.
+// The type can be either "gauge" or "counter". If the type is not valid, it returns a 400 Bad Request status code.
+// If the metric is not found, it returns a 404 Not Found status code.
+// The updated metric value is returned in the response body.
+// The response body is compressed using gzip if the client accepts it.
+func (h *MetricsHandlersType) UpdateMetrics(c *gin.Context) {
 	h.setRepository()
 
 	metrics := h.unSerializerRequest(c)
@@ -371,12 +433,12 @@ func (h *metricsHandlers) UpdateMetrics(c *gin.Context) {
 	c.Data(http.StatusOK, "application/json", []byte(data))
 }
 
-func (h *metricsHandlers) UpdatePostJSON(c *gin.Context) {
+func (h *MetricsHandlersType) UpdatePostJSON(c *gin.Context) {
 	h.UpdateMetrics(c)
 }
 
 // Point Update
-func (h *metricsHandlers) Update(c *gin.Context) {
+func (h *MetricsHandlersType) Update(c *gin.Context) {
 	typeMetric := c.Param("type")
 
 	switch val := typeMetric; val {
@@ -389,12 +451,15 @@ func (h *metricsHandlers) Update(c *gin.Context) {
 	}
 }
 
-func (h *metricsHandlers) ValuePostJSON(c *gin.Context) {
+func (h *MetricsHandlersType) ValuePostJSON(c *gin.Context) {
 	h.GetMetrics(c)
 }
 
-// Point Value
-func (h *metricsHandlers) Value(c *gin.Context) {
+// Value retrieves the value of a metric by its type and name.
+// It accepts a path parameter "type" which can be either "gauge" or "counter" to specify the type of the metric.
+// If the type is not valid, it returns a 400 Bad Request status code.
+// Otherwise, it calls the corresponding handler function to retrieve the value of the metric and returns it in the response body.
+func (h *MetricsHandlersType) Value(c *gin.Context) {
 
 	//fmt.Println("VALUE Content-Type NOT JSON")
 	typeMetric := c.Param("type")
@@ -410,7 +475,7 @@ func (h *metricsHandlers) Value(c *gin.Context) {
 }
 
 // End Points MetricsHandlers GetAllMetricsHtml
-func (h *metricsHandlers) GetAllMetricsHTML(c *gin.Context) {
+func (h *MetricsHandlersType) GetAllMetricsHTML(c *gin.Context) {
 	h.setRepository()
 
 	html := ""
@@ -475,7 +540,9 @@ func gZipAccept(data []byte, c *gin.Context) []byte {
 }
 
 // Ping Data Base Postgres Server
-func (h *metricsHandlers) Ping(c *gin.Context) {
+// The Ping function handles the HTTP request to check the connection to the Postgres server.
+// It returns a 200 status code if the connection is successful, and a 500 status code if it fails.
+func (h *MetricsHandlersType) Ping(c *gin.Context) {
 	h.setRepository()
 
 	err := h.metricsRepository.PingDatabase(c)
@@ -488,7 +555,11 @@ func (h *metricsHandlers) Ping(c *gin.Context) {
 	c.Data(200, "Ping successful", []byte("Success to ping database"))
 }
 
-func (h *metricsHandlers) Updates(c *gin.Context) {
+// Updates
+// The Updates function handles the HTTP request to update multiple metrics in the database.
+// It expects a request body containing a list of metrics in JSON format, and saves them to the database.
+// It returns a 200 status code if the update is successful, and a 400 status code if the request body is empty or invalid.
+func (h *MetricsHandlersType) Updates(c *gin.Context) {
 	metrics := h.unSerializerRequestBatch(c)
 
 	err := h.metricsRepository.SaveMetricsBatch(c, metrics)
