@@ -873,8 +873,8 @@ func TestUpdateJsonPostGauge(t *testing.T) {
 	}
 }
 
-// ExampleMetricsHandlersType_GetMetricsCounter демонстрирует использование функции GetMetricsCounter.
-func ExampleMetricsHandlersType_GetMetricsCounter() {
+// ExampleMetricsHandlersTypeGetMetricsCounter демонстрирует использование функции GetMetricsCounter.
+func ExampleMetricsHandlersTypeGetMetricsCounter() {
 	type mockBehavior func(ctx context.Context, mocks *mocks.MockMetricsRepository, nameMetrics string)
 
 	tt := struct {
