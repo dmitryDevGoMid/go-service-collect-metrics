@@ -372,7 +372,6 @@ func (h *MetricsHandlersType) GetMetrics(c *gin.Context) {
 	//c.Data(http.StatusOK, "application/json", []byte(sendData))
 	data := gZipAccept([]byte(sendData), c)
 	c.Data(http.StatusOK, "application/json", []byte(data))
-	return
 }
 
 // UpdateMetrics updates the value of a metric by its ID and type.
