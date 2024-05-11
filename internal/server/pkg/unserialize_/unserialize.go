@@ -102,10 +102,10 @@ func (s *UnSerializer) JSONBatch() {
 
 }
 
-// Преобразуем используем easyjson от mail.ru
-func (s *UnSerializer) JSONExample() {
+// Преобразуем
+func (s *UnSerializer) JSON() {
 
-	err := s.unserializeDataExample.UnmarshalJSON(*s.sourceData)
+	err := json.Unmarshal(*s.sourceData, &s.unserializeData)
 
 	if err != nil {
 		//panic(err.Error())
@@ -114,10 +114,10 @@ func (s *UnSerializer) JSONExample() {
 
 }
 
-// Преобразуем
-func (s *UnSerializer) JSON() {
+// Преобразуем используем обычный json
+func (s *UnSerializer) JSONExample() {
 
-	err := json.Unmarshal(*s.sourceData, &s.unserializeData)
+	err := json.Unmarshal(*s.sourceData, &s.unserializeDataExample)
 
 	if err != nil {
 		//panic(err.Error())
