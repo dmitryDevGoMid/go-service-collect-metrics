@@ -75,7 +75,8 @@ func (d Decorator) UpdateMetricGauge(ctx context.Context, nameMetric string, val
 			return ctx.Err()
 		default:
 		}
-		err := d.IMetric.UpdateMetricGauge(ctx, nameMetric, value)
+		err = d.IMetric.UpdateMetricGauge(ctx, nameMetric, value)
+		//Fixed: declaration of "err" shadows declaration at
 		if err == nil {
 			return nil
 		} else {
@@ -95,7 +96,8 @@ func (d Decorator) UpdateMetricCounter(ctx context.Context, nameMetric string, v
 			return ctx.Err()
 		default:
 		}
-		err := d.IMetric.UpdateMetricCounter(ctx, nameMetric, value)
+		err = d.IMetric.UpdateMetricCounter(ctx, nameMetric, value)
+		//Fixed: declaration of "err" shadows declaration at
 		if err == nil {
 			return nil
 		} else {
@@ -109,13 +111,16 @@ func (d Decorator) UpdateMetricCounter(ctx context.Context, nameMetric string, v
 // GetAllMetrics(ctx context.Context) (*models.MemStorage, error)
 func (d Decorator) GetAllMetrics(ctx context.Context) (*models.MemStorage, error) {
 	var err error
+	var val *models.MemStorage
+
 	for i := 0; i < len(countAttempt); i++ {
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		default:
 		}
-		val, err := d.IMetric.GetAllMetrics(ctx)
+		//Fixed: declaration of "err" shadows declaration at
+		val, err = d.IMetric.GetAllMetrics(ctx)
 		if err == nil {
 			return val, nil
 		} else {

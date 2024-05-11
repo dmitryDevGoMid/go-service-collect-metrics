@@ -34,7 +34,8 @@ type conn struct {
 // Выполняем соединение с базой данных и возвращаем коннект вместе с ошибкой
 func NewConnection(cfg *config.Config) Connection {
 
-	connectPostgres, err := GetPostgresConnection(cfg)
+	//Fixed: declaration of "connectPostgres" shadows declaration
+	connectPostgres, err = GetPostgresConnection(cfg)
 	if err != nil {
 		fmt.Println("Error opening database: ", err)
 	}
