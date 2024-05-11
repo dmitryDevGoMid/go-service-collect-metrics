@@ -5,6 +5,7 @@
 // error message with the location of the call.
 //
 // The analyzer skips functions that are not named "main".
+
 package osexit
 
 import (
