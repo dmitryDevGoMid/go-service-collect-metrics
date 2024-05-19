@@ -1,0 +1,6 @@
+{"LEVEL":"INFO","TIME":"2024-05-16T21:00:06.146+0300","CALLER":"server/server.go:44","MESSAGE":"Start Service API Metrics"}
+{"LEVEL":"INFO","TIME":"2024-05-16T21:00:06.146+0300","CALLER":"server/server.go:46","MESSAGE":"AppVersion: "}
+{"LEVEL":"INFO","TIME":"2024-05-16T21:02:10.629+0300","CALLER":"server/server.go:44","MESSAGE":"Start Service API Metrics"}
+{"LEVEL":"INFO","TIME":"2024-05-16T21:02:10.629+0300","CALLER":"server/server.go:46","MESSAGE":"AppVersion: "}
+{"LEVEL":"INFO","TIME":"2024-05-16T21:07:21.044+0300","CALLER":"server/server.go:44","MESSAGE":"Start Service API Metrics"}
+{"LEVEL":"INFO","TIME":"2024-05-16T21:07:21.044+0300","CALLER":"server/server.go:46","MESSAGE":"AppVersion: "}

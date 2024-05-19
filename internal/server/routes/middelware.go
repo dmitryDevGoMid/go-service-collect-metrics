@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/compress"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/asimencrypt"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/cryptohashsha"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/decompress"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/logger"
@@ -175,15 +177,37 @@ func LoggerMiddleware(appLogger *logger.APILogger) gin.HandlerFunc {
 	}
 }
 
+// Assimetric Encrypt Decode by Private Key
+func AssimEncryptBody(cfg *config.Config, encrypt asimencrypt.AsimEncrypt) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if cfg.PathEncrypt.KeyEncryptEnbled {
+			body, _ := io.ReadAll(c.Request.Body)
+			fmt.Println("Получили--------->>>>>>>>>>:", body)
+			bodyDecrypt, err := encrypt.Decrypt(body)
+			fmt.Println("Расшифровали--------->>>>>>>>>>:", bodyDecrypt)
+
+			if err != nil {
+				log.Println("Error decrypt into middleware", err)
+				bodyDecrypt = string(body)
+			}
+
+			c.Request.Body = io.NopCloser(bytes.NewReader([]byte(bodyDecrypt)))
+		}
+		c.Next()
+	}
+}
+
 // Пишем синхронно с отправкой данные на диск в случае update данных
 func CheckHashSHA256Data(cfg *config.Config, hash cryptohashsha.HashSha256) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//fmt.Println("===CheckHashSHA256Data===", cfg.HashSHA256.Key)
 
 		hashData := c.Request.Header.Get("HashSHA256")
+		fmt.Println("В заголовке есть ключ", hashData)
 
 		if hashData != "" && hash.CheckHashSHA256Key() {
 			body, _ := io.ReadAll(c.Request.Body)
+			fmt.Println("Тело запроса======>", body)
 
 			c.Request.Body = io.NopCloser(bytes.NewReader(body))
 

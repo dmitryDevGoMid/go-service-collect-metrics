@@ -12,6 +12,7 @@ import (
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/config"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/middleware"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/asimencrypt"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/cryptohashsha"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/repository"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/sandlers"
@@ -37,8 +38,16 @@ func MonitorMetricsRun() {
 
 	sha256 := cryptohashsha.NewSha256(cfg)
 
-	clientMiddleware := middleware.NewClientMiddleware(client, cfg, sha256)
+	//Шифрование тела сообщения
+	asme := asimencrypt.NewAsimEncrypt(cfg)
+	errSetPrivateKey := asme.SetPublicKey()
+	if errSetPrivateKey != nil {
+		log.Println("error set private key:", errSetPrivateKey)
+	}
 
+	clientMiddleware := middleware.NewClientMiddleware(client, cfg, sha256, asme)
+
+	clientMiddleware.AssimEncryptBody()
 	clientMiddleware.OnBeforeRequest()
 	clientMiddleware.OnAfterResponse()
 

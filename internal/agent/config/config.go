@@ -1,10 +1,31 @@
 package config
 
 import (
+	"encoding/json"
 	"flag"
+	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/caarlos0/env/v6"
 )
+
+// Структура которая необходима для конфигурационных данных, читаемых из файл
+type ConfigJsonStruct struct {
+	Address         string `json:"address,omitempty"`
+	Report_interval int    `json:"report_interval,omitempty"`
+	Poll_interval   int    `json:"poll_interval,omitempty"`
+	Crypto_key      string `json:"crypto_key,omitempty"`
+}
+
+type ConfigJson struct {
+	ConfigJson string `env:"CONFIG"`
+}
+
+type PathEncrypt struct {
+	PathEncryptKey   string `env:"CRYPTO_KEY"`
+	KeyEncryptEnbled bool
+}
 
 type Workers struct {
 	LimitWorkers int `env:"RATE_LIMIT"`
@@ -38,13 +59,14 @@ type Server struct {
 }
 
 type Config struct {
-	Server     Server
-	Metrics    Metrics
-	Logger     Logger
-	Serializer Serializer
-	Gzip       Gzip
-	SHA256     SHA256
-	Workers    Workers
+	Server      Server
+	Metrics     Metrics
+	Logger      Logger
+	Serializer  Serializer
+	Gzip        Gzip
+	SHA256      SHA256
+	Workers     Workers
+	PathEncrypt PathEncrypt
 }
 
 var (
@@ -58,34 +80,118 @@ var (
 	sendMeticsBatch  bool
 	keySHA256        string
 	limitWorkersPool int
+	pathEncryptKey   string
+	configJson       string
 )
 
-func init() {
-	flag.StringVar(&address, "a", "localhost:8080", "location http server")
-	flag.IntVar(&reportInterval, "r", 10, "interval for run metrics")
-	flag.IntVar(&pollInterval, "p", 2, "interval for run metrics")
-	flag.BoolVar(&sendMeticsBatch, "mb", true, "set gzip for agent and server")
+/*
+{
+    "address": "localhost:8080", // аналог переменной окружения ADDRESS или флага -a
+    "report_interval": "1s", // аналог переменной окружения REPORT_INTERVAL или флага -r
+    "poll_interval": "1s", // аналог переменной окружения POLL_INTERVAL или флага -p
+    "crypto_key": "/path/to/key.pem" // аналог переменной окружения CRYPTO_KEY или флага -crypto-key
+}
+*/
+
+var result = ConfigJsonStruct{
+	Address:         "localhost:8080",
+	Crypto_key:      "",
+	Poll_interval:   2,
+	Report_interval: 10,
+}
+
+func InitFlag(flagInit *flag.FlagSet) {
+	//Config
+	flagInit.StringVar(&configJson, "c", "", "path to config file by json")
+	flagInit.StringVar(&configJson, "config", "", "path to config file by json")
+
+	//Encrypt
+	flagInit.StringVar(&pathEncryptKey, "crypto-key", result.Crypto_key, "path encrypt key")
+
+	flagInit.StringVar(&address, "a", result.Address, "location http server")
+	flagInit.IntVar(&reportInterval, "r", result.Report_interval, "interval for run metrics")
+	flagInit.IntVar(&pollInterval, "p", result.Poll_interval, "interval for run metrics")
+	flagInit.BoolVar(&sendMeticsBatch, "mb", true, "set gzip for agent and server")
 
 	//	Logger
-	flag.StringVar(&loggerEncoding, "logen", "full", "set logger config encoding")
-	flag.StringVar(&loggerLevel, "loglv", "InfoLevel", "set logger config level")
+	flagInit.StringVar(&loggerEncoding, "logen", "full", "set logger config encoding")
+	flagInit.StringVar(&loggerLevel, "loglv", "InfoLevel", "set logger config level")
 
 	//Serialize Type
-	flag.StringVar(&serializeType, "sertype", "json", "set logger config encoding")
+	flagInit.StringVar(&serializeType, "sertype", "json", "set logger config encoding")
 
 	//Serialize Type
-	flag.BoolVar(&enableGzip, "gzip", false, "set gzip for agent and server")
+	flagInit.BoolVar(&enableGzip, "gzip", false, "set gzip for agent and server")
 
 	//sha 256 key
-	flag.StringVar(&keySHA256, "k", "invalidkey", "set gzip for agent and server")
+	flagInit.StringVar(&keySHA256, "k", "invalidkey", "set gzip for agent and server")
 
 	//Works
-	flag.IntVar(&limitWorkersPool, "l", 5, "limit workers send to server metrics")
+	flagInit.IntVar(&limitWorkersPool, "l", 5, "limit workers send to server metrics")
+}
+
+// Это просто треш, а не библиотека, такой процесс повторной инициализации флагов могли придумать только в golang - жесть
+// Такое выполнение повтороне позволяетс реализовать инициализацию флаго: по умолчанию, из командной строки и из файла json,
+// при условии, что у конфигов из файла приоритет самый низкий, тоесть инициализация значения происходит только из файла в том
+// случаи если нет значение в командной строке и в переменных окружения.
+func ParseFlag() {
+	flags1 := flag.NewFlagSet("myapp1", flag.ExitOnError)
+	InitFlag(flags1)
+	InitFlag(flag.CommandLine)
+	flag.Parse()
+
+	err := flags1.Parse(nil)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	//Проверяем наличие конфигурационного файла, если он есть то выставляем значения по умолчанию из него
+	if configJson != "" {
+		errConfig := ConfigFileRead(configJson)
+		//Если ошибка то возвращаемся из функции, все флаги проинициализированы
+		if errConfig != nil {
+			fmt.Println("Error Set Path File Config", errConfig)
+			return
+		}
+
+		flags1.VisitAll(func(f *flag.Flag) {
+			if f.Name == "crypto-key" {
+
+				fmt.Printf("Flag name: %s\n", f.Name)
+				fmt.Printf("Flag default value: %v\n", f.DefValue)
+				fmt.Printf("Flag usage: %s\n", f.Usage)
+				fmt.Println("Flag Value:", f.Value)
+
+				fmt.Println()
+			}
+		})
+
+		flags2 := flag.NewFlagSet("myapp2", flag.ExitOnError)
+		InitFlag(flags2)
+		flags2.Parse(nil)
+
+		flag.Parse()
+
+		flags2.VisitAll(func(f *flag.Flag) {
+			if f.Name == "crypto-key" {
+
+				fmt.Printf("Flag2 name: %s\n", f.Name)
+				fmt.Printf("Flag2 default value: %v\n", f.DefValue)
+				fmt.Printf("Flag2 usage: %s\n", f.Usage)
+				fmt.Println("Flag2 Value:", f.Value)
+
+				fmt.Println()
+			}
+		})
+
+		fmt.Println("pathEncryptKey=>", pathEncryptKey)
+	}
+	//os.Exit(1)
 }
 
 // Разбираем конфигурацию по структурам
 func ParseConfig() (*Config, error) {
-	flag.Parse()
+	ParseFlag()
 
 	var config Config
 
@@ -106,6 +212,9 @@ func ParseConfig() (*Config, error) {
 
 	config.Workers.LimitWorkers = limitWorkersPool
 
+	config.PathEncrypt.PathEncryptKey = pathEncryptKey
+	config.PathEncrypt.KeyEncryptEnbled = false
+
 	//Init by environment variables
 	env.Parse(&config.Metrics)
 	env.Parse(&config.Server)
@@ -114,6 +223,41 @@ func ParseConfig() (*Config, error) {
 	env.Parse(&config.Gzip)
 	env.Parse(&config.SHA256)
 	env.Parse(&config.Workers)
+	env.Parse(&config.PathEncrypt)
 
 	return &config, nil
+}
+
+func ConfigFileRead(path string) error {
+	// Получаем текущую рабочую директорию
+	wd, err := os.Getwd()
+	if err != nil {
+		fmt.Println("Ошибка при получении текущей рабочей директории:", err)
+		return err
+	}
+
+	// Путь к файлу
+	filePath := filepath.Join(wd, path)
+
+	// Проверяем существование файла
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		fmt.Println("Файл не существует")
+		return err
+	}
+
+	// Читаем содержимое файла
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		fmt.Println("Ошибка при чтении файла:", err)
+		return err
+	}
+
+	// Выполняем маршалинг данных в структуру
+	err = json.Unmarshal(data, &result)
+	if err != nil {
+		fmt.Println("Ошибка при маршалинге данных:", err)
+		return err
+	}
+
+	return nil
 }
