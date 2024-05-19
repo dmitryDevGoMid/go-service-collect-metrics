@@ -3,7 +3,7 @@ package middleware_test
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -45,7 +45,7 @@ func TestAssimEncryptBody(t *testing.T) {
 					}
 
 					// Читаем тело запроса
-					bodyBytes, err := ioutil.ReadAll(r.Body)
+					bodyBytes, err := io.ReadAll(r.Body)
 					if err != nil {
 						http.Error(w, "error reading request body", http.StatusInternalServerError)
 						return

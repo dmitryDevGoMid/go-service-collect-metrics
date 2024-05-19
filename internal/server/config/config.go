@@ -10,16 +10,16 @@ import (
 	"github.com/caarlos0/env/v6"
 )
 
-type ConfigJsonStruct struct {
-	Address        string `json:"address,omitempty"`
-	Restore        bool   `json:"restore,omitempty"`
-	Store_interval int    `json:"store_interval,omitempty"`
-	Store_file     string `json:"store_file,omitempty"`
-	Database_dsn   string `json:"database_dsn,omitempty"`
-	Crypto_key     string `json:"crypto_key,omitempty"`
+type ConfigJSONStruct struct {
+	Address       string `json:"address,omitempty"`
+	Restore       bool   `json:"restore,omitempty"`
+	StoreInterval int    `json:"store_interval,omitempty"`
+	StoreFile     string `json:"store_file,omitempty"`
+	DatabaseDsn   string `json:"database_dsn,omitempty"`
+	CryptoKey     string `json:"crypto_key,omitempty"`
 }
 
-type ConfigJson struct {
+type ConfigJSON struct {
 	ConfigJson string `env:"CONFIG"`
 }
 
@@ -74,7 +74,7 @@ type Config struct {
 	DataBase    DataBase
 	HashSHA256  HashSHA256
 	PathEncrypt PathEncrypt
-	ConfigJson  ConfigJson
+	ConfigJSON  ConfigJSON
 }
 
 var (
@@ -99,13 +99,13 @@ var (
 	configJson string
 )
 
-var result = ConfigJsonStruct{
-	Address:        "localhost:8080",
-	Crypto_key:     "",
-	Database_dsn:   "postgres://manager:M45fgMetr@localhost:5432/metrics?sslmode=disable",
-	Restore:        true,
-	Store_interval: 300,
-	Store_file:     "/tmp/metrics-db.json",
+var result = ConfigJSONStruct{
+	Address:       "localhost:8080",
+	CryptoKey:     "",
+	DatabaseDsn:   "postgres://manager:M45fgMetr@localhost:5432/metrics?sslmode=disable",
+	Restore:       true,
+	StoreInterval: 300,
+	StoreFile:     "/tmp/metrics-db.json",
 }
 
 /*
@@ -127,7 +127,7 @@ func InitFlag(flagInit *flag.FlagSet) {
 	flagInit.StringVar(&configJson, "config", "", "path to config file by json")
 
 	//Encrypt
-	flagInit.StringVar(&pathEncryptKey, "crypto-key", result.Crypto_key, "path encrypt key")
+	flagInit.StringVar(&pathEncryptKey, "crypto-key", result.CryptoKey, "path encrypt key")
 
 	flagInit.StringVar(&address, "a", result.Address, "location http server")
 	//flag.IntVar(&reportInterval, "r", 400, "interval for run metrics")
@@ -146,8 +146,8 @@ func InitFlag(flagInit *flag.FlagSet) {
 	//File
 	flagInit.BoolVar(&restoreFile, "r", result.Restore, "restore file")
 	//flag.StringVar(&fileStoragePath, "f", "/tmp/metrics-db.json", "path file")
-	flagInit.StringVar(&fileStoragePath, "f", result.Store_file, "path file")
-	flagInit.IntVar(&storeIntervalFile, "i", result.Store_interval, "store interval file")
+	flagInit.StringVar(&fileStoragePath, "f", result.StoreFile, "path file")
+	flagInit.IntVar(&storeIntervalFile, "i", result.StoreInterval, "store interval file")
 
 	//Connection Database
 	/*
@@ -155,7 +155,7 @@ func InitFlag(flagInit *flag.FlagSet) {
 	  - POSTGRES_USER=manager
 	  - POSTGRES_DB=metrics
 	*/
-	flagInit.StringVar(&databaseURL, "d", result.Database_dsn, "database url for conection postgress")
+	flagInit.StringVar(&databaseURL, "d", result.DatabaseDsn, "database url for conection postgress")
 
 	//sha 256 key
 	flagInit.StringVar(&keySHA256, "k", "invalidkey", "set key for calc SHA256")
@@ -260,6 +260,7 @@ func ParseConfig() (*Config, error) {
 	env.Parse(&config.DataBase)
 	env.Parse(&config.HashSHA256)
 	env.Parse(&config.PathEncrypt)
+	env.Parse(&config.ConfigJSON)
 
 	return &config, nil
 }

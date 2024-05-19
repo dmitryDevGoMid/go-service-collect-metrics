@@ -11,14 +11,14 @@ import (
 )
 
 // Структура которая необходима для конфигурационных данных, читаемых из файл
-type ConfigJsonStruct struct {
-	Address         string `json:"address,omitempty"`
-	Report_interval int    `json:"report_interval,omitempty"`
-	Poll_interval   int    `json:"poll_interval,omitempty"`
-	Crypto_key      string `json:"crypto_key,omitempty"`
+type ConfigJSONStruct struct {
+	Address        string `json:"address,omitempty"`
+	ReportInterval int    `json:"report_interval,omitempty"`
+	PollInterval   int    `json:"poll_interval,omitempty"`
+	CryptoKey      string `json:"crypto_key,omitempty"`
 }
 
-type ConfigJson struct {
+type ConfigJSON struct {
 	ConfigJson string `env:"CONFIG"`
 }
 
@@ -67,6 +67,7 @@ type Config struct {
 	SHA256      SHA256
 	Workers     Workers
 	PathEncrypt PathEncrypt
+	ConfigJSON  ConfigJSON
 }
 
 var (
@@ -93,11 +94,11 @@ var (
 }
 */
 
-var result = ConfigJsonStruct{
-	Address:         "localhost:8080",
-	Crypto_key:      "",
-	Poll_interval:   2,
-	Report_interval: 10,
+var result = ConfigJSONStruct{
+	Address:        "localhost:8080",
+	CryptoKey:      "",
+	PollInterval:   2,
+	ReportInterval: 10,
 }
 
 func InitFlag(flagInit *flag.FlagSet) {
@@ -106,11 +107,11 @@ func InitFlag(flagInit *flag.FlagSet) {
 	flagInit.StringVar(&configJson, "config", "", "path to config file by json")
 
 	//Encrypt
-	flagInit.StringVar(&pathEncryptKey, "crypto-key", result.Crypto_key, "path encrypt key")
+	flagInit.StringVar(&pathEncryptKey, "crypto-key", result.CryptoKey, "path encrypt key")
 
 	flagInit.StringVar(&address, "a", result.Address, "location http server")
-	flagInit.IntVar(&reportInterval, "r", result.Report_interval, "interval for run metrics")
-	flagInit.IntVar(&pollInterval, "p", result.Poll_interval, "interval for run metrics")
+	flagInit.IntVar(&reportInterval, "r", result.ReportInterval, "interval for run metrics")
+	flagInit.IntVar(&pollInterval, "p", result.PollInterval, "interval for run metrics")
 	flagInit.BoolVar(&sendMeticsBatch, "mb", true, "set gzip for agent and server")
 
 	//	Logger
@@ -224,6 +225,7 @@ func ParseConfig() (*Config, error) {
 	env.Parse(&config.SHA256)
 	env.Parse(&config.Workers)
 	env.Parse(&config.PathEncrypt)
+	env.Parse(&config.ConfigJSON)
 
 	return &config, nil
 }

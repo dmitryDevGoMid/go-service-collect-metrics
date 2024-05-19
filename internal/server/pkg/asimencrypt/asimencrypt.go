@@ -100,7 +100,7 @@ func (asme *asimEncrypt) GenerateKey(bits int, filename string) error {
 	}
 
 	// Encode the public key in PKIX format
-	pubkey_bytes, err := x509.MarshalPKIXPublicKey(public)
+	pubkeyBytes, err := x509.MarshalPKIXPublicKey(public)
 	if err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func (asme *asimEncrypt) GenerateKey(bits int, filename string) error {
 	// Write the public key to a file in PEM format
 	blockPublic := &pem.Block{
 		Type:  "RSA PUBLIC KEY",
-		Bytes: pubkey_bytes,
+		Bytes: pubkeyBytes,
 	}
 
 	filePublic, err := os.Create("public.pem")
