@@ -20,7 +20,7 @@ type ConfigJSONStruct struct {
 }
 
 type ConfigJSON struct {
-	ConfigJson string `env:"CONFIG"`
+	ConfigJSON string `env:"CONFIG"`
 }
 
 type PathEncrypt struct {
@@ -96,7 +96,7 @@ var (
 
 	pathEncryptKey string
 
-	configJson string
+	configJSON string
 )
 
 var result = ConfigJSONStruct{
@@ -123,8 +123,8 @@ var result = ConfigJSONStruct{
 
 func InitFlag(flagInit *flag.FlagSet) {
 	//Config
-	flagInit.StringVar(&configJson, "c", "", "path to config file by json")
-	flagInit.StringVar(&configJson, "config", "", "path to config file by json")
+	flagInit.StringVar(&configJSON, "c", "", "path to config file by json")
+	flagInit.StringVar(&configJSON, "config", "", "path to config file by json")
 
 	//Encrypt
 	flagInit.StringVar(&pathEncryptKey, "crypto-key", result.CryptoKey, "path encrypt key")
@@ -177,8 +177,8 @@ func ParseFlag() {
 	}
 
 	//Проверяем наличие конфигурационного файла, если он есть то выставляем значения по умолчанию из него
-	if configJson != "" {
-		errConfig := ConfigFileRead(configJson)
+	if configJSON != "" {
+		errConfig := ConfigFileRead(configJSON)
 
 		//Если ошибка то возвращаемся из функции, все флаги проинициализированы
 		if errConfig != nil {
