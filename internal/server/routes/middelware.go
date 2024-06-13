@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -174,6 +175,30 @@ func LoggerMiddleware(appLogger *logger.APILogger) gin.HandlerFunc {
 			content,
 			myString,
 		)
+	}
+}
+
+// Assimetric Encrypt Decode by Private Key
+func ParseCIDRAndCheckIP(cfg *config.Config) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if cfg.TrustedSubnet.TrustedSubnetCIDR != "" {
+			_, cidr, err := net.ParseCIDR(cfg.TrustedSubnet.TrustedSubnetCIDR)
+			if err != nil {
+				fmt.Println("Invalid CIDR")
+				return
+			}
+
+			//Get IP by Header
+			ip := c.Request.Header.Get("X-Real-IP")
+			//Parsing IP adress
+			parseIP := net.ParseIP(ip)
+			//Checking ip to differentiate
+			if !cidr.Contains(parseIP) {
+				c.AbortWithStatus(http.StatusForbidden)
+			}
+		}
+
+		c.Next()
 	}
 }
 

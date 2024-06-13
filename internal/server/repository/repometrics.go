@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/models"
@@ -27,6 +28,7 @@ type Decorator struct {
 var countAttempt [4]int = [4]int{0, 1, 2, 3}
 
 func (d Decorator) GetMetricCounter(ctx context.Context, nameMetric string) (int64, error) {
+	fmt.Println("GetMetricCounter===>", nameMetric)
 	var err error
 	var val int64
 	for i := 0; i < len(countAttempt); i++ {
