@@ -199,7 +199,7 @@ func RunGRPCServer(server *hgrpc.ServerGRPC, cfg *config.Config) error {
 	var errServer error
 
 	if errServer = s.Serve(lis); errServer != nil {
-		fmt.Println("Failed run GRPC serve: %v", err)
+		fmt.Println("failed run grpc serve", err)
 		cfg.TypeProtocolForSend.GetByGRPC = false
 	}
 
