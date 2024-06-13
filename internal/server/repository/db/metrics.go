@@ -86,12 +86,14 @@ func (connect *metricsRepository) UpdateMetricGauge(ctx context.Context, nameMet
 }
 
 func (connect *metricsRepository) GetMetricCounter(ctx context.Context, nameMetric string) (int64, error) {
+	fmt.Println("DB GetMetricCounter")
 	var deltaMetric int64
 	// Query for a value based on a single row.
 	if err := connect.db.QueryRow("SELECT delta FROM metrics_counter WHERE name = $1",
 		nameMetric).Scan(&deltaMetric); err != nil {
 		return 0, err
 	}
+	fmt.Println("DB GetMetricCounter 1")
 
 	return deltaMetric, nil
 }

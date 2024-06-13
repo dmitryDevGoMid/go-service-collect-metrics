@@ -13,9 +13,15 @@ import (
 // Структура которая необходима для конфигурационных данных, читаемых из файл
 type ConfigJSONStruct struct {
 	Address        string `json:"address,omitempty"`
+	AddressGRPC    string `json:"address_grpc,omitempty"`
 	ReportInterval int    `json:"report_interval,omitempty"`
 	PollInterval   int    `json:"poll_interval,omitempty"`
 	CryptoKey      string `json:"crypto_key,omitempty"`
+}
+
+type TypeProtocolForSend struct {
+	SendByHTTP bool
+	SendByGRPC bool
 }
 
 type ConfigJSON struct {
@@ -58,16 +64,22 @@ type Server struct {
 	Address string `env:"ADDRESS"`
 }
 
+type ServerGRPC struct {
+	AddressGRPC string `env:"ADDRESS_GRPC"`
+}
+
 type Config struct {
-	Server      Server
-	Metrics     Metrics
-	Logger      Logger
-	Serializer  Serializer
-	Gzip        Gzip
-	SHA256      SHA256
-	Workers     Workers
-	PathEncrypt PathEncrypt
-	ConfigJSON  ConfigJSON
+	Server              Server
+	ServerGRPC          ServerGRPC
+	Metrics             Metrics
+	Logger              Logger
+	Serializer          Serializer
+	Gzip                Gzip
+	SHA256              SHA256
+	Workers             Workers
+	PathEncrypt         PathEncrypt
+	ConfigJSON          ConfigJSON
+	TypeProtocolForSend TypeProtocolForSend
 }
 
 var (
@@ -83,6 +95,11 @@ var (
 	limitWorkersPool int
 	pathEncryptKey   string
 	configJSON       string
+
+	sendByHTTP bool
+	sendByGRPC bool
+
+	addressGRPC string
 )
 
 /*
@@ -96,6 +113,7 @@ var (
 
 var result = ConfigJSONStruct{
 	Address:        "localhost:8080",
+	AddressGRPC:    "127.0.0.1:50051",
 	CryptoKey:      "",
 	PollInterval:   2,
 	ReportInterval: 10,
@@ -108,6 +126,8 @@ func InitFlag(flagInit *flag.FlagSet) {
 
 	//Encrypt
 	flagInit.StringVar(&pathEncryptKey, "crypto-key", result.CryptoKey, "path encrypt key")
+
+	flagInit.StringVar(&addressGRPC, "agrpc", result.AddressGRPC, "location http server")
 
 	flagInit.StringVar(&address, "a", result.Address, "location http server")
 	flagInit.IntVar(&reportInterval, "r", result.ReportInterval, "interval for run metrics")
@@ -129,6 +149,10 @@ func InitFlag(flagInit *flag.FlagSet) {
 
 	//Works
 	flagInit.IntVar(&limitWorkersPool, "l", 5, "limit workers send to server metrics")
+
+	//typeProtocolForSend
+	flagInit.BoolVar(&sendByGRPC, "grpc", false, "set protoc for send data")
+	flagInit.BoolVar(&sendByHTTP, "http", true, "set protoc for send data")
 }
 
 // Это просто треш, а не библиотека, такой процесс повторной инициализации флагов могли придумать только в golang - жесть
@@ -173,19 +197,19 @@ func ParseFlag() {
 
 		flag.Parse()
 
-		flags2.VisitAll(func(f *flag.Flag) {
+		/*flags2.VisitAll(func(f *flag.Flag) {
 			if f.Name == "crypto-key" {
 
-				fmt.Printf("Flag2 name: %s\n", f.Name)
-				fmt.Printf("Flag2 default value: %v\n", f.DefValue)
-				fmt.Printf("Flag2 usage: %s\n", f.Usage)
-				fmt.Println("Flag2 Value:", f.Value)
+			fmt.Printf("Flag2 name: %s\n", f.Name)
+			fmt.Printf("Flag2 default value: %v\n", f.DefValue)
+			fmt.Printf("Flag2 usage: %s\n", f.Usage)
+			fmt.Println("Flag2 Value:", f.Value)
 
-				fmt.Println()
+			fmt.Println()
 			}
-		})
+		})*/
 
-		fmt.Println("pathEncryptKey=>", pathEncryptKey)
+		//fmt.Println("pathEncryptKey=>", pathEncryptKey)
 	}
 	//os.Exit(1)
 }
@@ -216,6 +240,11 @@ func ParseConfig() (*Config, error) {
 	config.PathEncrypt.PathEncryptKey = pathEncryptKey
 	config.PathEncrypt.KeyEncryptEnbled = false
 
+	config.TypeProtocolForSend.SendByGRPC = sendByGRPC
+	config.TypeProtocolForSend.SendByHTTP = sendByHTTP
+
+	config.ServerGRPC.AddressGRPC = addressGRPC
+
 	//Init by environment variables
 	env.Parse(&config.Metrics)
 	env.Parse(&config.Server)
@@ -226,6 +255,7 @@ func ParseConfig() (*Config, error) {
 	env.Parse(&config.Workers)
 	env.Parse(&config.PathEncrypt)
 	env.Parse(&config.ConfigJSON)
+	env.Parse(&config.ServerGRPC)
 
 	return &config, nil
 }

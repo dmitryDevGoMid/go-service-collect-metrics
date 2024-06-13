@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -12,13 +13,16 @@ import (
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config/db"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/handlers"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/handlers/hgrpc"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/migration"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pb"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/asimencrypt"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/cryptohashsha"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/logger"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/file"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/mrepository"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/storage"
+	"google.golang.org/grpc"
 
 	repositoryDb "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/db"
 	repositoryM "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/memory"
@@ -133,6 +137,21 @@ func Run() {
 		}
 	}()
 
+	//Принимает данные по протоколу GRPC
+	if cfg.TypeProtocolForSend.GetByGRPC {
+		//Получаем обработчики gRPC
+		handlerGRPC := hgrpc.NewGRPCHandlers(activeRepository)
+
+		//Запускаем сервер gRPC
+		go RunGRPCServer(handlerGRPC, cfg)
+
+		/*if errGRPC != nil {
+			log.Fatalf("not run serverGRPC: %s\n", errGRPC)
+		} else {
+			fmt.Println("run server GRPC")
+		}*/
+	}
+
 	signalChannel := make(chan os.Signal, 1)
 
 	signal.Notify(signalChannel, syscall.SIGINT, syscall.SIGTERM)
@@ -149,4 +168,50 @@ func Run() {
 		log.Fatal("Server forced to shutdown: ", err)
 	}
 
+}
+
+func RunGRPCServer(server *hgrpc.ServerGRPC, cfg *config.Config) error {
+
+	adress := cfg.ServerGRPC.AddressGRPC
+
+	lis, err := net.Listen("tcp", adress)
+	if err != nil {
+		//return log.Fatalf("Failed to listen: %v", err)
+		cfg.TypeProtocolForSend.GetByGRPC = false
+		return err
+	}
+
+	s := grpc.NewServer()
+	pb.RegisterMetricsServiceServer(s, server)
+
+	// Set up graceful shutdown
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	fmt.Println("GRPC1")
+	go func() {
+		<-sigs
+		log.Println("Shutting down gracefully...")
+		s.GracefulStop()
+	}()
+
+	fmt.Println("GRPC2")
+
+	var errServer error
+
+	//go func() {
+	if errServer = s.Serve(lis); err != nil {
+		//log.Fatalf("Failed to serve: %v", err)
+		cfg.TypeProtocolForSend.GetByGRPC = false
+		//return err
+	}
+	//}()
+
+	if errServer != nil {
+		return err
+	}
+
+	fmt.Println("GRPC3")
+
+	return nil
 }

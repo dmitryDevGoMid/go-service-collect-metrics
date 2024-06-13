@@ -17,6 +17,114 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestTestClientIPAddressAccess(t *testing.T) {
+	// create a listener for the test server
+	listener, err := net.Listen("tcp", "localhost:8080")
+	if err != nil {
+		t.Fatalf("Error creating listener: %v", err)
+	}
+	defer listener.Close()
+
+	// create a new test server with a handler that checks the X-Real-IP header
+	server := &httptest.Server{
+		Listener: listener,
+		Config: &http.Server{
+			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				ip := r.Header.Get("X-Real-IP")
+				fmt.Println(ip)
+				_, cidr, err := net.ParseCIDR("192.168.0.0/24")
+				if err != nil {
+					t.Fatalf("Error parsing CIDR: %v", err)
+				}
+				if !cidr.Contains(net.ParseIP(ip)) {
+					//Отправляем ответ с сервера
+					w.WriteHeader(http.StatusForbidden)
+					return
+				}
+				w.WriteHeader(http.StatusOK)
+			}),
+		},
+	}
+
+	defer server.Close()
+
+	//Запускаем сервер
+	server.Start()
+
+	// Создаем клиент resty
+	client := resty.New()
+
+	//Создаем middleware
+	clientMiddleware := middleware.NewClientMiddleware(client, nil, nil, nil)
+
+	clientMiddleware.SetRealIPAdressToHeader()
+
+	fmt.Println(server.URL)
+	// send a request to the server and check the response
+	resp, err := client.R().Get(server.URL)
+
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	//Ожидаем 200 потому что адрес входить в диапазон
+	assert.Equal(t, 200, resp.StatusCode())
+}
+
+func TestTestClientIPAddressForbidden(t *testing.T) {
+	// create a listener for the test server
+	listener, err := net.Listen("tcp", "localhost:8080")
+	if err != nil {
+		t.Fatalf("Error creating listener: %v", err)
+	}
+	defer listener.Close()
+
+	// create a new test server with a handler that checks the X-Real-IP header
+	server := &httptest.Server{
+		Listener: listener,
+		Config: &http.Server{
+			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				ip := r.Header.Get("X-Real-IP")
+				fmt.Println(ip)
+				_, cidr, err := net.ParseCIDR("192.169.0.0/24")
+				if err != nil {
+					t.Fatalf("Error parsing CIDR: %v", err)
+				}
+				if !cidr.Contains(net.ParseIP(ip)) {
+					//Отправляем ответ с сервера
+					w.WriteHeader(http.StatusForbidden)
+					return
+				}
+				w.WriteHeader(http.StatusOK)
+			}),
+		},
+	}
+
+	defer server.Close()
+
+	//Запускаем сервер
+	server.Start()
+
+	// Создаем клиент resty
+	client := resty.New()
+
+	//Создаем middleware
+	clientMiddleware := middleware.NewClientMiddleware(client, nil, nil, nil)
+
+	clientMiddleware.SetRealIPAdressToHeader()
+
+	fmt.Println(server.URL)
+	// send a request to the server and check the response
+	resp, err := client.R().Get(server.URL)
+
+	if err != nil {
+		t.Fatalf("Error: %v", err)
+	}
+
+	//Ожидаем 403 так как адрес не входит в диапазон
+	assert.Equal(t, 403, resp.StatusCode())
+}
+
 // Тестовая структура
 type RequestBody struct {
 	Name string `json:"name"`

@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package grpctwoservice;
+
+//option go_package = "./cmd/grpc/grpctwoservice/pb";
+
+//option go_package = "github.com/yourusername/yourproject/metrics";
+option go_package = "github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pb";
+
+service MetricsService {
+    rpc Metrics (MetricsRequest) returns (MetricsResponse);
+    rpc MetricsTest (MetricsTestRequest) returns (MetricsTestResponse);
+  }
+
+message MetricsRequest {
+    string id = 1;
+    string mtype = 2;
+    double value = 3;
+    int64 delta = 4;
+}
+
+message MetricsResponse {
+    bool success = 1;
+}
+
+message MetricsTestRequest {
+    string id = 1;
+    string mtype = 2;
+    double value = 3;
+    int64 delta = 4;
+}
+
+message MetricsTestResponse {
+    bool success = 1;
+}

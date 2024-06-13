@@ -16,6 +16,7 @@ type CleintInterface interface {
 	OnBeforeRequest()
 	OnAfterResponse()
 	AssimEncryptBody()
+	SetRealIPAdressToHeader()
 }
 
 type Client struct {
@@ -33,6 +34,14 @@ func StreamToByte(stream io.Reader) []byte {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(stream)
 	return buf.Bytes()
+}
+
+// Send X-Real-IP to Server
+func (cl *Client) SetRealIPAdressToHeader() {
+	cl.client.OnBeforeRequest(func(c *resty.Client, req *resty.Request) error {
+		c.SetHeader("X-Real-IP", fmt.Sprintf("%s", "192.168.0.100"))
+		return nil
+	})
 }
 
 // Assimetric Encrypt Decode by Private Key

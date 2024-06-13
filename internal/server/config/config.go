@@ -12,11 +12,22 @@ import (
 
 type ConfigJSONStruct struct {
 	Address       string `json:"address,omitempty"`
+	AddressGRPC   string `json:"address_grpc,omitempty"`
 	Restore       bool   `json:"restore,omitempty"`
 	StoreInterval int    `json:"store_interval,omitempty"`
 	StoreFile     string `json:"store_file,omitempty"`
 	DatabaseDsn   string `json:"database_dsn,omitempty"`
 	CryptoKey     string `json:"crypto_key,omitempty"`
+	TrustedSubnet string `json:"trusted_subnet,omitempty"`
+}
+
+type TrustedSubnet struct {
+	TrustedSubnetCIDR string `env:"TRUSTED_SUBNET"`
+}
+
+type TypeProtocolForSend struct {
+	GetByHTTP bool
+	GetByGRPC bool
 }
 
 type ConfigJSON struct {
@@ -64,17 +75,24 @@ type Server struct {
 	Address string `env:"ADDRESS"`
 }
 
+type ServerGRPC struct {
+	AddressGRPC string `env:"ADDRESS_GRPC"`
+}
+
 type Config struct {
-	Server      Server
-	Metrics     Metrics
-	Logger      Logger
-	Serializer  Serializer
-	Gzip        Gzip
-	File        File
-	DataBase    DataBase
-	HashSHA256  HashSHA256
-	PathEncrypt PathEncrypt
-	ConfigJSON  ConfigJSON
+	Server              Server
+	ServerGRPC          ServerGRPC
+	Metrics             Metrics
+	Logger              Logger
+	Serializer          Serializer
+	Gzip                Gzip
+	File                File
+	DataBase            DataBase
+	HashSHA256          HashSHA256
+	PathEncrypt         PathEncrypt
+	ConfigJSON          ConfigJSON
+	TrustedSubnet       TrustedSubnet
+	TypeProtocolForSend TypeProtocolForSend
 }
 
 var (
@@ -97,10 +115,18 @@ var (
 	pathEncryptKey string
 
 	configJSON string
+
+	trustedSubnet string
+
+	getByHTTP bool
+	getByGRPC bool
+
+	addressGRPC string
 )
 
 var result = ConfigJSONStruct{
 	Address:       "localhost:8080",
+	AddressGRPC:   "127.0.0.1:50051",
 	CryptoKey:     "",
 	DatabaseDsn:   "postgres://manager:M45fgMetr@localhost:5432/metrics?sslmode=disable",
 	Restore:       true,
@@ -122,12 +148,18 @@ var result = ConfigJSONStruct{
 */
 
 func InitFlag(flagInit *flag.FlagSet) {
+
+	//TrustedSubnet
+	flagInit.StringVar(&trustedSubnet, "t", "", "classless addressing (CIDR) string representation")
+
 	//Config
 	flagInit.StringVar(&configJSON, "c", "", "path to config file by json")
 	flagInit.StringVar(&configJSON, "config", "", "path to config file by json")
 
 	//Encrypt
 	flagInit.StringVar(&pathEncryptKey, "crypto-key", result.CryptoKey, "path encrypt key")
+
+	flagInit.StringVar(&addressGRPC, "agrpc", result.AddressGRPC, "location grpc server")
 
 	flagInit.StringVar(&address, "a", result.Address, "location http server")
 	//flag.IntVar(&reportInterval, "r", 400, "interval for run metrics")
@@ -159,6 +191,10 @@ func InitFlag(flagInit *flag.FlagSet) {
 
 	//sha 256 key
 	flagInit.StringVar(&keySHA256, "k", "invalidkey", "set key for calc SHA256")
+
+	//typeProtocolForSend
+	flagInit.BoolVar(&getByGRPC, "grpc", false, "set protoc for send data")
+	flagInit.BoolVar(&getByHTTP, "http", true, "set protoc for send data")
 }
 
 // Это просто треш, а не библиотека, такой процесс повторной инициализации флагов могли придумать только в golang - жесть
@@ -206,19 +242,17 @@ func ParseFlag() {
 
 	flag.Parse()
 
-	flags2.VisitAll(func(f *flag.Flag) {
+	/*flags2.VisitAll(func(f *flag.Flag) {
 		if f.Name == "crypto-key" {
 
 			fmt.Printf("Flag2 name: %s\n", f.Name)
 			fmt.Printf("Flag2 default value: %v\n", f.DefValue)
 			fmt.Printf("Flag2 usage: %s\n", f.Usage)
 			fmt.Println("Flag2 Value:", f.Value)
-
-			fmt.Println()
 		}
-	})
+	})*/
 
-	fmt.Println("pathEncryptKey=>", pathEncryptKey)
+	//fmt.Println("pathEncryptKey=>", pathEncryptKey)
 }
 
 // Разбираем конфигурацию по структурам
@@ -227,10 +261,13 @@ func ParseConfig() (*Config, error) {
 
 	var config Config
 
+	config.TrustedSubnet.TrustedSubnetCIDR = trustedSubnet
+
 	config.Metrics.PollInterval = pollInterval
 	//config.Metrics.ReportInterval = reportInterval
 
 	config.Server.Address = address
+	config.ServerGRPC.AddressGRPC = addressGRPC
 
 	config.Logger.Encoding = loggerEncoding
 	config.Logger.Level = loggerLevel
@@ -250,6 +287,9 @@ func ParseConfig() (*Config, error) {
 	config.PathEncrypt.PathEncryptKey = pathEncryptKey
 	config.PathEncrypt.KeyEncryptEnbled = false
 
+	config.TypeProtocolForSend.GetByHTTP = getByHTTP
+	config.TypeProtocolForSend.GetByGRPC = getByGRPC
+
 	//Init by environment variables
 	env.Parse(&config.Metrics)
 	env.Parse(&config.Server)
@@ -261,6 +301,8 @@ func ParseConfig() (*Config, error) {
 	env.Parse(&config.HashSHA256)
 	env.Parse(&config.PathEncrypt)
 	env.Parse(&config.ConfigJSON)
+	env.Parse(&config.TrustedSubnet)
+	env.Parse(&config.ServerGRPC)
 
 	return &config, nil
 }
