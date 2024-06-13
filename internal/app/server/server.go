@@ -188,30 +188,24 @@ func RunGRPCServer(server *hgrpc.ServerGRPC, cfg *config.Config) error {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	fmt.Println("GRPC1")
+	fmt.Println("Run GRPC Server")
+
 	go func() {
 		<-sigs
 		log.Println("Shutting down gracefully...")
 		s.GracefulStop()
 	}()
 
-	fmt.Println("GRPC2")
-
 	var errServer error
 
-	//go func() {
-	if errServer = s.Serve(lis); err != nil {
-		//log.Fatalf("Failed to serve: %v", err)
+	if errServer = s.Serve(lis); errServer != nil {
+		fmt.Println("Failed run GRPC serve: %v", err)
 		cfg.TypeProtocolForSend.GetByGRPC = false
-		//return err
 	}
-	//}()
 
 	if errServer != nil {
 		return err
 	}
-
-	fmt.Println("GRPC3")
 
 	return nil
 }

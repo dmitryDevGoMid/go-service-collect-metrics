@@ -39,7 +39,7 @@ func StreamToByte(stream io.Reader) []byte {
 // Send X-Real-IP to Server
 func (cl *Client) SetRealIPAdressToHeader() {
 	cl.client.OnBeforeRequest(func(c *resty.Client, req *resty.Request) error {
-		c.SetHeader("X-Real-IP", fmt.Sprintf("%s", "192.168.0.100"))
+		c.SetHeader("X-Real-IP", "192.168.0.100")
 		return nil
 	})
 }
