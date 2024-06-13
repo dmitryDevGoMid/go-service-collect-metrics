@@ -13,6 +13,7 @@ import (
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/config/db"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/handlers"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/migration"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/asimencrypt"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/cryptohashsha"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/pkg/logger"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/server/repository/file"
@@ -97,6 +98,18 @@ func Run() {
 
 	router.Use(routes.CheckHashSHA256Data(cfg, hash256))
 
+	asme := asimencrypt.NewAsimEncrypt(cfg)
+
+	errSetPrivateKey := asme.SetPrivateKey()
+
+	if errSetPrivateKey != nil {
+		log.Println("error set private key:", errSetPrivateKey)
+	}
+
+	router.Use(routes.AssimEncryptBody(cfg, asme))
+
+	router.Use(routes.ToolsGroupPermission())
+
 	//router.Use(routes.ToolsGroupPermission())
 
 	//Инициализируем роуты
@@ -104,7 +117,7 @@ func Run() {
 
 	dbMigration := migration.NewMigration(dbConnection.DB())
 
-	//dbMigration.RunDrop(ctx)
+	dbMigration.RunDrop(ctx)
 	dbMigration.RunCreate(ctx)
 
 	// Line 27

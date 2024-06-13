@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/config"
+	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/asimencrypt"
 	"github.com/dmitryDevGoMid/go-service-collect-metrics/internal/agent/pkg/cryptohashsha"
 	"github.com/go-resty/resty/v2"
 )
@@ -13,16 +15,18 @@ import (
 type CleintInterface interface {
 	OnBeforeRequest()
 	OnAfterResponse()
+	AssimEncryptBody()
 }
 
 type Client struct {
 	client     *resty.Client
 	cfg        *config.Config
 	hashSha256 cryptohashsha.HashSha256
+	encrypt    asimencrypt.AsimEncrypt
 }
 
-func NewClientMiddleware(client *resty.Client, cfg *config.Config, sha256 cryptohashsha.HashSha256) CleintInterface {
-	return &Client{client: client, cfg: cfg, hashSha256: sha256}
+func NewClientMiddleware(client *resty.Client, cfg *config.Config, sha256 cryptohashsha.HashSha256, encrypt asimencrypt.AsimEncrypt) CleintInterface {
+	return &Client{client: client, cfg: cfg, hashSha256: sha256, encrypt: encrypt}
 }
 
 func StreamToByte(stream io.Reader) []byte {
@@ -31,15 +35,34 @@ func StreamToByte(stream io.Reader) []byte {
 	return buf.Bytes()
 }
 
+// Assimetric Encrypt Decode by Private Key
+func (cl *Client) AssimEncryptBody() {
+	cl.client.OnBeforeRequest(func(c *resty.Client, req *resty.Request) error {
+		if cl.cfg.PathEncrypt.KeyEncryptEnbled {
+
+			body := fmt.Sprintf("%s", req.Body)
+			bodyEncrypt, err := cl.encrypt.Encrypt(string(body))
+
+			if err != nil {
+				log.Println("Error decrypt into middleware", err)
+			} else {
+				req.Body = string(bodyEncrypt)
+			}
+		}
+		return nil
+	})
+}
+
 func (cl *Client) OnBeforeRequest() {
 	// Registering Request Middleware
 	cl.client.OnBeforeRequest(func(c *resty.Client, req *resty.Request) error {
 		body := fmt.Sprintf("%s", req.Body)
-		//fmt.Println(body)
 
 		hashString, err := cl.hashSha256.GetSha256ByData([]byte(body))
 
 		if err == nil {
+			fmt.Println("Тело запроса--------->>>>>>>>>>:", body)
+			fmt.Println("Записали заголовок HashSHA256--------->>>>>>>>>>:", hashString)
 			c.SetHeader("HashSHA256", fmt.Sprintf("%x", hashString))
 		}
 
